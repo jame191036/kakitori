@@ -1,0 +1,55 @@
+.hero {
+  display: grid;
+  gap: 6px;
+  max-width: 720px;
+}
+
+.hero .kana {
+  color: var(--accent);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.action {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  color: var(--text);
+  text-decoration: none !important;
+  transition:
+    border-color 0.15s,
+    transform 0.1s;
+}
+
+.action:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.actionIcon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.tableHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.h2 {
+  font-size: 1.15rem;
+}

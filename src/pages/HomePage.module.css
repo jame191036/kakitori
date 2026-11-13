@@ -1,0 +1,111 @@
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 32px;
+  padding-block: 24px 8px;
+}
+
+.heroText {
+  display: grid;
+  gap: 16px;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.title {
+  font-size: clamp(1.9rem, 1.3rem + 2.6vw, 3rem);
+  line-height: 1.25;
+}
+
+.heroArt {
+  width: min(320px, 100%);
+  justify-self: center;
+}
+
+.h2 {
+  font-size: 1.2rem;
+}
+
+.scripts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.scriptCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--text);
+  text-decoration: none !important;
+  transition:
+    border-color 0.15s,
+    transform 0.1s;
+}
+
+.scriptCard:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.scriptGlyph {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 2rem;
+}
+
+.scriptText {
+  display: grid;
+  flex: 1;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px 24px;
+}
+
+.feature {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.featureIcon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--accent);
+}
+
+.privacy {
+  text-align: center;
+  padding-top: 8px;
+}
+
+@media (max-width: 720px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    padding-top: 8px;
+  }
+
+  .heroArt {
+    order: -1;
+    width: min(220px, 70%);
+  }
+}

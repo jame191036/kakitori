@@ -1,0 +1,293 @@
+/* ── Setup ── */
+.setup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.setupTitle {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.typeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 8px;
+}
+
+.typeChip {
+  border-radius: var(--radius-sm);
+  min-height: 52px;
+  padding: 8px 14px;
+}
+
+.example {
+  display: block;
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.startBar {
+  position: sticky;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 12px 12px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+}
+
+/* ── Runner ── */
+.runner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  max-width: 640px;
+  width: 100%;
+  margin-inline: auto;
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: inherit;
+  transition: width 0.3s;
+}
+
+.question {
+  display: grid;
+  gap: 16px;
+  justify-items: center;
+  text-align: center;
+}
+
+.promptChar {
+  font-size: 6rem;
+  line-height: 1.2;
+}
+
+.promptReading {
+  display: grid;
+  gap: 2px;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.promptThai {
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: var(--text-2);
+}
+
+.audioBtn {
+  flex-direction: column;
+  width: 140px;
+  height: 120px;
+  border-radius: var(--radius);
+  gap: 6px;
+}
+
+.choices {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.choice {
+  position: relative;
+  min-height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    transform 0.05s;
+}
+
+.choice:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.choice:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.choice:disabled {
+  cursor: default;
+}
+
+.choiceChar {
+  font-size: 2.8rem;
+}
+
+.choiceReading {
+  display: grid;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.key {
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  font-size: 0.75rem;
+  color: var(--text-2);
+}
+
+.mark {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.correct {
+  border-color: var(--good);
+  background: var(--good-soft);
+  color: var(--good);
+}
+
+.wrong {
+  border-color: var(--bad);
+  background: var(--bad-soft);
+  color: var(--bad);
+}
+
+.dim {
+  opacity: 0.45;
+}
+
+.writeArea {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.feedback {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.feedbackText .kana {
+  font-size: 1.4rem;
+}
+
+/* ── Result ── */
+.result {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  max-width: 640px;
+  margin-inline: auto;
+  width: 100%;
+}
+
+.scoreCard {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  text-align: center;
+}
+
+.bigScore {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.bigScore .muted {
+  font-size: 1.5rem;
+}
+
+.meter {
+  width: min(320px, 100%);
+  height: 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.meter span {
+  display: block;
+  height: 100%;
+  background: var(--good);
+}
+
+.wrongList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.wrongList li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.resultActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+@media (max-width: 560px) {
+  .promptChar {
+    font-size: 4.8rem;
+  }
+
+  .promptReading {
+    font-size: 2.4rem;
+  }
+
+  .choice {
+    min-height: 76px;
+  }
+
+  .startBar {
+    bottom: calc(var(--bottom-nav-h) + 10px + env(safe-area-inset-bottom));
+    padding: 8px 8px 8px 16px;
+  }
+}

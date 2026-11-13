@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>ฝึกคัดญี่ปุ่น — ฮิรางานะ</title>
+    <meta name="description" content="ฝึกคัดตัวอักษรฮิรางานะทีละขีด ดูลำดับขีด เขียนทับ ตรวจลายมือ และทำแบบทดสอบ ฟรี ไม่ต้องสมัครสมาชิก" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
+    <meta name="theme-color" content="#faf7f2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#17161b" media="(prefers-color-scheme: dark)" />
+    <script>
+      // ตั้งธีมก่อนหน้าเว็บแสดงผล เพื่อไม่ให้หน้าจอกะพริบ
+      try {
+        var s = JSON.parse(localStorage.getItem('jp-learn:settings:v1') || '{}');
+        if (s.theme === 'light' || s.theme === 'dark') document.documentElement.dataset.theme = s.theme;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>กรุณาเปิดใช้งาน JavaScript เพื่อใช้งานเว็บนี้</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

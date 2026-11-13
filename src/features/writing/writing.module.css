@@ -1,0 +1,324 @@
+.svg {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  overflow: visible;
+}
+
+.board {
+  width: 100%;
+  max-width: 400px;
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.surface {
+  background: var(--pad);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.pad {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  cursor: crosshair;
+}
+
+.padDisabled {
+  cursor: default;
+}
+
+.gridLine {
+  stroke: var(--guide);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  vector-effect: non-scaling-stroke;
+  fill: none;
+}
+
+.stroke,
+.ghost path,
+.ink path,
+.live,
+.userInk path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ghost path {
+  stroke: var(--ghost);
+  stroke-width: 5;
+}
+
+.ghostThin path {
+  stroke-width: 3.5;
+}
+
+.ink path {
+  stroke: var(--ink);
+  stroke-width: 4;
+}
+
+.current {
+  stroke: var(--accent) !important;
+}
+
+.live,
+.userInk path {
+  stroke: var(--ink);
+  stroke-width: 4.5;
+}
+
+.num {
+  font-family: var(--font-ui);
+  font-size: 7px;
+  font-weight: 700;
+  fill: var(--text-2);
+  paint-order: stroke;
+  stroke: var(--pad);
+  stroke-width: 2.5px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.numCurrent {
+  fill: var(--accent);
+}
+
+/* ── แอนิเมชันการเขียน (ใช้ pathLength=1) ── */
+.draw {
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  animation-name: draw;
+  animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  animation-fill-mode: both;
+}
+
+@keyframes draw {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  1% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+.fadeIn {
+  opacity: 0;
+  animation: fadeIn 0.2s ease-out both;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.paused * {
+  animation-play-state: paused !important;
+}
+
+/* ── คำใบ้: วาดขีดที่ต้องเขียนซ้ำไปเรื่อยๆ ── */
+.hint {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 1 1;
+  animation: hintDraw 1.6s ease-in-out infinite;
+}
+
+@keyframes hintDraw {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 0.9;
+  }
+  60% {
+    stroke-dashoffset: 0;
+    opacity: 0.9;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+.flashBad {
+  fill: none;
+  stroke: var(--bad);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: flashOut 0.9s ease-in forwards;
+}
+
+@keyframes flashOut {
+  0%,
+  40% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.snap {
+  animation: snapIn 0.25s ease-out;
+}
+
+@keyframes snapIn {
+  from {
+    opacity: 0.3;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.startDot {
+  fill: var(--accent);
+  animation: pulse 1.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(1.5);
+  }
+}
+
+/* ── ผลเขียนอิสระ ── */
+.res-good,
+.res-ok {
+  stroke: var(--good) !important;
+}
+
+.res-direction,
+.res-order {
+  stroke: var(--warn) !important;
+}
+
+.res-shape,
+.res-extra {
+  stroke: var(--bad) !important;
+}
+
+.missing {
+  fill: none;
+  stroke: var(--bad);
+  stroke-width: 3;
+  stroke-dasharray: 3 3;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.status {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.stepLabel {
+  min-width: 84px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.resultList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.resultList li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.dot-good,
+.dot-ok {
+  background: var(--good);
+}
+
+.dot-direction,
+.dot-order {
+  background: var(--warn);
+}
+
+.dot-shape,
+.dot-extra,
+.dot-missing {
+  background: var(--bad);
+}
+
+.score {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 12px;
+}
+
+.scoreValue {
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.stars {
+  font-size: 1.6rem;
+  letter-spacing: 2px;
+  color: var(--warn);
+}
+
+.starOff {
+  color: var(--ghost);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hint,
+  .startDot {
+    animation-duration: 3s;
+  }
+}
