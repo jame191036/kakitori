@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { GROUP_KIND_LABEL } from '../data/scripts';
+import { GROUP_KIND_LABEL, groupKindDescription } from '../data/scripts';
 import type { CharEntry, GroupKind, ScriptPack } from '../data/types';
 import { masteryLevel, MASTERY_LABEL, type ScriptProgress } from '../features/progress/progressLogic';
 import { cx } from '../lib/cx';
@@ -23,6 +23,7 @@ export function KanaTable({ pack, progress, hrefFor, activeId, compact = false, 
       {kinds.map((kind) => (
         <section key={kind} className={styles.section}>
           {headings && <h3 className={styles.heading}>{GROUP_KIND_LABEL[kind]}</h3>}
+          {headings && !compact && <p className={styles.description}>{groupKindDescription(kind, pack)}</p>}
           <div className={styles.grid}>
             {pack.groups
               .filter((g) => g.kind === kind)

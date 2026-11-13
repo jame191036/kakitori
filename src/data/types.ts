@@ -6,8 +6,8 @@
  * แล้วลงทะเบียนใน src/data/scripts/index.ts โดยไม่ต้องแก้หน้าจอ
  */
 
-/** รหัสชุดตัวอักษร — เพิ่ม 'katakana' | 'kanji' ได้ในอนาคต */
-export type ScriptId = 'hiragana';
+/** รหัสชุดตัวอักษร — เพิ่ม 'kanji' ฯลฯ ได้ในอนาคต */
+export type ScriptId = 'hiragana' | 'katakana';
 
 /** ประเภทของกลุ่มตัวอักษร */
 export type GroupKind = 'basic' | 'dakuten' | 'handakuten' | 'yoon';
@@ -43,6 +43,21 @@ export interface CharEntry {
   base?: string;
   /** ตัวอักษรที่หน้าตาคล้ายกันและมักสับสน (ใช้ทำตัวเลือกหลอกในแบบทดสอบ) */
   similar?: readonly string[];
+  /** คำศัพท์ตัวอย่างที่มีตัวอักษรนี้ */
+  example?: ExampleWord;
+}
+
+export interface ExampleWord {
+  /** คำที่เขียนด้วยคานะ เช่น 'あめ' */
+  kana: string;
+  /** รูปคันจิที่ใช้กันทั่วไป (ถ้าปกติเขียนด้วยคันจิ) เช่น '雨' */
+  kanji?: string;
+  /** โรมาจิ — สะกดตามตัวคานะ (おう = ou, ー = สระซ้ำ) */
+  romaji: string;
+  /** ความหมายภาษาไทย */
+  meaning: string;
+  /** คำต้นทางของคำทับศัพท์ เช่น 'ice' */
+  origin?: string;
 }
 
 /** ข้อมูลลำดับขีดของตัวอักษร 1 ตัว (พิกัดใน viewBox 0 0 109 109 ตาม KanjiVG) */
@@ -67,6 +82,11 @@ export interface ScriptPack {
   /** ชื่อภาษาอังกฤษ เช่น 'Hiragana' */
   nameEn: string;
   description: string;
+  /**
+   * ชุดคู่ที่มีเสียงตรงกันทีละตัว (เช่น ฮิรางานะ ↔ คาตาคานะ) — จับคู่ด้วย CharEntry.id
+   * ใช้ทำข้อสอบแบบจับคู่
+   */
+  counterpart?: ScriptId;
   groups: readonly CharGroup[];
   chars: readonly CharEntry[];
   /** โหลดข้อมูลลำดับขีดแบบ lazy (แยกไฟล์ ไม่โหลดจนกว่าจะใช้) */

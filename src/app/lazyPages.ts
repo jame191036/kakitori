@@ -10,3 +10,4 @@ export const QuizPage = lazy(() => import('../pages/QuizPage'));
 export const ReviewPage = lazy(() => import('../pages/ReviewPage'));
 export const WorksheetPage = lazy(() => import('../pages/WorksheetPage'));
 export const AboutPage = lazy(() => import('../pages/AboutPage'));
+export const StartPage = lazy(() => import('../pages/StartPage'));

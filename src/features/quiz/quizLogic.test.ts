@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { charsInGroups, findChar, sameReading } from '../../data/scripts';
 import { hiragana } from '../../data/scripts/hiragana';
+import { katakana } from '../../data/scripts/katakana';
 import { rng } from '../writing/engine/testUtils';
 import { buildQuiz, confusablesOf, isCorrectChoice, pickDistractors, weightedSample } from './quizLogic';
+import { isTypeAvailable, questionTypeInfo } from './quizText';
 
 const all = hiragana.chars;
 
@@ -85,6 +87,37 @@ describe('buildQuiz', () => {
         expect(q.choices.filter((c) => c.id === q.answer.id)).toHaveLength(1);
       }
     }
+  });
+
+  it('builds katakana pair questions with katakana choices only', () => {
+    const qs = buildQuiz({
+      pool: katakana.chars,
+      all: katakana.chars,
+      types: ['pairToChar'],
+      count: 20,
+      weightOf: () => 1,
+      random: rng(7),
+    });
+    const katakanaIds = new Set(katakana.chars);
+    for (const q of qs) {
+      expect(q.choices).toHaveLength(4);
+      expect(q.choices.every((c) => katakanaIds.has(c))).toBe(true);
+    }
+  });
+
+  it('labels the pair question with both script names', () => {
+    expect(questionTypeInfo('pairToChar', katakana)).toEqual({
+      label: 'ดูฮิรางานะ → เลือกคาตาคานะ',
+      example: 'か → カ',
+    });
+    expect(isTypeAvailable('pairToChar', hiragana, false)).toBe(true);
+    expect(isTypeAvailable('audioToChar', hiragana, false)).toBe(false);
+  });
+
+  it('uses katakana look-alikes as distractors (シ/ツ/ン/ソ)', () => {
+    const conf = confusablesOf(findChar(katakana, 'シ')!, katakana.chars);
+    expect([...conf]).toEqual(expect.arrayContaining(['ツ', 'ン']));
+    expect(confusablesOf(findChar(katakana, 'ジ')!, katakana.chars).has('ヅ')).toBe(true);
   });
 
   it('accepts a same-reading character when choosing by sound or reading', () => {

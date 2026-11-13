@@ -9,6 +9,7 @@ import {
   QuizPage,
   ReviewPage,
   ScriptHomePage,
+  StartPage,
   WorksheetPage,
 } from './lazyPages';
 import { RouteError } from './RouteError';
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <HomePage /> },
           { path: 'about', element: <AboutPage /> },
+          { path: 'start', element: <StartPage /> },
           {
             path: ':script',
             element: <ScriptRoute />,

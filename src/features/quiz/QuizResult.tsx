@@ -2,7 +2,7 @@ import { PenLine, RotateCcw, Settings2, Target } from 'lucide-react';
 import { Link } from 'react-router';
 import { romajiLabel } from '../../data/scripts';
 import type { CharEntry, ScriptPack } from '../../data/types';
-import { QUESTION_TYPE_INFO } from './quizText';
+import { questionTypeInfo } from './quizText';
 import type { AnswerRecord } from './QuizRunner';
 import styles from './quiz.module.css';
 
@@ -54,7 +54,7 @@ export function QuizResult({ pack, records, onRetry, onReviewWrong, onSetup }: Q
                   {romajiLabel(r.question.answer)} <span className="muted">({r.question.answer.thai})</span>
                   <br />
                   <span className="small muted">
-                    {QUESTION_TYPE_INFO[r.question.type].label}
+                    {questionTypeInfo(r.question.type, pack).label}
                     {r.chosen && (
                       <>
                         {' '}

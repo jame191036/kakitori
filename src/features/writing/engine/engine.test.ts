@@ -5,9 +5,10 @@ import { matchStroke } from './strokeMatcher';
 import { createSession, isComplete, submitStroke, type SessionConfig } from './strokeSession';
 import { scoreFreeWrite } from './freeWrite';
 import { referenceStrokes } from './refStrokes';
-import { hiraganaStrokes, rng, simulateHand } from './testUtils';
+import { allStrokeEntries, hiraganaStrokes, katakanaStrokes, rng, simulateHand } from './testUtils';
 
-const allChars = Object.entries(hiraganaStrokes.chars);
+// ทดสอบกับข้อมูลจริงทั้งฮิรางานะและคาตาคานะ (142 ตัว)
+const allChars = allStrokeEntries;
 
 describe('flattenPath', () => {
   it('handles absolute and relative lines with implicit repeats', () => {
@@ -145,6 +146,16 @@ describe('stroke session', () => {
     }
     // ยอมให้พลาดได้บ้างในบางตัว แต่ส่วนใหญ่ต้องผ่าน
     expect(failures).toBeLessThan(allChars.length * 0.15);
+  });
+
+  it('tells シ from ツ by stroke direction (long stroke up vs down)', () => {
+    const shi = referenceStrokes(katakanaStrokes.chars['シ']!);
+    const tsu = referenceStrokes(katakanaStrokes.chars['ツ']!);
+    // เขียนขีดยาวของ シ (ล่าง→บน) แต่ลากแบบ ツ (บน→ล่าง) = ผิดทิศ
+    const m = matchStroke([...shi[2]!].reverse(), shi[2]!);
+    expect(m.reason).toBe('direction');
+    // ขีดยาวของ ツ ไม่ควรผ่านเป็นขีดยาวของ シ
+    expect(matchStroke(tsu[2]!, shi[2]!).ok).toBe(false);
   });
 
   it('reports the order when a later stroke is written first', () => {

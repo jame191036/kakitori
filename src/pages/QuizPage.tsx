@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useScriptPack } from '../app/ScriptContext';
-import { charsInGroups, findChar } from '../data/scripts';
+import { ContinueCard } from '../components/ContinueCard';
+import { charsInGroups, findChar, scriptList } from '../data/scripts';
 import type { CharEntry, ScriptPack } from '../data/types';
 import { quizWeight } from '../features/progress/progressLogic';
 import { progressStore } from '../features/progress/progressStore';
@@ -9,6 +10,7 @@ import { buildQuiz, type QuizQuestion } from '../features/quiz/quizLogic';
 import { QuizResult } from '../features/quiz/QuizResult';
 import { QuizRunner, type AnswerRecord } from '../features/quiz/QuizRunner';
 import { QuizSetup } from '../features/quiz/QuizSetup';
+import { isTypeAvailable } from '../features/quiz/quizText';
 import {
   DEFAULT_QUIZ_PREFS,
   getQuizPrefs,
@@ -40,27 +42,36 @@ function makeQuestions(pack: ScriptPack, config: RunConfig): QuizQuestion[] {
   });
 }
 
-/** ทบทวนเฉพาะตัวที่กำหนด: รอบละไม่เกิน 10 ข้อ ให้แต่ละตัวออกอย่างน้อย 1 ครั้ง */
-function reviewConfig(pool: CharEntry[], types: QuestionType[]): RunConfig {
+/** สอบเฉพาะตัวที่กำหนด: ให้แต่ละตัวออกอย่างน้อย 1 ครั้ง (ตัวน้อยออกตัวละ 2 ครั้ง) */
+function focusedConfig(pool: CharEntry[], types: QuestionType[], title: string): RunConfig {
   return {
     pool,
     types,
     count: Math.min(Math.max(10, pool.length), pool.length * 2),
-    title: `ทบทวน ${pool.length} ตัว`,
+    title,
   };
 }
 
-function QuizFlow({ initialChars }: { initialChars: CharEntry[] }) {
+interface QuickStart {
+  chars: CharEntry[];
+  title: string;
+}
+
+function QuizFlow({ quickStart }: { quickStart: QuickStart | null }) {
   const pack = useScriptPack();
   const navigate = useNavigate();
 
   const [phase, setPhase] = useState<Phase>(() => {
-    if (initialChars.length === 0) return { kind: 'setup' };
-    // ใช้รูปแบบคำถามที่ผู้ใช้ตั้งไว้ล่าสุด (ตัดแบบฟังเสียงออกถ้าเครื่องไม่มีเสียงญี่ปุ่น)
-    const saved = getQuizPrefs(settingsStore.get(), pack.id).types.filter(
-      (t) => t !== 'audioToChar' || isSpeechAvailable(),
+    if (!quickStart) return { kind: 'setup' };
+    // ใช้รูปแบบคำถามที่ผู้ใช้ตั้งไว้ล่าสุด (ตัดแบบที่ใช้ไม่ได้ออก เช่น ฟังเสียงในเครื่องที่ไม่มีเสียงญี่ปุ่น)
+    const saved = getQuizPrefs(settingsStore.get(), pack.id).types.filter((t) =>
+      isTypeAvailable(t, pack, isSpeechAvailable()),
     );
-    const config = reviewConfig(initialChars, saved.length ? saved : DEFAULT_QUIZ_PREFS.types);
+    const config = focusedConfig(
+      quickStart.chars,
+      saved.length ? saved : DEFAULT_QUIZ_PREFS.types,
+      quickStart.title,
+    );
     return { kind: 'run', config, questions: makeQuestions(pack, config), runId: 0 };
   });
 
@@ -73,10 +84,13 @@ function QuizFlow({ initialChars }: { initialChars: CharEntry[] }) {
     }));
 
   const backToSetup = () => {
-    // ล้าง ?chars= ออกจาก URL เมื่อกลับไปหน้าตั้งค่า
+    // ล้าง ?chars= / ?groups= ออกจาก URL เมื่อกลับไปหน้าตั้งค่า
     navigate(`/${pack.id}/quiz`, { replace: true });
     setPhase({ kind: 'setup' });
   };
+
+  // ทดสอบแถวจากปุ่ม "เรียนต่อ" เสร็จแล้ว → ให้ปุ่มกลับไปเรียนต่อในหน้าผลสอบ
+  const fromPath = !!quickStart && phase.kind === 'result';
 
   return (
     <div className="container page">
@@ -119,21 +133,46 @@ function QuizFlow({ initialChars }: { initialChars: CharEntry[] }) {
           records={phase.records}
           onRetry={() => start(phase.config)}
           onSetup={backToSetup}
-          onReviewWrong={(chars) => start(reviewConfig(chars, phase.config.types))}
+          onReviewWrong={(chars) =>
+            start(focusedConfig(chars, phase.config.types, `สอบซ้ำตัวที่ผิด ${chars.length} ตัว`))
+          }
         />
+      )}
+
+      {fromPath && (
+        <div style={{ maxWidth: 640, width: '100%', marginInline: 'auto' }}>
+          <ContinueCard packs={scriptList} />
+        </div>
       )}
     </div>
   );
 }
 
-export default function QuizPage() {
-  const pack = useScriptPack();
-  const [params] = useSearchParams();
-  const charsParam = params.get('chars') ?? '';
-  const initialChars = charsParam
+/**
+ * เริ่มสอบทันทีจากลิงก์:
+ * - ?chars=a,ka  → ทบทวนตัวที่กำหนด (จากหน้าทบทวน)
+ * - ?groups=ka   → ทดสอบเฉพาะแถว (จากปุ่ม "เรียนต่อ")
+ */
+function quickStartFrom(pack: ScriptPack, params: URLSearchParams): QuickStart | null {
+  const groupIds = (params.get('groups') ?? '').split(',').filter(Boolean);
+  const groups = pack.groups.filter((g) => groupIds.includes(g.id));
+  if (groups.length) {
+    return {
+      chars: charsInGroups(pack, groups.map((g) => g.id)),
+      title: `ทดสอบแถว ${groups.map((g) => g.head).join(' ')} — ตอบถูกครบทุกตัวเพื่อผ่านแถวนี้`,
+    };
+  }
+  const chars = (params.get('chars') ?? '')
     .split(',')
     .map((id) => findChar(pack, id))
     .filter((c): c is CharEntry => !!c);
-  // key: เมื่อลิงก์ทบทวนเปลี่ยน ให้เริ่มใหม่ทั้งหมด
-  return <QuizFlow key={charsParam} initialChars={initialChars} />;
+  return chars.length ? { chars, title: `ทบทวน ${chars.length} ตัว` } : null;
+}
+
+export default function QuizPage() {
+  const pack = useScriptPack();
+  const [params] = useSearchParams();
+  // key: เมื่อลิงก์เปลี่ยน (เช่นจากปุ่มเรียนต่อ) ให้เริ่มใหม่ทั้งหมด
+  const key = `${params.get('chars') ?? ''}|${params.get('groups') ?? ''}`;
+  return <QuizFlow key={key} quickStart={quickStartFrom(pack, params)} />;
 }

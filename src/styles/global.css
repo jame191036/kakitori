@@ -339,8 +339,12 @@ svg {
   scrollbar-width: none;
 }
 
-.segmented button {
+.segmented button,
+.segmented a {
   flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 0;
   background: transparent;
   padding: 6px 14px;
@@ -350,10 +354,12 @@ svg {
   color: var(--text-2);
   font-weight: 500;
   white-space: nowrap;
+  text-decoration: none !important;
 }
 
 .segmented button[aria-pressed='true'],
-.segmented button[aria-selected='true'] {
+.segmented button[aria-selected='true'],
+.segmented a[aria-current='page'] {
   background: var(--surface);
   color: var(--text);
   box-shadow: var(--shadow);

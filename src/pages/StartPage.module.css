@@ -1,0 +1,100 @@
+.page {
+  max-width: 800px;
+}
+
+.h2 {
+  font-size: 1.15rem;
+}
+
+.list {
+  margin: 0;
+  padding-left: 1.3em;
+  display: grid;
+  gap: 8px;
+}
+
+.sentenceBox {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.sentence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-kana);
+  font-size: 1.8rem;
+  line-height: 1.4;
+}
+
+.seg {
+  padding: 0 6px;
+  border-radius: 6px;
+  border-bottom: 3px solid;
+}
+
+.hira {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--accent);
+}
+
+.kata {
+  background: color-mix(in srgb, var(--focus) 12%, transparent);
+  border-color: var(--focus);
+}
+
+.kanji {
+  background: color-mix(in srgb, var(--good) 14%, transparent);
+  border-color: var(--good);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  border-collapse: separate;
+  border-spacing: 4px;
+  margin-inline: auto;
+}
+
+.table th {
+  font-weight: 600;
+  color: var(--text-2);
+  font-size: 0.9rem;
+  padding: 2px 8px;
+}
+
+.table td {
+  min-width: 56px;
+  padding: 6px 4px;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.table td :global(.kana) {
+  display: block;
+  font-size: 1.6rem;
+}
+
+.romaji {
+  font-size: 0.8rem;
+  color: var(--text-2);
+}
+
+.irregular {
+  color: var(--accent);
+  font-weight: 700;
+}

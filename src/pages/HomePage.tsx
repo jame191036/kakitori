@@ -1,6 +1,7 @@
 import { ArrowRight, ClipboardCheck, Eye, PenTool, Printer, Target, WifiOff, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router';
 import { SITE_NAME } from '../app/config';
+import { ContinueCard } from '../components/ContinueCard';
 import { scriptList } from '../data/scripts';
 import { useStrokeData } from '../data/useStrokes';
 import { masteryLevel } from '../features/progress/progressLogic';
@@ -12,7 +13,11 @@ import styles from './HomePage.module.css';
 const FEATURES: { icon: LucideIcon; title: string; desc: string }[] = [
   { icon: Eye, title: 'ดูลำดับขีด', desc: 'แอนิเมชันการเขียนทีละขีด พร้อมเลขกำกับลำดับและทิศทาง' },
   { icon: PenTool, title: 'ตรวจลายมือทีละขีด', desc: 'เขียนด้วยนิ้ว ปากกา หรือเมาส์ ระบบบอกทันทีว่าผิดลำดับหรือผิดทิศ' },
-  { icon: ClipboardCheck, title: 'แบบทดสอบ 4 แบบ', desc: 'ดูตัว เลือกคำอ่าน ฟังเสียง และเขียนตอบจากความจำ' },
+  {
+    icon: ClipboardCheck,
+    title: 'แบบทดสอบ 5 แบบ',
+    desc: 'เลือกคำอ่าน เลือกตัวอักษร ฟังเสียง เขียนตอบ และจับคู่ฮิรางานะ–คาตาคานะ',
+  },
   { icon: Target, title: 'ทบทวนตัวที่ผิดบ่อย', desc: 'ระบบจำตัวที่คุณยังไม่แม่น แล้วนำมาถามซ้ำบ่อยขึ้น' },
   { icon: Printer, title: 'พิมพ์แบบฝึกคัด', desc: 'สร้างกระดาษคัดลายมือ A4 พร้อมตัวจางให้เขียนทับ' },
   { icon: WifiOff, title: 'ใช้ออฟไลน์ได้', desc: 'ติดตั้งลงหน้าจอมือถือ แล้วฝึกได้แม้ไม่มีอินเทอร์เน็ต' },
@@ -22,6 +27,7 @@ export default function HomePage() {
   const first = scriptList[0]!;
   const heroData = useStrokeData(first, first.chars[0]!.char)!;
   const progress = useStore(progressStore);
+  const hasProgress = Object.values(progress.scripts).some((s) => Object.keys(s).length > 0);
 
   return (
     <div className="container page">
@@ -34,12 +40,13 @@ export default function HomePage() {
             ทีละขีด ให้ถูกตั้งแต่แรก
           </h1>
           <p className="muted">
-            เริ่มจากฮิรางานะ ดูลำดับขีด เขียนทับ ให้ระบบตรวจลายมือ แล้วทดสอบความจำ — ใช้ได้ทันที ฟรี
+            ฮิรางานะและคาตาคานะ ดูลำดับขีด เขียนทับ ให้ระบบตรวจลายมือ แล้วทดสอบความจำ — ใช้ได้ทันที ฟรี
             ไม่ต้องสมัครสมาชิก
           </p>
           <div className="row">
-            <Link to={`/${first.id}/practice`} className="btn btn-primary">
-              เริ่มฝึก{first.name} <ArrowRight size={18} aria-hidden />
+            {/* ผู้ใช้ใหม่: ชวนอ่านพื้นฐานก่อน / ผู้ใช้เดิม: ปุ่มหลักอยู่ในการ์ด "เรียนต่อ" ด้านล่าง */}
+            <Link to="/start" className={hasProgress ? 'btn' : 'btn btn-primary'}>
+              {hasProgress ? 'พื้นฐานสำหรับมือใหม่' : 'เริ่มต้นที่นี่'} <ArrowRight size={18} aria-hidden />
             </Link>
             <Link to={`/${first.id}`} className="btn">
               ดูตารางตัวอักษร
@@ -56,6 +63,8 @@ export default function HomePage() {
           />
         </div>
       </section>
+
+      <ContinueCard packs={scriptList} />
 
       <section className="stack">
         <h2 className={styles.h2}>เลือกชุดตัวอักษร</h2>

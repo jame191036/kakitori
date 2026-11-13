@@ -1,7 +1,7 @@
 import { ArrowRight, Check, HelpCircle, Volume2, X } from 'lucide-react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { SpeakButton } from '../../components/SpeakButton';
-import { romajiLabel } from '../../data/scripts';
+import { counterpartOf, romajiLabel } from '../../data/scripts';
 import type { CharEntry, ScriptPack } from '../../data/types';
 import { useStrokeSet } from '../../data/useStrokes';
 import { cx } from '../../lib/cx';
@@ -11,7 +11,7 @@ import { speak, useSpeech } from '../speech/useSpeech';
 import { StrokeAnimator } from '../writing/StrokeAnimator';
 import { StrokeCheckBoard } from '../writing/StrokeCheckBoard';
 import { isCorrectChoice, type QuizQuestion } from './quizLogic';
-import { QUESTION_TYPE_INFO } from './quizText';
+import { questionTypeInfo } from './quizText';
 import styles from './quiz.module.css';
 
 export interface AnswerRecord {
@@ -83,6 +83,7 @@ export function QuizRunner({ pack, questions, onFinish, onQuit }: QuizRunnerProp
 
   const strokes = strokeSet.chars[q.answer.char]!;
   const score = records.filter((r) => r.correct).length;
+  const pair = q.type === 'pairToChar' ? counterpartOf(pack, q.answer) : undefined;
 
   return (
     <div className={styles.runner}>
@@ -106,8 +107,13 @@ export function QuizRunner({ pack, questions, onFinish, onQuit }: QuizRunnerProp
       </div>
 
       <section className={cx('card', styles.question)} aria-live="polite">
-        <p className="small muted">{QUESTION_TYPE_INFO[q.type].label}</p>
+        <p className="small muted">{questionTypeInfo(q.type, pack).label}</p>
 
+        {q.type === 'pairToChar' && pair && (
+          <div className={cx('kana', styles.promptChar)} lang="ja">
+            {pair.char}
+          </div>
+        )}
         {q.type === 'charToReading' && (
           <div className={cx('kana', styles.promptChar)} lang="ja">
             {q.answer.char}
@@ -205,6 +211,14 @@ export function QuizRunner({ pack, questions, onFinish, onQuit }: QuizRunnerProp
         <div className={cx('notice', styles.feedback, answered.correct ? 'notice-good' : 'notice-bad')}>
           <span className={styles.feedbackText}>
             {answered.correct ? 'ถูกต้อง!' : 'ยังไม่ถูก — คำตอบคือ'}{' '}
+            {pair && (
+              <>
+                <span className="kana" lang="ja">
+                  {pair.char}
+                </span>{' '}
+                →{' '}
+              </>
+            )}
             <span className="kana" lang="ja">
               {q.answer.char}
             </span>{' '}

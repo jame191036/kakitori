@@ -1,12 +1,14 @@
 import type { CharEntry, CharGroup, GroupKind, ScriptId, ScriptPack } from '../types';
 import { hiragana } from './hiragana';
+import { katakana } from './katakana';
 
 /**
- * ทะเบียนชุดตัวอักษรทั้งหมดของเว็บ
- * เพิ่มชุดใหม่ (เช่น katakana) ได้ที่นี่ — เมนูและหน้าทั้งหมดจะใช้งานได้ทันที
+ * ทะเบียนชุดตัวอักษรทั้งหมดของเว็บ (ลำดับที่นี่ = ลำดับในเมนู)
+ * เพิ่มชุดใหม่ได้ที่นี่ — เมนูและหน้าทั้งหมดจะใช้งานได้ทันที
  */
 export const scripts: Record<ScriptId, ScriptPack> = {
   hiragana,
+  katakana,
 };
 
 export const scriptList: readonly ScriptPack[] = Object.values(scripts);
@@ -21,6 +23,21 @@ export const GROUP_KIND_LABEL: Record<GroupKind, string> = {
   handakuten: 'ตัวครึ่งขุ่น ゜',
   yoon: 'ตัวควบ',
 };
+
+/** คำอธิบายสั้นๆ ของแต่ละหมวด สำหรับมือใหม่ (ยกตัวอย่างจากชุดตัวอักษรนั้นเอง) */
+export function groupKindDescription(kind: GroupKind, pack: ScriptPack): string {
+  const c = (id: string) => findChar(pack, id)?.char ?? '';
+  switch (kind) {
+    case 'basic':
+      return 'เรียงเป็นแถวตามเสียงพยัญชนะ แต่ละแถวมีสระ a i u e o (บางแถวมีไม่ครบ 5 ตัว)';
+    case 'dakuten':
+      return `เติมขีดเล็ก 2 ขีด ゛ ที่มุมขวาบน เสียงจะเปลี่ยน เช่น ${c('ka')} (ka) → ${c('ga')} (ga), ${c('sa')} (sa) → ${c('za')} (za)`;
+    case 'handakuten':
+      return `เติมวงกลมเล็ก ゜ ที่มุมขวาบน ใช้กับแถว ${c('ha')} เท่านั้น เสียงจะเปลี่ยนเป็น p เช่น ${c('ha')} (ha) → ${c('pa')} (pa)`;
+    case 'yoon':
+      return 'ตัวอักษรรวมกับตัวเล็ก ゃ ゅ ょ เป็นเสียงควบ';
+  }
+}
 
 export function groupLabel(group: CharGroup): string {
   return `แถว ${group.head}`;
@@ -49,6 +66,12 @@ export function readingsOf(entry: CharEntry): string[] {
 export function sameReading(a: CharEntry, b: CharEntry): boolean {
   const ra = readingsOf(a);
   return readingsOf(b).some((r) => ra.includes(r));
+}
+
+/** ตัวคู่ในชุด counterpart (เช่น か → カ) */
+export function counterpartOf(pack: ScriptPack, entry: CharEntry): CharEntry | undefined {
+  const other = pack.counterpart ? scripts[pack.counterpart] : undefined;
+  return other ? findChar(other, entry.id) : undefined;
 }
 
 /** ข้อความคำอ่านแบบเต็ม เช่น "ji (di)" */

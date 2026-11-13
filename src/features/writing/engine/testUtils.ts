@@ -1,9 +1,17 @@
-import strokesJson from '../../../data/strokes/hiragana.json';
+import hiraganaJson from '../../../data/strokes/hiragana.json';
+import katakanaJson from '../../../data/strokes/katakana.json';
 import type { StrokeSet } from '../../../data/types';
 import type { Point } from './geometry';
 
-/** ข้อมูลลำดับขีดฮิรางานะ (ใช้ในเทสเท่านั้น) */
-export const hiraganaStrokes = strokesJson as unknown as StrokeSet;
+/** ข้อมูลลำดับขีด (ใช้ในเทสเท่านั้น) */
+export const hiraganaStrokes = hiraganaJson as unknown as StrokeSet;
+export const katakanaStrokes = katakanaJson as unknown as StrokeSet;
+
+/** [ตัวอักษร, ข้อมูลขีด] ของทุกชุด */
+export const allStrokeEntries = [
+  ...Object.entries(hiraganaStrokes.chars),
+  ...Object.entries(katakanaStrokes.chars),
+];
 
 /** ตัวสุ่มแบบกำหนด seed ได้ เพื่อให้เทสได้ผลเหมือนเดิมทุกครั้ง */
 export function rng(seed: number): () => number {

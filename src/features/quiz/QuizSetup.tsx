@@ -13,7 +13,7 @@ import {
   type QuizPrefs,
 } from '../settings/settings';
 import { useSpeech } from '../speech/useSpeech';
-import { QUESTION_TYPE_INFO } from './quizText';
+import { isTypeAvailable, questionTypeInfo } from './quizText';
 import styles from './quiz.module.css';
 
 const COUNTS = [10, 20, 30, 0] as const; // 0 = ทุกตัวที่เลือก
@@ -33,7 +33,9 @@ export function QuizSetup({ pack, onStart }: QuizSetupProps) {
   const [types, setTypes] = useState<QuestionType[]>(saved.types);
   const [count, setCount] = useState<number>(saved.count);
 
-  const usableTypes = types.filter((t) => t !== 'audioToChar' || audioOk);
+  const usableTypes = types.filter((t) => isTypeAvailable(t, pack, audioOk));
+  // ซ่อนรูปแบบที่ชุดนี้ไม่มี (เช่น จับคู่ ถ้าไม่มีชุดคู่) แต่แสดงแบบฟังเสียงไว้เป็นปุ่มที่กดไม่ได้
+  const shownTypes = QUESTION_TYPES.filter((t) => t === 'audioToChar' || isTypeAvailable(t, pack, audioOk));
   const poolSize = charsInGroups(pack, groups).length;
   const canStart = poolSize > 0 && usableTypes.length > 0;
 
@@ -55,8 +57,9 @@ export function QuizSetup({ pack, onStart }: QuizSetupProps) {
       <section className="card stack">
         <h2 className={styles.setupTitle}>2. รูปแบบคำถาม</h2>
         <div className={styles.typeGrid}>
-          {QUESTION_TYPES.map((t) => {
-            const disabled = t === 'audioToChar' && !audioOk;
+          {shownTypes.map((t) => {
+            const disabled = !isTypeAvailable(t, pack, audioOk);
+            const info = questionTypeInfo(t, pack);
             return (
               <label key={t} className={cx('chip', styles.typeChip, disabled && styles.disabled)}>
                 <input
@@ -66,8 +69,8 @@ export function QuizSetup({ pack, onStart }: QuizSetupProps) {
                   onChange={() => toggleType(t)}
                 />
                 <span>
-                  {QUESTION_TYPE_INFO[t].label}
-                  <span className={cx('small muted', styles.example)}>{QUESTION_TYPE_INFO[t].example}</span>
+                  {info.label}
+                  <span className={cx('small muted', styles.example)}>{info.example}</span>
                 </span>
               </label>
             );

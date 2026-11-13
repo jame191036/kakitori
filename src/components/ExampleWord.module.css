@@ -1,0 +1,34 @@
+.example {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.label {
+  font-size: 0.8rem;
+  color: var(--text-2);
+}
+
+.word {
+  font-size: 1.25rem;
+}
+
+.mark {
+  background: transparent;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.kanji {
+  font-family: var(--font-kana);
+  font-size: 1rem;
+  color: var(--text-2);
+}
+
+.meaning {
+  font-size: 0.95rem;
+}

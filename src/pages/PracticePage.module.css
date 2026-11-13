@@ -78,6 +78,13 @@
   color: var(--text-2);
 }
 
+/* หมายเหตุ + คำตัวอย่าง: แถวเต็มความกว้างใต้หัวการ์ด */
+.extra {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 6px;
+}
+
 .note {
   padding: 6px 10px;
   border-radius: var(--radius-sm);
@@ -170,6 +177,10 @@
   .bigChar {
     font-size: 3.6rem;
     width: 4.2rem;
+  }
+
+  .charHeader {
+    grid-template-columns: auto minmax(0, 1fr) auto;
   }
 
   .nav {

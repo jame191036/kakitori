@@ -2,13 +2,20 @@ import { createPersistentStore, isRecord, useStore } from '../../lib/persistentS
 
 export type ThemePref = 'system' | 'light' | 'dark';
 export type Strictness = 'easy' | 'normal' | 'strict';
-export type QuestionType = 'charToReading' | 'readingToChar' | 'audioToChar' | 'readingToWrite';
+export type QuestionType =
+  | 'charToReading'
+  | 'readingToChar'
+  | 'audioToChar'
+  | 'readingToWrite'
+  /** ดูตัวในชุดคู่ (เช่น あ) → เลือกตัวในชุดนี้ (ア) */
+  | 'pairToChar';
 
 export const QUESTION_TYPES: readonly QuestionType[] = [
   'charToReading',
   'readingToChar',
   'audioToChar',
   'readingToWrite',
+  'pairToChar',
 ];
 
 export interface QuizPrefs {
@@ -28,6 +35,8 @@ export interface Settings {
   showStrokeNumbers: boolean;
   /** ตั้งค่าแบบทดสอบแยกตามชุดตัวอักษร */
   quiz: Record<string, QuizPrefs>;
+  /** เคยเปิดหน้า "เริ่มต้นที่นี่" หรือปิดแถบแนะนำแล้ว */
+  introSeen: boolean;
 }
 
 export const SETTINGS_KEY = 'jp-learn:settings:v1';
@@ -60,6 +69,7 @@ const defaults: Settings = {
   animationSpeed: 1,
   showStrokeNumbers: true,
   quiz: {},
+  introSeen: false,
 };
 
 function sanitizeQuizPrefs(raw: unknown): QuizPrefs {
@@ -89,6 +99,7 @@ function sanitize(raw: unknown): Settings {
       : 1,
     showStrokeNumbers: raw.showStrokeNumbers !== false,
     quiz,
+    introSeen: raw.introSeen === true,
   };
 }
 

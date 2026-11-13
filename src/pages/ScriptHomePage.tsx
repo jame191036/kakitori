@@ -1,6 +1,8 @@
 import { ClipboardCheck, PenLine, Printer, Target, type LucideIcon } from 'lucide-react';
+import { useMemo } from 'react';
 import { Link } from 'react-router';
 import { useScriptPack } from '../app/ScriptContext';
+import { ContinueCard } from '../components/ContinueCard';
 import { KanaTable, MasteryLegend } from '../components/KanaTable';
 import { masteryLevel } from '../features/progress/progressLogic';
 import { useScriptProgress } from '../features/progress/progressStore';
@@ -9,6 +11,8 @@ import styles from './ScriptHomePage.module.css';
 export default function ScriptHomePage() {
   const pack = useScriptPack();
   const progress = useScriptProgress(pack.id);
+  // เส้นทาง "เรียนต่อ" เฉพาะชุดนี้ (หน้าแรกใช้เส้นทางรวม ฮิรางานะ → คาตาคานะ)
+  const packs = useMemo(() => [pack], [pack]);
   const mastered = pack.chars.filter((c) => masteryLevel(progress?.[c.id]) === 3).length;
 
   const actions: { to: string; icon: LucideIcon; title: string; desc: string }[] = [
@@ -46,6 +50,8 @@ export default function ScriptHomePage() {
         </h1>
         <p className="muted">{pack.description}</p>
       </header>
+
+      <ContinueCard packs={packs} />
 
       <nav className={styles.actions} aria-label="เมนูการเรียน">
         {actions.map(({ to, icon: Icon, title, desc }) => (

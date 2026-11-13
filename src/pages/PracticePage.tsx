@@ -1,4 +1,14 @@
-import { ChevronLeft, ChevronRight, Eye, Grid3x3, PenLine, PenTool, Sparkles, type LucideIcon } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ClipboardCheck,
+  Eye,
+  Grid3x3,
+  PenLine,
+  PenTool,
+  Sparkles,
+  type LucideIcon,
+} from 'lucide-react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router';
 import { useScriptPack } from '../app/ScriptContext';
 import { KanaTable } from '../components/KanaTable';
@@ -18,6 +28,8 @@ import { FreeWriteBoard } from '../features/writing/FreeWriteBoard';
 import { StrokeAnimator } from '../features/writing/StrokeAnimator';
 import { StrokeCheckBoard, type CheckResult } from '../features/writing/StrokeCheckBoard';
 import { cx } from '../lib/cx';
+import { ExampleWord } from '../components/ExampleWord';
+import { rowStatus } from '../features/progress/learningPath';
 import NotFoundPage from './NotFoundPage';
 import styles from './PracticePage.module.css';
 
@@ -78,6 +90,10 @@ export default function PracticePage() {
   const prev = pack.chars[index - 1];
   const next = pack.chars[index + 1];
   const group = pack.groups.find((g) => g.id === entry.group);
+  const rowState = rowStatus(
+    pack.chars.filter((c) => c.group === entry.group),
+    progress,
+  );
   const level = masteryLevel(progress?.[entry.id]);
   const hrefFor = (id: string, m: Mode = mode) =>
     `/${pack.id}/practice/${id}${m === 'animate' ? '' : `?mode=${m}`}`;
@@ -131,7 +147,6 @@ export default function PracticePage() {
                 </>
               )}
             </p>
-            {entry.note && <p className={cx('small', styles.note)}>{entry.note}</p>}
           </div>
           <div className={styles.nav}>
             {prev ? (
@@ -149,6 +164,12 @@ export default function PracticePage() {
               <span className="btn btn-icon" aria-hidden style={{ visibility: 'hidden' }} />
             )}
           </div>
+          {(entry.note || entry.example) && (
+            <div className={styles.extra}>
+              {entry.note && <p className={cx('small', styles.note)}>{entry.note}</p>}
+              {entry.example && <ExampleWord word={entry.example} char={entry.char} />}
+            </div>
+          )}
         </header>
 
         <div className={styles.modeBar}>
@@ -249,12 +270,23 @@ export default function PracticePage() {
               </div>
             )}
           </div>
-          {next && (
-            <Link to={hrefFor(next.id)} className="btn btn-primary">
-              ตัวถัดไป <span className="kana">{next.char}</span>
-              <ChevronRight size={18} aria-hidden />
-            </Link>
-          )}
+          <div className="row" style={{ justifyContent: 'center' }}>
+            {/* เขียนครบทั้งแถวแล้ว แต่ยังไม่เคยตอบถูกครบ → ชวนไปทดสอบแถวนี้ (ตามเส้นทาง "เรียนต่อ") */}
+            {group && rowState.kind === 'quiz' && (
+              <Link to={`/${pack.id}/quiz?groups=${group.id}`} className="btn btn-primary">
+                <ClipboardCheck size={18} aria-hidden /> ทดสอบแถว <span className="kana">{group.head}</span>
+              </Link>
+            )}
+            {next && (
+              <Link
+                to={hrefFor(next.id)}
+                className={rowState.kind === 'quiz' ? 'btn' : 'btn btn-primary'}
+              >
+                ตัวถัดไป <span className="kana">{next.char}</span>
+                <ChevronRight size={18} aria-hidden />
+              </Link>
+            )}
+          </div>
         </div>
       </section>
     </div>
