@@ -2,7 +2,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-const APP_NAME = 'ฝึกคัดญี่ปุ่น';
+const APP_NAME = 'kakitori'; // ให้ตรงกับ SITE_NAME ใน src/app/config.ts
 
 export default defineConfig({
   plugins: [
@@ -12,7 +12,7 @@ export default defineConfig({
       injectRegister: false,
       includeAssets: ['favicon.ico', 'logo.svg', 'apple-touch-icon-180x180.png'],
       manifest: {
-        name: `${APP_NAME} — ฮิรางานะ คาตาคานะ`,
+        name: `${APP_NAME} — ฝึกคัดฮิรางานะ คาตาคานะ`,
         short_name: APP_NAME,
         description: 'ฝึกคัดตัวอักษรภาษาญี่ปุ่นทีละขีด พร้อมแบบทดสอบ ใช้ได้ฟรี ไม่ต้องสมัครสมาชิก',
         lang: 'th',

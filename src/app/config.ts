@@ -1,3 +1,4 @@
-/** ชื่อเว็บ — แก้ที่นี่ที่เดียว (และใน vite.config.ts / index.html สำหรับ PWA) */
-export const SITE_NAME = 'ฝึกคัดญี่ปุ่น';
-export const SITE_TAGLINE = 'ฝึกเขียนตัวอักษรญี่ปุ่นทีละขีด ฟรี ไม่ต้องสมัคร';
+/** ชื่อเว็บ — แก้ที่นี่ (และใน vite.config.ts / index.html สำหรับ PWA และแท็บเบราว์เซอร์) */
+export const SITE_NAME = 'kakitori';
+/** ที่มาของชื่อ: 書き取り (kakitori) = แบบฝึกคัดเขียนตัวอักษร */
+export const SITE_NAME_JA = '書き取り';

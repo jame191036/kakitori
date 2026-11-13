@@ -1,10 +1,13 @@
-import { SITE_NAME } from '../app/config';
+import { SITE_NAME, SITE_NAME_JA } from '../app/config';
 import styles from './AboutPage.module.css';
 
 export default function AboutPage() {
   return (
     <div className={`container page ${styles.about}`}>
       <h1 className="page-title">เกี่ยวกับ {SITE_NAME}</h1>
+      <p className="muted">
+        ชื่อ {SITE_NAME} มาจากคำว่า <span lang="ja">{SITE_NAME_JA}</span> ในภาษาญี่ปุ่น หมายถึงแบบฝึกคัดเขียนตัวอักษร
+      </p>
 
       <section className="card stack">
         <h2 className={styles.h2}>ความเป็นส่วนตัว</h2>

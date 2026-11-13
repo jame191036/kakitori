@@ -1,6 +1,6 @@
 # kakitori 書き取り
 
-เว็บฝึกคัดตัวอักษรญี่ปุ่นทีละขีด (ชื่อบนหน้าเว็บตอนนี้: “ฝึกคัดญี่ปุ่น”)
+เว็บฝึกคัดตัวอักษรญี่ปุ่นทีละขีด — ชื่อมาจาก 書き取り (kakitori) แปลว่าแบบฝึกคัดเขียนตัวอักษร
 มี **ฮิรางานะ** และ **คาตาคานะ** ชุดละ 71 ตัว (46 ตัวพื้นฐาน + ตัวขุ่น/ครึ่งขุ่น 25 ตัว) — สลับชุดได้จากปุ่ม ひらがな / カタカナ ด้านบน
 
 - เข้าใช้ได้ทันที ไม่ต้อง login
@@ -104,11 +104,32 @@ URL: `/hiragana`, `/hiragana/practice/ka?mode=trace`, `/hiragana/quiz`, `/hiraga
 
 - [แนวคิดการเพิ่ม database](docs/future-database.md) — ยังไม่ทำ เก็บไว้เป็นแผน (ซิงก์ข้ามเครื่อง แจ้งเตือน ปรับตัวตรวจลายมือจากข้อมูลจริง)
 
-## การนำขึ้นเว็บ (deploy)
+## การนำขึ้นเว็บ (deploy) — Vercel
 
-เป็นเว็บ static ล้วน (`npm run build` → โฟลเดอร์ `dist/`) วางบน hosting ฟรีได้ทุกเจ้า
-เนื่องจากใช้ URL แบบ `/hiragana/quiz` จึงต้องตั้งให้ทุก path ส่ง `index.html` กลับมา (SPA fallback)
-— ยังไม่ได้ใส่ไฟล์ตั้งค่าของ hosting เจ้าไหน รอเลือก hosting ก่อน
+ตั้งค่าไว้แล้วใน `vercel.json` (build ด้วย `npm run build`, ส่งออกที่ `dist/`, ทุก path ส่ง `index.html` กลับมา
+เพื่อให้ URL อย่าง `/hiragana/quiz` เปิดตรงได้) และ `package.json` ระบุ Node 24
+
+ตั้งค่าครั้งแรก (ทำครั้งเดียว ผ่านหน้าเว็บ Vercel):
+
+1. ไปที่ <https://vercel.com> → สมัคร/เข้าสู่ระบบด้วยบัญชี GitHub
+2. **Add New… → Project** → เลือก repo `kakitori` (ถ้าไม่เห็น กด “Adjust GitHub App Permissions” แล้วอนุญาต repo นี้)
+3. หน้าตั้งค่าไม่ต้องแก้อะไร (Framework: Vite ตรวจเจอเอง) → กด **Deploy**
+4. ได้ลิงก์เว็บ เช่น `https://kakitori.vercel.app` (ถ้าชื่อนี้ถูกใช้แล้ว Vercel จะตั้งชื่ออื่นให้ เปลี่ยนได้ใน Settings → Domains)
+
+หลังจากนั้นทุกครั้งที่ push:
+
+- push เข้า **production branch** (ค่าเริ่มต้นคือ `main`) → อัปเดตเว็บจริง
+- push เข้า branch อื่น (เช่น `dev`) → ได้ลิงก์ **Preview** แยกไว้ลองก่อน ไม่กระทบเว็บจริง
+
+เปลี่ยน production branch ได้ที่ Settings → Git → Production Branch
+
+หลัง deploy ให้ทดสอบตาม [docs/device-test-checklist.md](docs/device-test-checklist.md)
+
+## ตรวจเนื้อหาภาษาญี่ปุ่น
+
+`npm run content:review` สร้างตารางเนื้อหาภาษาญี่ปุ่นทั้งหมด (คำอ่าน หมายเหตุ คำตัวอย่าง) ไว้ส่งให้ผู้รู้ช่วยตรวจ:
+[docs/content-review.md](docs/content-review.md) (อ่านบน GitHub) และ `docs/content-review.csv` (เปิดใน Excel / Google Sheets)
+— รันใหม่ทุกครั้งที่แก้เนื้อหา
 
 ## เครดิตและสัญญาอนุญาต
 
