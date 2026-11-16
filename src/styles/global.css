@@ -246,13 +246,18 @@ svg {
 }
 
 /* ───────────── Layout helpers ───────────── */
-/* มือถือแนวนอน: เว้นขอบให้พ้นรอยบากจอ (safe area) */
+/*
+ * ความกว้างเนื้อหา: สูงสุด 1760px (จอ 23–24 นิ้วไม่เหลือที่ว่างข้างๆ มากเกินไป)
+ * ขอบซ้ายขวา ≈ 5% ของจอ: มือถือ 20px → โน้ตบุ๊ก ~64px → จอใหญ่ 96px
+ * มือถือแนวนอนเว้นให้พ้นรอยบากจอ (safe area)
+ */
 .container {
+  --gutter: clamp(20px, 5vw, 96px);
   width: 100%;
-  max-width: 1080px;
+  max-width: 1760px;
   margin: 0 auto;
   padding-block: 0;
-  padding-inline: max(20px, env(safe-area-inset-left, 0px)) max(20px, env(safe-area-inset-right, 0px));
+  padding-inline: max(var(--gutter), env(safe-area-inset-left, 0px)) max(var(--gutter), env(safe-area-inset-right, 0px));
 }
 
 /* grid ทุกตัวใช้ minmax(0, 1fr) เพื่อไม่ให้เนื้อหากว้างๆ ดันจนล้นจอมือถือ */

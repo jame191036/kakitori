@@ -52,10 +52,11 @@
 }
 
 /* ตัวอย่างช่องคัด + คำบรรยายใต้ภาพแบบหนังสือเรียน */
+/* จอกว้าง: ชิดขวาให้ตรงแนวกับขอบเนื้อหาด้านล่าง และโตตามจอ 300→380px (มือถือ: กึ่งกลาง) */
 .heroArt {
   margin: 0;
-  width: min(300px, 100%);
-  justify-self: center;
+  width: min(clamp(300px, 21vw, 380px), 100%);
+  justify-self: end;
   display: grid;
   gap: 10px;
 }
@@ -147,9 +148,10 @@
 }
 
 /* ── ฟีเจอร์: รายการเรียบๆ คั่นด้วยเส้นบรรทัด ไม่มีไอคอน ── */
+/* สูงสุด 3 คอลัมน์ (6 ข้อ = 2 แถวเต็ม ไม่เหลือเศษ) · คอลัมน์แคบสุด 300px · มือถือ 1 คอลัมน์ */
 .features {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, max(300px, (100% - 80px) / 3)), 1fr));
   gap: 0 40px;
   margin: 0;
 }
@@ -183,6 +185,7 @@
 
   .heroArt {
     width: min(240px, 72%);
+    justify-self: center;
   }
 }
 

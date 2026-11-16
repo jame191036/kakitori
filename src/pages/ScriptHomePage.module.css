@@ -11,7 +11,8 @@
 /* เมนูการเรียน: รายการแบบสารบัญ 2 คอลัมน์ คั่นด้วยเส้นบรรทัด */
 .actions {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  /* 4 เมนู: สูงสุด 2 คอลัมน์ → จอกว้างเป็น 2×2 (ไม่ใช่ 3+1) / มือถือ 1 คอลัมน์ */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, max(420px, (100% - 40px) / 2)), 1fr));
   gap: 0 40px;
   border-top: 1px solid var(--border);
 }
