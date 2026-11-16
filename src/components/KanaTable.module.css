@@ -1,12 +1,42 @@
+/*
+ * แบ่งคอลัมน์ตาม "ที่ที่ตารางวางอยู่" (container query) ไม่ใช่ขนาดจอ:
+ * ที่แคบ (มือถือ / แถบข้างหน้าฝึก) = คอลัมน์เดียว · ที่กว้าง = 2 คอลัมน์ (ตัวพื้นฐาน | ตัวขุ่น + ตัวครึ่งขุ่น)
+ * แต่ละคอลัมน์จำกัดความกว้าง ให้ช่องใกล้สี่เหลี่ยมแบบกระดาษช่อง ไม่ยืดเป็นแถบยาว
+ */
 .wrap {
-  display: grid;
-  gap: 22px;
-  /* จำกัดความกว้าง ให้ช่องใกล้สี่เหลี่ยมจัตุรัสแบบกระดาษช่อง ไม่ยืดเป็นแถบยาวบนจอกว้าง */
-  max-width: 600px;
+  --col-max: 600px;
+  container-type: inline-size;
 }
 
 .compact {
-  max-width: none;
+  --col-max: 460px;
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: minmax(0, var(--col-max));
+  gap: 22px 56px;
+  align-items: start;
+}
+
+.col {
+  display: grid;
+  gap: 22px;
+  align-content: start;
+  min-width: 0;
+}
+
+@container (min-width: 880px) {
+  .cols {
+    grid-template-columns: repeat(2, minmax(0, var(--col-max)));
+  }
+}
+
+/* ตารางย่อ: ไม่จำกัดความกว้างตอนอยู่คอลัมน์เดียว (เต็มแถบข้าง/จอมือถือ) */
+@container (max-width: 879px) {
+  .compact .cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .section {
@@ -41,6 +71,44 @@
 .empty {
   border-right: 1px solid var(--grid);
   border-bottom: 1px solid var(--grid);
+}
+
+/*
+ * หัวตาราง: สระด้านบน (a i u e o) + พยัญชนะของแถวด้านซ้าย (– k s t …) แบบตารางโกจูอง
+ * อยู่ในกริดเดียวกับช่อง → แถว/คอลัมน์ตรงกันเสมอ · เส้นกรอบล้อมเฉพาะช่องตัวอักษร
+ */
+.withAxes {
+  grid-template-columns: 1.6em repeat(5, minmax(0, 1fr));
+  border: 0;
+}
+
+.withAxes .top {
+  border-top: 1px solid var(--grid);
+}
+
+.withAxes .left {
+  border-left: 1px solid var(--grid);
+}
+
+.axisCol,
+.axisRow {
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.axisCol {
+  padding-bottom: 6px;
+}
+
+.axisRow {
+  justify-items: start;
 }
 
 .cell {
@@ -119,21 +187,7 @@
   padding: 4px 2px 7px;
 }
 
-/* แบบย่อ (แถบเลือกตัวในหน้าฝึก): ไม่มีเส้นตาราง ให้เป็นดัชนีเงียบๆ ตัวที่เลือกอยู่มีกรอบหมึก */
-.compact .grid {
-  border: 0;
-}
-
-.compact .cell,
-.compact .empty {
-  border: 0;
-  background: transparent;
-}
-
-.compact .active {
-  background: var(--pad);
-  box-shadow: inset 0 0 0 1px var(--ink);
-}
+/* แบบย่อ (ตารางเลือกตัวในหน้าฝึก / หน้าทบทวน): เส้นตารางแบบกระดาษช่องเหมือนตารางหลัก แค่ช่องเตี้ยกว่า */
 
 .compact .char {
   font-size: 1.35rem;
