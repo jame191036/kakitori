@@ -2,7 +2,7 @@ import { ArrowRight, ClipboardCheck, Eye, PenTool, Printer, Target, WifiOff, typ
 import { Link } from 'react-router';
 import { SITE_NAME } from '../app/config';
 import { ContinueCard } from '../components/ContinueCard';
-import { scriptList } from '../data/scripts';
+import { findChar, scriptList } from '../data/scripts';
 import { useStrokeData } from '../data/useStrokes';
 import { masteryLevel } from '../features/progress/progressLogic';
 import { progressStore } from '../features/progress/progressStore';
@@ -25,7 +25,9 @@ const FEATURES: { icon: LucideIcon; title: string; desc: string }[] = [
 
 export default function HomePage() {
   const first = scriptList[0]!;
-  const heroData = useStrokeData(first, first.chars[0]!.char)!;
+  // แอนิเมชันหน้าแรกใช้ か (ka) ให้ตรงกับโลโก้ kakitori
+  const heroChar = (findChar(first, 'ka') ?? first.chars[0]!).char;
+  const heroData = useStrokeData(first, heroChar)!;
   const progress = useStore(progressStore);
   const hasProgress = Object.values(progress.scripts).some((s) => Object.keys(s).length > 0);
 
@@ -59,7 +61,7 @@ export default function HomePage() {
             speed={1}
             showNumbers
             controls={false}
-            label={`ตัวอย่างลำดับขีดของ ${first.chars[0]!.char} (แตะเพื่อเล่นซ้ำ)`}
+            label={`ตัวอย่างลำดับขีดของ ${heroChar} (แตะเพื่อเล่นซ้ำ)`}
           />
         </div>
       </section>
