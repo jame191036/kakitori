@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import type { StrokeData } from '../../data/types';
 import { cx } from '../../lib/cx';
 import { toPathData, type Point } from './engine/geometry';
@@ -31,6 +31,8 @@ interface StrokeCheckBoardProps {
   /** ซ่อนปุ่ม "เขียนใหม่" (เช่นในข้อสอบ) */
   hideRestart?: boolean;
   disabled?: boolean;
+  /** ปุ่มที่แสดงเมื่อเขียนครบ เช่น "ตัวถัดไป" (หน้าฝึกเขียนส่งมา) */
+  completeActions?: ReactNode;
 }
 
 type Tone = 'neutral' | 'good' | 'bad';
@@ -52,6 +54,7 @@ export function StrokeCheckBoard({
   onComplete,
   hideRestart = false,
   disabled = false,
+  completeActions,
 }: StrokeCheckBoardProps) {
   const refs = useMemo(() => referenceStrokes(data), [data]);
   const total = refs.length;
@@ -106,7 +109,7 @@ export function StrokeCheckBoard({
         });
         onComplete?.({ mistakes: state.mistakes, hintsUsed });
       } else {
-        setMessage({ tone: 'good', text: `ถูกต้อง! ต่อไปขีดที่ ${state.done + 1}` });
+        setMessage({ tone: 'good', text: `ถูกต้อง — ต่อไปขีดที่ ${state.done + 1}` });
       }
       return;
     }
@@ -198,37 +201,50 @@ export function StrokeCheckBoard({
         )}
       </WritingPad>
 
-      <div
-        className={cx(
-          'notice',
-          styles.status,
-          message.tone === 'good' && 'notice-good',
-          message.tone === 'bad' && 'notice-bad',
-        )}
-        role="status"
-        aria-live="polite"
-      >
-        {message.text}
+      {/* บรรทัดสถานะใต้กระดาน: ช่องติ๊กทีละขีด + ข้อความ (ไม่มีกล่องพื้นสี) */}
+      <div className={styles.statusLine}>
+        <span
+          className={styles.strokeTally}
+          role="img"
+          aria-label={`เขียนแล้ว ${session.done} จาก ${total} ขีด`}
+        >
+          {refs.map((_, i) => (
+            <span
+              key={i}
+              className={cx(i < session.done && styles.tallyDone, i === session.done && !complete && styles.tallyNow)}
+            />
+          ))}
+        </span>
+        <span
+          className={cx(
+            styles.statusText,
+            message.tone === 'good' && styles.toneGood,
+            message.tone === 'bad' && styles.toneBad,
+          )}
+          role="status"
+          aria-live="polite"
+        >
+          {message.text}
+        </span>
       </div>
 
       <div className={styles.controls}>
         {!complete && (
-          <button type="button" className="btn" onClick={showHint} disabled={disabled}>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={showHint} disabled={disabled}>
             ใบ้ขีดนี้
           </button>
         )}
         {!hideRestart && (
           <button
             type="button"
-            className={cx('btn', complete && 'btn-primary')}
+            className={cx('btn btn-sm', complete && !completeActions && 'btn-primary', !complete && 'btn-ghost')}
             onClick={restart}
           >
             เขียนใหม่
           </button>
         )}
-        <span className="small muted" aria-live="off">
-          ขีดที่ {Math.min(session.done + 1, total)} / {total}
-        </span>
+        {/* เขียนครบแล้ว: ปุ่มไปต่อ (ตัวถัดไป / ทดสอบแถว) อยู่ตรงนี้เลย ไม่ต้องเลื่อนหา */}
+        {complete && completeActions && <span className={styles.nextActions}>{completeActions}</span>}
       </div>
     </div>
   );

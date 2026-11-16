@@ -1,0 +1,329 @@
+/*
+ * กระดานแบบสตูดิโอ: กระดาน (ซ้าย) + แผงลำดับขีด (ขวา) — ใช้สีกระดาษ/หมึกของเว็บ
+ * จอแคบ (≤ 760px): แผงลงไปอยู่ใต้กระดาน และรายการขีดเลื่อนแนวนอน
+ */
+.wrap {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 300px);
+  justify-content: center;
+  align-items: start;
+  gap: 40px;
+}
+
+/* ความกว้างกระดาน: สูงสุด 480px แต่เหลือที่ให้แถบความคืบหน้า + ปุ่มอยู่ในจอเดียวกัน */
+.canvasCol {
+  display: grid;
+  gap: 10px;
+  width: max(220px, min(480px, calc(100svh - var(--header-h) - 190px)));
+}
+
+/* ── ความคืบหน้าแบ่งช่องตามจำนวนขีด ── */
+.progress {
+  display: flex;
+  gap: 4px;
+}
+
+.progress span {
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  transition: background-color 200ms ease;
+}
+
+.progress .segNow {
+  background: var(--border-strong);
+}
+
+.progress .segDone {
+  background: var(--ink);
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 8px 12px;
+  min-height: 40px;
+  font-size: 0.9rem;
+}
+
+.counter {
+  flex: none;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ข้อความใต้กระดาน: ใช้บนมือถือเท่านั้น (จอกว้างแสดงในแถวของขีด) */
+.footMsg {
+  display: none;
+  flex: 1;
+  color: var(--text-2);
+  transition: color 150ms ease;
+}
+
+.toneGood {
+  color: var(--good);
+}
+
+.toneBad {
+  color: var(--bad);
+}
+
+.footBtns {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+/* จุดเริ่ม: วงกลมชาดมีเลขขีด */
+.startMark {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mark-in 200ms var(--ease-out) both;
+  pointer-events: none;
+}
+
+.startMark circle {
+  fill: var(--accent);
+}
+
+.startMark text {
+  fill: #fff;
+  font-family: var(--font-ui);
+  font-size: 4.6px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+@keyframes mark-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+/* ── แผงลำดับขีด ── */
+.panel {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+}
+
+.panelLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    opacity 150ms ease;
+}
+
+.todo {
+  opacity: 0.5;
+}
+
+/* ขีดที่ต้องเขียนอยู่: กระดาษสว่าง + เส้นหมึกด้านซ้าย */
+.now {
+  background: var(--pad);
+  border-color: var(--border);
+  box-shadow: inset 2px 0 0 var(--ink);
+}
+
+.thumb {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--grid);
+  background: var(--pad);
+}
+
+.thumbOff,
+.thumbOn {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.thumbOff {
+  stroke: var(--ghost);
+  stroke-width: 6;
+}
+
+.thumbOn {
+  stroke: var(--ink);
+  stroke-width: 8;
+}
+
+.done .thumbOn {
+  stroke: var(--good);
+}
+
+.thumbStart {
+  fill: var(--accent);
+}
+
+.thumbNum {
+  fill: var(--text-3);
+  font-family: var(--font-ui);
+  font-size: 34px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.stepText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.stepTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.check {
+  color: var(--good);
+}
+
+.stepDir {
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+
+.stepMeta {
+  font-size: 0.8rem;
+  color: var(--text-2);
+}
+
+/* เหตุที่ผิด อยู่ในแถวของขีดนั้นเลย */
+.stepMsg {
+  font-size: 0.875rem;
+  color: var(--bad);
+  animation: msg-in 180ms var(--ease-out) both;
+}
+
+@keyframes msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+}
+
+/* ── สรุปเมื่อเขียนครบ ── */
+.summary {
+  display: grid;
+  gap: 4px;
+  padding-bottom: 16px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  scroll-margin-bottom: calc(var(--bottom-nav-h) + 16px);
+  animation: summary-in 220ms var(--ease-out) both;
+}
+
+@keyframes summary-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.bigStat {
+  font-size: 3.2rem;
+  line-height: 1.05;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.bigStat span {
+  margin-left: 2px;
+  font-size: 1.4rem;
+  color: var(--text-2);
+}
+
+.summaryBtns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .startMark,
+  .stepMsg,
+  .summary {
+    animation-name: fade;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ── จอแคบ ── */
+@media (max-width: 760px) {
+  .wrap {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .canvasCol {
+    width: max(220px, min(480px, 100%, calc(100svh - var(--header-h) - var(--bottom-nav-h) - 170px)));
+    justify-self: center;
+  }
+
+  /* ข้อความอยู่บรรทัดของตัวเองใต้ตัวนับ/ปุ่ม จองไว้ 2 บรรทัดกันปุ่มกระโดด */
+  .foot {
+    flex-wrap: wrap;
+  }
+
+  .footMsg {
+    display: block;
+    order: 3;
+    flex-basis: 100%;
+    min-height: calc(1.6em * 2);
+  }
+
+  .stepMsg {
+    display: none;
+  }
+
+  .steps {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .step {
+    flex: 0 0 auto;
+    width: 190px;
+  }
+}

@@ -32,8 +32,10 @@ export function WritingPad({ onStroke, disabled = false, children, label }: Writ
     };
   };
 
-  const paint = () => {
-    liveRef.current?.setAttribute('d', active.current ? toPathData(active.current.points) : '');
+  /** วาดหมึกที่กำลังเขียน — `ahead` = จุดที่เบราว์เซอร์คาดว่านิ้ว/ปากกาจะไปถึง (วาดชั่วคราว ไม่เก็บ) */
+  const paint = (ahead: Point[] = []) => {
+    const stroke = active.current;
+    liveRef.current?.setAttribute('d', stroke ? toPathData([...stroke.points, ...ahead]) : '');
   };
 
   const onPointerDown = (e: ReactPointerEvent<SVGSVGElement>) => {
@@ -53,14 +55,16 @@ export function WritingPad({ onStroke, disabled = false, children, label }: Writ
       const p = toLocal(ev);
       if (dist(p, stroke.points[stroke.points.length - 1]!) >= MIN_STEP) stroke.points.push(p);
     }
-    paint();
+    // ลดความหน่วงที่ตารับรู้: วาดล่วงหน้าไปถึงตำแหน่งที่คาดไว้ (Chrome/Edge) แต่ใช้ตรวจเฉพาะจุดจริง
+    const predicted = e.nativeEvent.getPredictedEvents?.() ?? [];
+    paint(predicted.slice(0, 2).map(toLocal));
   };
 
   const finish = (e: ReactPointerEvent<SVGSVGElement>, cancelled: boolean) => {
     const stroke = active.current;
     if (!stroke || stroke.id !== e.pointerId) return;
     active.current = null;
-    paint();
+    paint(); // ล้างหมึกชั่วคราว (รวมจุดที่คาดไว้) — เส้นที่ใช้ตรวจคือจุดจริงเท่านั้น
     if (!cancelled) onStroke(stroke.points);
   };
 

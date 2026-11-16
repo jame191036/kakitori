@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import type { StrokeData } from '../../data/types';
 import { cx } from '../../lib/cx';
 import { boundingBox, toPathData, type Point } from './engine/geometry';
@@ -53,10 +53,19 @@ interface FreeWriteBoardProps {
   label: string;
   onResult?: (result: FreeWriteResult) => void;
   onShowOrder?: () => void;
+  /** ปุ่มไปต่อหลังตรวจ เช่น "ตัวถัดไป" (หน้าฝึกเขียนส่งมา) */
+  completeActions?: ReactNode;
 }
 
 /** เขียนทั้งตัวเองโดยไม่มีเส้นนำ แล้วกด "ตรวจ" เพื่อดูคะแนนทีละขีด */
-export function FreeWriteBoard({ data, leniency, label, onResult, onShowOrder }: FreeWriteBoardProps) {
+export function FreeWriteBoard({
+  data,
+  leniency,
+  label,
+  onResult,
+  onShowOrder,
+  completeActions,
+}: FreeWriteBoardProps) {
   const refs = useMemo(() => referenceStrokes(data), [data]);
   const [strokes, setStrokes] = useState<Point[][]>([]);
   const [result, setResult] = useState<FreeWriteResult | null>(null);
@@ -153,14 +162,15 @@ export function FreeWriteBoard({ data, leniency, label, onResult, onShowOrder }:
         </div>
 
         <div className={styles.controls}>
-          <button type="button" className="btn btn-primary" onClick={reset}>
+          <button type="button" className={cx('btn btn-sm', !completeActions && 'btn-primary')} onClick={reset}>
             เขียนอีกครั้ง
           </button>
           {onShowOrder && (
-            <button type="button" className="btn" onClick={onShowOrder}>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={onShowOrder}>
               ดูลำดับขีด
             </button>
           )}
+          {completeActions && <span className={styles.nextActions}>{completeActions}</span>}
         </div>
       </div>
     );
@@ -176,27 +186,29 @@ export function FreeWriteBoard({ data, leniency, label, onResult, onShowOrder }:
         </g>
       </WritingPad>
 
-      <div className={cx('notice', styles.status)} role="status">
-        {strokes.length === 0
-          ? 'เขียนทั้งตัวจากความจำ แล้วกด "ตรวจ"'
-          : `เขียนไปแล้ว ${strokes.length} ขีด`}
+      <div className={styles.statusLine}>
+        <span className={styles.statusText} role="status">
+          {strokes.length === 0
+            ? 'เขียนทั้งตัวจากความจำ แล้วกด "ตรวจ"'
+            : `เขียนไปแล้ว ${strokes.length} ขีด`}
+        </span>
       </div>
 
       <div className={styles.controls}>
         <button
           type="button"
-          className="btn"
+          className="btn btn-ghost btn-sm"
           onClick={() => setStrokes((s) => s.slice(0, -1))}
           disabled={strokes.length === 0}
         >
           ย้อนขีด
         </button>
-        <button type="button" className="btn" onClick={reset} disabled={strokes.length === 0}>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={reset} disabled={strokes.length === 0}>
           ล้าง
         </button>
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn btn-primary btn-sm"
           onClick={check}
           disabled={strokes.length === 0}
         >

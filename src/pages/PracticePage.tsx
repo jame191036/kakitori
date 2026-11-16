@@ -24,7 +24,10 @@ import {
 } from '../features/settings/settings';
 import { FreeWriteBoard } from '../features/writing/FreeWriteBoard';
 import { StrokeAnimator } from '../features/writing/StrokeAnimator';
-import { StrokeCheckBoard, type CheckResult } from '../features/writing/StrokeCheckBoard';
+import type { CheckResult } from '../features/writing/StrokeCheckBoard';
+import { StrokeStepBoard, StrokeStepList } from '../features/writing/StrokeStepBoard';
+import step from '../features/writing/StrokeStepBoard.module.css';
+import { referenceStrokes } from '../features/writing/engine/refStrokes';
 import { cx } from '../lib/cx';
 import { ExampleWord } from '../components/ExampleWord';
 import { rowStatus } from '../features/progress/learningPath';
@@ -76,14 +79,14 @@ export default function PracticePage() {
   const { state } = useLocation();
   const dir = navType === 'PUSH' ? ((state as { dir?: number } | null)?.dir ?? 0) : 0;
 
-  // มือถือจอเล็ก/แนวนอน: เปิดหน้า เปลี่ยนตัว หรือเปลี่ยนโหมด → เลื่อนให้กระดานอยู่ในจอครบทั้งอัน
-  // (ระหว่างเขียนบนกระดานเลื่อนหน้าไม่ได้) — ถ้าเห็นครบอยู่แล้วจะไม่เลื่อน
+  // เปิดหน้า เปลี่ยนตัว หรือเปลี่ยนโหมด → เลื่อนให้ "ชุดเขียน" (กระดาน + บรรทัดสถานะ + ปุ่มไปต่อ) อยู่ในจอครบ
+  // ถ้าจอเตี้ยเกินจะใส่ครบ (มือถือแนวนอน) เบราว์เซอร์จะชิดขอบบน → อย่างน้อยเห็นกระดานเต็มอัน
+  // ถ้าเห็นครบอยู่แล้วจะไม่เลื่อน
   const boardRef = useRef<HTMLDivElement>(null);
   const scrolledOnce = useRef(false);
   const modeKey = params.get('mode');
   useEffect(() => {
-    // เลื่อนแค่ตัวกระดาน (svg แรก) ไม่รวมข้อความ/ปุ่มด้านล่าง → เลื่อนน้อยที่สุด การ์ดตัวอักษรด้านบนยังเห็นมากที่สุด
-    const el = boardRef.current?.querySelector('svg');
+    const el = boardRef.current;
     if (!el) return;
     const smooth = scrolledOnce.current && !matchMedia('(prefers-reduced-motion: reduce)').matches;
     el.scrollIntoView({ block: 'nearest', behavior: smooth ? 'smooth' : 'auto' });
@@ -121,27 +124,34 @@ export default function PracticePage() {
     });
 
   const boardLabel = `กระดานเขียนตัว ${entry.char}`;
+  // ปุ่มไปต่อเมื่อเขียนครบ (อยู่ใต้กระดาน) — แถวพร้อมสอบ: ทดสอบแถวเป็นปุ่มหลัก, ไม่งั้นตัวถัดไปเป็นปุ่มหลัก
+  const rowQuiz = group && rowState.kind === 'quiz' ? group : undefined;
+  const completeActions =
+    rowQuiz || next ? (
+      <>
+        {rowQuiz && (
+          <Link to={`/${pack.id}/quiz?groups=${rowQuiz.id}`} className="btn btn-primary btn-sm">
+            ทดสอบแถว <span className="kana">{rowQuiz.head}</span>
+          </Link>
+        )}
+        {next && (
+          <Link
+            to={hrefFor(next.id)}
+            state={{ dir: 1 }}
+            preventScrollReset
+            className={cx('btn btn-sm', !rowQuiz && 'btn-primary')}
+          >
+            ตัวถัดไป <span className="kana">{next.char}</span> →
+          </Link>
+        )}
+      </>
+    ) : undefined;
   // key = ตัวอักษร → เล่นแอนิเมชันใหม่ทุกครั้งที่เปลี่ยนตัว
   const slide = dir !== 0 ? styles.slideIn : undefined;
   const slideStyle = { '--dir': dir } as CSSProperties;
 
   return (
     <div className={`container ${styles.layout}`}>
-      <aside className={styles.picker}>
-        <details className={styles.pickerDetails} open>
-          <summary className={styles.pickerSummary}>
-            เลือกตัวอักษร
-          </summary>
-          <KanaTable
-            pack={pack}
-            progress={progress}
-            hrefFor={(c) => hrefFor(c.id)}
-            activeId={entry.id}
-            compact
-          />
-        </details>
-      </aside>
-
       <section className={styles.main} aria-labelledby="char-title">
         <header className={cx('card', styles.charHeader)}>
           <div
@@ -170,32 +180,39 @@ export default function PracticePage() {
               )}
             </p>
           </div>
-          <div className={styles.nav}>
+          {/* ลูกศรบอกตัวข้างเคียง (‹ お · い ›) — รู้ว่ากดแล้วไปตัวไหน */}
+          <nav className={styles.nav} aria-label="เปลี่ยนตัวอักษร">
             {prev ? (
               <Link
                 to={hrefFor(prev.id)}
                 state={{ dir: -1 }}
-                className="btn btn-icon"
+                className={cx('btn', styles.navBtn)}
                 aria-label={`ตัวก่อนหน้า ${prev.char}`}
               >
-                <ChevronLeft size={20} strokeWidth={1.6} aria-hidden />
+                <ChevronLeft size={18} strokeWidth={1.6} aria-hidden />
+                <span className="kana" lang="ja" aria-hidden>
+                  {prev.char}
+                </span>
               </Link>
             ) : (
-              <span className="btn btn-icon" aria-hidden style={{ visibility: 'hidden' }} />
+              <span className={cx('btn', styles.navBtn)} aria-hidden style={{ visibility: 'hidden' }} />
             )}
             {next ? (
               <Link
                 to={hrefFor(next.id)}
                 state={{ dir: 1 }}
-                className="btn btn-icon"
+                className={cx('btn', styles.navBtn)}
                 aria-label={`ตัวถัดไป ${next.char}`}
               >
-                <ChevronRight size={20} strokeWidth={1.6} aria-hidden />
+                <span className="kana" lang="ja" aria-hidden>
+                  {next.char}
+                </span>
+                <ChevronRight size={18} strokeWidth={1.6} aria-hidden />
               </Link>
             ) : (
-              <span className="btn btn-icon" aria-hidden style={{ visibility: 'hidden' }} />
+              <span className={cx('btn', styles.navBtn)} aria-hidden style={{ visibility: 'hidden' }} />
             )}
-          </div>
+          </nav>
           {(entry.note || entry.example) && (
             <div className={styles.extra}>
               {entry.note && <p className={cx('small', styles.note)}>{entry.note}</p>}
@@ -223,16 +240,24 @@ export default function PracticePage() {
 
         <div id="practice-board" role="tabpanel" className={styles.board} ref={boardRef}>
           {mode === 'animate' && (
-            <StrokeAnimator
-              key={entry.id}
-              data={strokes}
-              speed={settings.animationSpeed}
-              showNumbers={settings.showStrokeNumbers}
-              label={`แอนิเมชันลำดับขีดของ ${entry.char}`}
-            />
+            <div className={step.wrap}>
+              <div className={step.canvasCol}>
+                <StrokeAnimator
+                  key={entry.id}
+                  data={strokes}
+                  speed={settings.animationSpeed}
+                  showNumbers={settings.showStrokeNumbers}
+                  label={`แอนิเมชันลำดับขีดของ ${entry.char}`}
+                />
+              </div>
+              <aside className={step.panel} aria-label="ลำดับขีด">
+                <p className={step.panelLabel}>ลำดับขีด</p>
+                <StrokeStepList data={strokes} refs={referenceStrokes(strokes)} />
+              </aside>
+            </div>
           )}
           {mode === 'trace' && (
-            <StrokeCheckBoard
+            <StrokeStepBoard
               key={`${entry.id}-trace-${settings.strictness}`}
               data={strokes}
               guide
@@ -240,16 +265,18 @@ export default function PracticePage() {
               showNumbers={settings.showStrokeNumbers}
               label={boardLabel}
               onComplete={onTraceDone}
+              completeActions={completeActions}
             />
           )}
           {mode === 'check' && (
-            <StrokeCheckBoard
+            <StrokeStepBoard
               key={`${entry.id}-check-${settings.strictness}`}
               data={strokes}
               guide={false}
               leniency={leniency}
               label={boardLabel}
               onComplete={onCheckDone}
+              completeActions={completeActions}
             />
           )}
           {mode === 'free' && (
@@ -258,6 +285,7 @@ export default function PracticePage() {
               data={strokes}
               leniency={leniency}
               label={boardLabel}
+              completeActions={completeActions}
               onShowOrder={() => setMode('animate')}
               onResult={(r) =>
                 recordPractice(pack.id, entry.id, {
@@ -269,55 +297,61 @@ export default function PracticePage() {
           )}
         </div>
 
-        <div className={styles.footerBar}>
-          <p className="small muted">{modeInfo.tip}</p>
-          <div className={styles.options}>
-            {(mode === 'animate' || mode === 'trace') && (
-              <label className="chip">
-                <input
-                  type="checkbox"
-                  checked={settings.showStrokeNumbers}
-                  onChange={(e) => updateSettings({ showStrokeNumbers: e.target.checked })}
-                />
-                แสดงเลขลำดับขีด
-              </label>
-            )}
-            {mode !== 'animate' && (
-              <div className="row">
-                <span className="small muted">ความเข้มงวดในการตรวจ</span>
-                <div className="segmented" role="group" aria-label="ความเข้มงวดในการตรวจ">
-                  {STRICTNESS_ORDER.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      aria-pressed={settings.strictness === s}
-                      onClick={() => updateSettings({ strictness: s })}
-                    >
-                      {STRICTNESS_LABEL[s]}
-                    </button>
-                  ))}
-                </div>
+        {/*
+          เขียนครบทั้งแถวแล้ว แต่ยังไม่เคยตอบถูกครบ → ชวนไปทดสอบแถวนี้ (ตามเส้นทาง "เรียนต่อ")
+          อยู่ใต้กระดาน ไม่ดันกระดานลงไปจนต้องเลื่อนจอ
+        */}
+        {rowQuiz && (
+          <p className={styles.rowReady}>
+            เขียนครบทั้งแถว <span className="kana">{rowQuiz.head}</span> แล้ว —{' '}
+            <Link to={`/${pack.id}/quiz?groups=${rowQuiz.id}`}>ทดสอบแถวนี้ →</Link>
+          </p>
+        )}
+
+        {/* ตารางเลือกตัวอักษร: พับเก็บใต้กระดาน (เปลี่ยนตัวปกติใช้ลูกศรด้านบน) */}
+        <details className={styles.picker}>
+          <summary>เลือกตัวอักษร</summary>
+          <div className={styles.pickerBody}>
+            <KanaTable
+              pack={pack}
+              progress={progress}
+              hrefFor={(c) => hrefFor(c.id)}
+              activeId={entry.id}
+              compact
+            />
+          </div>
+        </details>
+
+        {/* ตั้งค่าที่ไม่ได้ใช้บ่อย: พับเก็บไว้ ไม่ให้แย่งความสนใจจากกระดาน */}
+        <details className={styles.settings}>
+          <summary>วิธีฝึกและตั้งค่า</summary>
+          <div className={styles.settingsBody}>
+            <p className={styles.tip}>{modeInfo.tip}</p>
+            <label className="chip">
+              <input
+                type="checkbox"
+                checked={settings.showStrokeNumbers}
+                onChange={(e) => updateSettings({ showStrokeNumbers: e.target.checked })}
+              />
+              แสดงเลขลำดับขีด
+            </label>
+            <div className="row">
+              <span className="small muted">ความเข้มงวดในการตรวจ</span>
+              <div className="segmented" role="group" aria-label="ความเข้มงวดในการตรวจ">
+                {STRICTNESS_ORDER.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    aria-pressed={settings.strictness === s}
+                    onClick={() => updateSettings({ strictness: s })}
+                  >
+                    {STRICTNESS_LABEL[s]}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
           </div>
-          <div className="row" style={{ justifyContent: 'center' }}>
-            {/* เขียนครบทั้งแถวแล้ว แต่ยังไม่เคยตอบถูกครบ → ชวนไปทดสอบแถวนี้ (ตามเส้นทาง "เรียนต่อ") */}
-            {group && rowState.kind === 'quiz' && (
-              <Link to={`/${pack.id}/quiz?groups=${group.id}`} className="btn btn-primary">
-                ทดสอบแถว <span className="kana">{group.head}</span>
-              </Link>
-            )}
-            {next && (
-              <Link
-                to={hrefFor(next.id)}
-                state={{ dir: 1 }}
-                className={rowState.kind === 'quiz' ? 'btn' : 'btn btn-primary'}
-              >
-                ตัวถัดไป <span className="kana">{next.char}</span> →
-              </Link>
-            )}
-          </div>
-        </div>
+        </details>
       </section>
     </div>
   );

@@ -375,6 +375,17 @@ svg {
   border-color: transparent;
 }
 
+/* ปุ่มตัวหนังสือ: ตอนกด (ทุกอุปกรณ์ รวมจอสัมผัส) มีพื้นจางๆ ให้รู้ว่าแตะติด */
+.btn-ghost:active:not(:disabled) {
+  background: var(--surface-2);
+}
+
+/* ตัวคานะในปุ่ม (เช่น "ตัวถัดไป い") — ฟอนต์คานะดูเล็กกว่าตัวไทยที่ขนาดเท่ากัน */
+.btn .kana {
+  font-size: 1.2em;
+  line-height: 1;
+}
+
 .btn-danger {
   color: var(--bad);
   border-color: color-mix(in srgb, var(--bad) 45%, var(--border));

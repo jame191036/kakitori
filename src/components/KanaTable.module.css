@@ -119,6 +119,22 @@
   padding: 4px 2px 7px;
 }
 
+/* แบบย่อ (แถบเลือกตัวในหน้าฝึก): ไม่มีเส้นตาราง ให้เป็นดัชนีเงียบๆ ตัวที่เลือกอยู่มีกรอบหมึก */
+.compact .grid {
+  border: 0;
+}
+
+.compact .cell,
+.compact .empty {
+  border: 0;
+  background: transparent;
+}
+
+.compact .active {
+  background: var(--pad);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
 .compact .char {
   font-size: 1.35rem;
 }
