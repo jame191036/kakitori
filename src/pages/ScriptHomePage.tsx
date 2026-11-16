@@ -32,7 +32,7 @@ export default function ScriptHomePage() {
       to: `/${pack.id}/review`,
       icon: Target,
       title: 'ทบทวน',
-      desc: 'ฝึกซ้ำเฉพาะตัวที่ผิดบ่อยจนจำได้',
+      desc: 'ทบทวนตัวที่ถึงรอบและตัวที่ผิดบ่อย สำรองความคืบหน้าเป็นไฟล์',
     },
     {
       to: `/${pack.id}/worksheet`,

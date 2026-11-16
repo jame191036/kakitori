@@ -66,9 +66,30 @@ export function createPersistentStore<T>(
   };
 }
 
+/** store ในหน่วยความจำ (ไม่บันทึกลงเครื่อง) — ใช้ส่งสัญญาณชั่วคราว เช่นแจ้งเตือนถึงเป้ารายวัน */
+export function createMemoryStore<T>(initial: T): Store<T> {
+  let value = initial;
+  const listeners = new Set<() => void>();
+  const emit = () => listeners.forEach((l) => l());
+  return {
+    get: () => value,
+    set(next) {
+      value = typeof next === 'function' ? (next as (prev: T) => T)(value) : next;
+      emit();
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    reset() {
+      value = initial;
+      emit();
+    },
+  };
+}
+
 export function useStore<T>(store: Store<T>): T {
   return useSyncExternalStore(store.subscribe, store.get, store.get);
 }
 
-export const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v);
+export { isRecord } from './isRecord';

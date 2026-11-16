@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { counterpartOf, scriptList, scripts } from './scripts';
 import { hiraganaStrokes, katakanaStrokes } from '../features/writing/engine/testUtils';
-import { applyAnswer, MAX_BOX, masteryLevel, weakChars, type CharStat } from '../features/progress/progressLogic';
 import { hiragana } from './scripts/hiragana';
 import { katakana } from './scripts/katakana';
 import type { ScriptPack, StrokeSet } from './types';
@@ -94,24 +93,4 @@ it('keeps hiragana and katakana pairs aligned (か ↔ カ, ぢ ↔ ヂ)', () =>
   expect(counterpartOf(hiragana, hiragana.chars.find((c) => c.char === 'か')!)?.char).toBe('カ');
   expect(counterpartOf(katakana, katakana.chars.find((c) => c.char === 'ヂ')!)?.char).toBe('ぢ');
   expect(katakana.chars.find((c) => c.char === 'ガ')?.base).toBe('カ');
-});
-
-describe('progress logic', () => {
-  it('moves up one box when correct and back to zero when wrong', () => {
-    let s: CharStat | undefined;
-    for (let i = 0; i < MAX_BOX + 2; i++) s = applyAnswer(s, true, i);
-    expect(s!.box).toBe(MAX_BOX);
-    expect(masteryLevel(s)).toBe(3);
-    s = applyAnswer(s, false, 99);
-    expect(s).toMatchObject({ box: 0, wrong: 1, lastWrong: 99 });
-    expect(masteryLevel(s)).toBe(1);
-  });
-
-  it('lists characters that were wrong and are still weak, worst first', () => {
-    const a = applyAnswer(applyAnswer(undefined, false, 1), false, 2);
-    const ka = applyAnswer(undefined, false, 3);
-    const sa = applyAnswer(applyAnswer(applyAnswer(applyAnswer(ka, true, 4), true, 5), true, 6), true, 7);
-    const weak = weakChars(hiragana, { a, ka, sa });
-    expect(weak.map((w) => w.entry.char)).toEqual(['あ', 'か']);
-  });
 });

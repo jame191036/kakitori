@@ -16,6 +16,7 @@ import { Link, NavLink, Outlet, ScrollRestoration, useLocation, useMatch } from 
 import { getScript, scriptList } from '../data/scripts';
 import { updateSettings, useSettings, type ThemePref } from '../features/settings/settings';
 import { SITE_NAME } from './config';
+import { GoalToast } from './GoalToast';
 import { UpdatePrompt } from './UpdatePrompt';
 import { useApplyTheme } from './useTheme';
 import styles from './AppLayout.module.css';
@@ -184,6 +185,7 @@ export function AppLayout() {
       </nav>
 
       <UpdatePrompt />
+      <GoalToast />
       <ScrollRestoration />
     </div>
   );

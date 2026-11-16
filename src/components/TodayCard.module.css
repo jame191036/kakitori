@@ -1,0 +1,106 @@
+.card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.streak {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.flame {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+
+.flameOn {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.title {
+  font-size: 1.3rem;
+}
+
+.goalPick {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.goalPick :global(.segmented) button {
+  min-width: 44px;
+  padding-inline: 10px;
+}
+
+.goal {
+  display: grid;
+  gap: 8px;
+}
+
+.goalHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+}
+
+.met {
+  color: var(--good);
+}
+
+.bar {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.barMet span {
+  background: var(--good);
+}
+
+.review {
+  display: grid;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+}
+
+.reviewTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar span {
+    transition: none;
+  }
+}

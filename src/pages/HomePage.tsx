@@ -2,6 +2,7 @@ import { ArrowRight, ClipboardCheck, Eye, PenTool, Printer, Target, WifiOff, typ
 import { Link } from 'react-router';
 import { SITE_NAME } from '../app/config';
 import { ContinueCard } from '../components/ContinueCard';
+import { TodayCard } from '../components/TodayCard';
 import { findChar, scriptList } from '../data/scripts';
 import { useStrokeData } from '../data/useStrokes';
 import { masteryLevel } from '../features/progress/progressLogic';
@@ -66,6 +67,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      <TodayCard packs={scriptList} />
       <ContinueCard packs={scriptList} />
 
       <section className="stack">

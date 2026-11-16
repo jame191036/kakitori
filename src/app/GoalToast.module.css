@@ -1,0 +1,46 @@
+.toast {
+  position: fixed;
+  z-index: 50;
+  left: 50%;
+  top: calc(var(--header-h) + 12px);
+  transform: translateX(-50%);
+  width: min(400px, calc(100% - 32px));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px 10px 14px;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--good) 45%, var(--border));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  animation: drop-in 0.25s ease-out;
+}
+
+.toast > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+@keyframes drop-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+}

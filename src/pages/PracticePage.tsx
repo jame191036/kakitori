@@ -16,7 +16,7 @@ import { SpeakButton } from '../components/SpeakButton';
 import { findChar, groupLabel, romajiLabel } from '../data/scripts';
 import { useStrokeData } from '../data/useStrokes';
 import { masteryLevel, MASTERY_LABEL } from '../features/progress/progressLogic';
-import { recordAnswer, recordPractice, useScriptProgress } from '../features/progress/progressStore';
+import { recordPractice, useScriptProgress } from '../features/progress/progressStore';
 import {
   STRICTNESS_LABEL,
   STRICTNESS_LENIENCY,
@@ -101,11 +101,11 @@ export default function PracticePage() {
     setParams(m === 'animate' ? {} : { mode: m }, { replace: true, preventScrollReset: true });
 
   const onTraceDone = () => recordPractice(pack.id, entry.id);
-  const onCheckDone = ({ mistakes, hintsUsed }: CheckResult) => {
-    recordPractice(pack.id, entry.id);
-    if (hintsUsed > 0) recordAnswer(pack.id, entry.id, false);
-    else if (mistakes === 0) recordAnswer(pack.id, entry.id, true);
-  };
+  // ตรวจทีละขีด: ใช้ตัวช่วย = ผิด, ไม่ผิดเลย = ถูก, ผิดบ้างแต่ไม่ใช้ตัวช่วย = ไม่ตัดสิน
+  const onCheckDone = ({ mistakes, hintsUsed }: CheckResult) =>
+    recordPractice(pack.id, entry.id, {
+      correct: hintsUsed > 0 ? false : mistakes === 0 ? true : undefined,
+    });
 
   const boardLabel = `กระดานเขียนตัว ${entry.char}`;
 
@@ -230,11 +230,12 @@ export default function PracticePage() {
               leniency={leniency}
               label={boardLabel}
               onShowOrder={() => setMode('animate')}
-              onResult={(r) => {
-                recordPractice(pack.id, entry.id, r.score);
-                if (r.score >= 70) recordAnswer(pack.id, entry.id, true);
-                else if (r.score < 40) recordAnswer(pack.id, entry.id, false);
-              }}
+              onResult={(r) =>
+                recordPractice(pack.id, entry.id, {
+                  score: r.score,
+                  correct: r.score >= 70 ? true : r.score < 40 ? false : undefined,
+                })
+              }
             />
           )}
         </div>

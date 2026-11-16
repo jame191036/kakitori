@@ -94,12 +94,45 @@
   line-height: 1.4;
 }
 
-.danger {
+.dueCard {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
+.dueList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 16px 0;
+  gap: 6px;
+}
+
+.dueList li {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  font-size: 1.5rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.data {
+  box-shadow: none;
+  background: transparent;
+  border-style: dashed;
+}
+
+/* ปุ่มเลือกไฟล์: input ถูกซ่อน จึงแสดงกรอบโฟกัสที่ปุ่มแทน (ใช้คีย์บอร์ดได้) */
+.fileBtn:has(input:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.danger {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 12px;
   border-top: 1px dashed var(--border);
 }

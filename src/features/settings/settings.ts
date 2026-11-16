@@ -1,4 +1,5 @@
 import { createPersistentStore, isRecord, useStore } from '../../lib/persistentStore';
+import { DEFAULT_GOAL, sanitizeGoal } from '../progress/activity';
 
 export type ThemePref = 'system' | 'light' | 'dark';
 export type Strictness = 'easy' | 'normal' | 'strict';
@@ -37,6 +38,8 @@ export interface Settings {
   quiz: Record<string, QuizPrefs>;
   /** เคยเปิดหน้า "เริ่มต้นที่นี่" หรือปิดแถบแนะนำแล้ว */
   introSeen: boolean;
+  /** เป้ารายวัน (จำนวนครั้งที่ตอบ/เขียน) — ถึงเป้าแล้วนับเป็นวันที่ฝึกต่อเนื่อง */
+  dailyGoal: number;
 }
 
 export const SETTINGS_KEY = 'jp-learn:settings:v1';
@@ -70,6 +73,7 @@ const defaults: Settings = {
   showStrokeNumbers: true,
   quiz: {},
   introSeen: false,
+  dailyGoal: DEFAULT_GOAL,
 };
 
 function sanitizeQuizPrefs(raw: unknown): QuizPrefs {
@@ -100,6 +104,7 @@ function sanitize(raw: unknown): Settings {
     showStrokeNumbers: raw.showStrokeNumbers !== false,
     quiz,
     introSeen: raw.introSeen === true,
+    dailyGoal: sanitizeGoal(raw.dailyGoal),
   };
 }
 
