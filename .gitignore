@@ -8,3 +8,19 @@ coverage
 .vscode/*
 !.vscode/extensions.json
 .idea
+
+# ── Skills ของคนอื่น (ติดตั้งด้วย `npx skills add ...`) — ไม่เก็บใน git ──
+# ตัวติดตั้งสร้างโฟลเดอร์ให้ AI ทุกเจ้า (.adal, .agents, .windsurf, ...) จึงซ่อนโฟลเดอร์ที่ขึ้นต้นด้วยจุดทั้งหมดที่ root
+# ยกเว้นโฟลเดอร์ที่โปรเจกต์ใช้จริงด้านล่าง (ถ้าเพิ่มโฟลเดอร์แบบนี้ในอนาคต เช่น .husky ต้องเพิ่มบรรทัด ! ด้วย)
+/.*/
+!/.claude/
+!/.github/
+!/.vscode/
+/skills/
+/data/
+/skills-lock.json
+
+# ใน .claude เก็บเฉพาะ skill ของโปรเจกต์นี้ (ชื่อขึ้นต้นด้วย kakitori-) และไม่เก็บการตั้งค่าส่วนตัว
+/.claude/skills/*
+!/.claude/skills/kakitori-*/
+/.claude/settings.local.json
