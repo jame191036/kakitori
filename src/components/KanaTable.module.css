@@ -1,6 +1,12 @@
 .wrap {
   display: grid;
-  gap: 20px;
+  gap: 22px;
+  /* จำกัดความกว้าง ให้ช่องใกล้สี่เหลี่ยมจัตุรัสแบบกระดาษช่อง ไม่ยืดเป็นแถบยาวบนจอกว้าง */
+  max-width: 600px;
+}
+
+.compact {
+  max-width: none;
 }
 
 .section {
@@ -9,7 +15,7 @@
 }
 
 .heading {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-2);
 }
@@ -20,10 +26,21 @@
   color: var(--text-2);
 }
 
+/*
+ * ตารางแบบกระดาษช่องสี่เหลี่ยม (原稿用紙): ช่องติดกัน ใช้เส้นร่วมกัน
+ * เส้นบน/ซ้ายอยู่ที่กรอบ เส้นขวา/ล่างอยู่ที่แต่ละช่อง
+ */
 .grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 6px;
+  border-top: 1px solid var(--grid);
+  border-left: 1px solid var(--grid);
+}
+
+.cell,
+.empty {
+  border-right: 1px solid var(--grid);
+  border-bottom: 1px solid var(--grid);
 }
 
 .cell {
@@ -35,35 +52,37 @@
   gap: 2px;
   min-height: 72px;
   padding: 8px 4px 12px;
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--pad);
   color: var(--text);
   text-decoration: none !important;
   overflow: hidden;
+  transition: background-color 150ms ease;
   /* กดค้างที่ช่องตัวอักษร: ไม่เลือกข้อความ ไม่เด้งพรีวิวลิงก์ */
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
-  transition:
-    transform var(--press),
-    border-color 150ms ease;
+}
+
+/* ช่องที่ไม่มีตัวอักษร (เช่นแถว や) = ช่องกระดาษว่าง */
+.empty {
+  min-height: 72px;
+  background: transparent;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .cell:hover {
-    border-color: var(--accent);
-    transform: translateY(-1px);
+    background: var(--surface-2);
   }
 }
 
+/* กด: ช่องหมึกเข้มขึ้นเล็กน้อย (ไม่ย่อ เพราะช่องใช้เส้นร่วมกับช่องข้างๆ) */
 .cell:active {
-  transform: scale(0.96);
+  background: var(--surface-2);
 }
 
 .active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 2px var(--ink);
 }
 
 .char {
@@ -75,20 +94,23 @@
   color: var(--text-2);
 }
 
+/* ความคืบหน้ารายตัว: ขีดสั้นๆ ใต้ตัวอักษร (ยังไม่เริ่ม = ไม่มีขีด) */
 .bar {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 4px;
+  left: 22%;
+  right: 22%;
+  bottom: 5px;
+  height: 3px;
+  border-radius: 2px;
 }
 
-.empty {
-  min-height: 72px;
+.bar.m0 {
+  background: transparent;
 }
 
-.compact .grid {
-  gap: 4px;
+.empty,
+.compact .empty {
+  pointer-events: none;
 }
 
 .compact .cell,
@@ -102,7 +124,8 @@
 }
 
 .compact .bar {
-  height: 3px;
+  bottom: 4px;
+  height: 2px;
 }
 
 .m0 {
@@ -124,7 +147,7 @@
 .legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 14px;
   font-size: 0.85rem;
   color: var(--text-2);
 }
@@ -137,6 +160,6 @@
 
 .swatch {
   width: 14px;
-  height: 6px;
-  border-radius: 3px;
+  height: 3px;
+  border-radius: 2px;
 }

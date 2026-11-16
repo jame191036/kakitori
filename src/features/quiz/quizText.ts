@@ -14,9 +14,9 @@ export function questionTypeInfo(type: QuestionType, pack: ScriptPack): { label:
     case 'readingToChar':
       return { label: 'ดูคำอ่าน → เลือกตัวอักษร', example: `ka → ${c}` };
     case 'audioToChar':
-      return { label: 'ฟังเสียง → เลือกตัวอักษร', example: `🔊 → ${c}` };
+      return { label: 'ฟังเสียง → เลือกตัวอักษร', example: `เสียง → ${c}` };
     case 'readingToWrite':
-      return { label: 'ดูคำอ่าน → เขียนตัวอักษร', example: 'ka → ✍️' };
+      return { label: 'ดูคำอ่าน → เขียนตัวอักษร', example: 'ka → เขียน' };
     case 'pairToChar': {
       const other = getScript(pack.counterpart);
       return other

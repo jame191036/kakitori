@@ -1,4 +1,3 @@
-import { PenLine, RotateCcw, Settings2, Target } from 'lucide-react';
 import { Link } from 'react-router';
 import { romajiLabel } from '../../data/scripts';
 import type { CharEntry, ScriptPack } from '../../data/types';
@@ -15,7 +14,7 @@ interface QuizResultProps {
 }
 
 function verdict(pct: number): string {
-  if (pct === 100) return 'เต็ม! สุดยอดมาก 🎉';
+  if (pct === 100) return 'เต็ม! ไม่ผิดเลยสักข้อ';
   if (pct >= 80) return 'เก่งมาก! อีกนิดเดียว';
   if (pct >= 50) return 'ดีแล้ว ทบทวนตัวที่ผิดอีกหน่อยนะ';
   return 'ไม่เป็นไร ลองกลับไปฝึกเขียนแล้วมาสอบใหม่';
@@ -75,7 +74,7 @@ export function QuizResult({ pack, records, onRetry, onReviewWrong, onSetup }: Q
                   className="btn btn-sm"
                   style={{ marginLeft: 'auto' }}
                 >
-                  <PenLine size={16} aria-hidden /> ฝึกเขียน
+                  ฝึกเขียน
                 </Link>
               </li>
             ))}
@@ -86,14 +85,14 @@ export function QuizResult({ pack, records, onRetry, onReviewWrong, onSetup }: Q
       <div className={styles.resultActions}>
         {wrongChars.length > 0 && (
           <button type="button" className="btn btn-primary" onClick={() => onReviewWrong(wrongChars)}>
-            <Target size={18} aria-hidden /> สอบเฉพาะตัวที่ผิด
+            สอบเฉพาะตัวที่ผิด
           </button>
         )}
         <button type="button" className={wrongChars.length ? 'btn' : 'btn btn-primary'} onClick={onRetry}>
-          <RotateCcw size={18} aria-hidden /> ทำอีกครั้ง
+          ทำอีกครั้ง
         </button>
         <button type="button" className="btn" onClick={onSetup}>
-          <Settings2 size={18} aria-hidden /> ตั้งค่าใหม่
+          ตั้งค่าใหม่
         </button>
       </div>
     </div>

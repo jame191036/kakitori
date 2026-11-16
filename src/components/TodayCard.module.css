@@ -1,52 +1,59 @@
 .card {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
+  gap: 18px;
 }
 
-.top {
+.head {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 12px 24px;
+  gap: 8px 24px;
+}
+
+.title {
+  font-size: 1.05rem;
+}
+
+.goalPick {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.goalPick :global(.segmented) button {
+  min-width: 40px;
+  padding-inline: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  align-items: start;
+  gap: 16px 40px;
 }
 
 .streak {
   display: flex;
   align-items: center;
   gap: 14px;
+  padding-right: 40px;
+  border-right: 1px solid var(--border);
 }
 
-.flame {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: var(--surface-2);
-  color: var(--text-2);
+.streakNum {
+  font-size: 3rem;
+  line-height: 1;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  min-width: 1.2ch;
+  text-align: right;
 }
 
-.flameOn {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.title {
-  font-size: 1.3rem;
-}
-
-.goalPick {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.goalPick :global(.segmented) button {
-  min-width: 44px;
-  padding-inline: 10px;
+.streakLabel {
+  font-weight: 600;
 }
 
 .goal {
@@ -54,38 +61,30 @@
   gap: 8px;
 }
 
-.goalHead {
+/* ช่องติ๊ก: ฝึก 1 ครั้ง = ระบายหมึก 1 ช่อง */
+.tally {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 4px 16px;
+  gap: 4px;
+}
+
+.tally span {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--grid);
+  background: var(--pad);
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease;
+}
+
+.tally .done {
+  background: var(--ink);
+  border-color: var(--ink);
 }
 
 .met {
   color: var(--good);
-}
-
-.bar {
-  height: 10px;
-  border-radius: 999px;
-  background: var(--surface-2);
-  overflow: hidden;
-}
-
-.bar span {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--accent);
-  transition:
-    transform 300ms var(--ease-out),
-    background-color 300ms ease;
-}
-
-.barMet span {
-  background: var(--good);
 }
 
 .review {
@@ -96,14 +95,18 @@
 }
 
 .reviewTitle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   font-weight: 600;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .bar span {
-    transition: none;
+@media (max-width: 640px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .streak {
+    padding-right: 0;
+    padding-bottom: 14px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
   }
 }

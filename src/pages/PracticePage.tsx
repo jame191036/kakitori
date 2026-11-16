@@ -1,14 +1,4 @@
-import {
-  ChevronLeft,
-  ChevronRight,
-  ClipboardCheck,
-  Eye,
-  Grid3x3,
-  PenLine,
-  PenTool,
-  Sparkles,
-  type LucideIcon,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useRef, type CSSProperties } from 'react';
 import {
   Link,
@@ -43,29 +33,25 @@ import styles from './PracticePage.module.css';
 
 type Mode = 'animate' | 'trace' | 'check' | 'free';
 
-const MODES: { id: Mode; label: string; icon: LucideIcon; tip: string }[] = [
+const MODES: { id: Mode; label: string; tip: string }[] = [
   {
     id: 'animate',
     label: 'ดูลำดับขีด',
-    icon: Eye,
     tip: 'ดูลำดับและทิศทางการเขียนให้จำก่อน กด "ดูทีละขีด" เพื่อดูช้าๆ แล้วค่อยไปฝึกเขียนทับ',
   },
   {
     id: 'trace',
     label: 'เขียนทับ',
-    icon: PenLine,
     tip: 'ลากตามเส้นจางทีละขีดตามลำดับ (เริ่มที่จุดสีแดง) ระบบจะตรวจลำดับและทิศทางให้ ผิด 3 ครั้งจะมีคำใบ้',
   },
   {
     id: 'check',
     label: 'ตรวจทีละขีด',
-    icon: PenTool,
     tip: 'ไม่มีเส้นนำแล้ว เขียนทีละขีดจากความจำ ระบบตรวจทุกขีด ขนาดหรือตำแหน่งเยื้องนิดหน่อยไม่เป็นไร',
   },
   {
     id: 'free',
     label: 'เขียนอิสระ',
-    icon: Sparkles,
     tip: 'เขียนทั้งตัวรวดเดียวจากความจำ แล้วกด "ตรวจ" เพื่อดูคะแนนและข้อผิดพลาดของแต่ละขีด',
   },
 ];
@@ -144,7 +130,7 @@ export default function PracticePage() {
       <aside className={styles.picker}>
         <details className={styles.pickerDetails} open>
           <summary className={styles.pickerSummary}>
-            <Grid3x3 size={18} aria-hidden /> เลือกตัวอักษร
+            เลือกตัวอักษร
           </summary>
           <KanaTable
             pack={pack}
@@ -192,7 +178,7 @@ export default function PracticePage() {
                 className="btn btn-icon"
                 aria-label={`ตัวก่อนหน้า ${prev.char}`}
               >
-                <ChevronLeft size={20} aria-hidden />
+                <ChevronLeft size={20} strokeWidth={1.6} aria-hidden />
               </Link>
             ) : (
               <span className="btn btn-icon" aria-hidden style={{ visibility: 'hidden' }} />
@@ -204,7 +190,7 @@ export default function PracticePage() {
                 className="btn btn-icon"
                 aria-label={`ตัวถัดไป ${next.char}`}
               >
-                <ChevronRight size={20} aria-hidden />
+                <ChevronRight size={20} strokeWidth={1.6} aria-hidden />
               </Link>
             ) : (
               <span className="btn btn-icon" aria-hidden style={{ visibility: 'hidden' }} />
@@ -220,7 +206,7 @@ export default function PracticePage() {
 
         <div className={styles.modeBar}>
           <div className="segmented" role="tablist" aria-label="โหมดฝึก">
-            {MODES.map(({ id, label, icon: Icon }) => (
+            {MODES.map(({ id, label }) => (
               <button
                 key={id}
                 type="button"
@@ -229,10 +215,7 @@ export default function PracticePage() {
                 aria-controls="practice-board"
                 onClick={() => setMode(id)}
               >
-                <span className={styles.tabInner}>
-                  <Icon size={16} aria-hidden />
-                  {label}
-                </span>
+                {label}
               </button>
             ))}
           </div>
@@ -321,7 +304,7 @@ export default function PracticePage() {
             {/* เขียนครบทั้งแถวแล้ว แต่ยังไม่เคยตอบถูกครบ → ชวนไปทดสอบแถวนี้ (ตามเส้นทาง "เรียนต่อ") */}
             {group && rowState.kind === 'quiz' && (
               <Link to={`/${pack.id}/quiz?groups=${group.id}`} className="btn btn-primary">
-                <ClipboardCheck size={18} aria-hidden /> ทดสอบแถว <span className="kana">{group.head}</span>
+                ทดสอบแถว <span className="kana">{group.head}</span>
               </Link>
             )}
             {next && (
@@ -330,8 +313,7 @@ export default function PracticePage() {
                 state={{ dir: 1 }}
                 className={rowState.kind === 'quiz' ? 'btn' : 'btn btn-primary'}
               >
-                ตัวถัดไป <span className="kana">{next.char}</span>
-                <ChevronRight size={18} aria-hidden />
+                ตัวถัดไป <span className="kana">{next.char}</span> →
               </Link>
             )}
           </div>

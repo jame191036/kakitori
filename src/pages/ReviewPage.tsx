@@ -1,4 +1,4 @@
-import { CalendarCheck, ClipboardCheck, Download, PenLine, Target, Trash2, Upload } from 'lucide-react';
+import { PenLine } from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useScriptPack } from '../app/ScriptContext';
@@ -92,10 +92,10 @@ function DataSection({ packName, canReset, onReset }: { packName: string; canRes
       </p>
       <div className="row">
         <button type="button" className="btn" onClick={downloadBackup}>
-          <Download size={18} aria-hidden /> บันทึกไฟล์สำรอง
+          บันทึกไฟล์สำรอง
         </button>
         <label className={cx('btn', styles.fileBtn)}>
-          <Upload size={18} aria-hidden /> นำเข้าไฟล์สำรอง
+          นำเข้าไฟล์สำรอง
           <input
             type="file"
             accept=".json,application/json"
@@ -115,7 +115,7 @@ function DataSection({ packName, canReset, onReset }: { packName: string; canRes
       {canReset && (
         <div className={styles.danger}>
           <button type="button" className="btn btn-sm btn-danger" onClick={onReset}>
-            <Trash2 size={16} aria-hidden /> ล้างความคืบหน้า{packName}
+            ล้างความคืบหน้า{packName}
           </button>
         </div>
       )}
@@ -159,11 +159,11 @@ export default function ReviewPage() {
         <section className={cx('card', 'stack', styles.dueCard)} aria-labelledby="due-title">
           <div className={styles.overviewHead}>
             <h2 id="due-title" className={styles.h2}>
-              <CalendarCheck size={20} aria-hidden /> ถึงรอบทบทวนวันนี้
+              ถึงรอบทบทวนวันนี้
             </h2>
             {due.length > 0 && (
               <Link to={reviewHref(pack.id, due)} className="btn btn-primary">
-                <ClipboardCheck size={18} aria-hidden /> เริ่มทบทวน ({Math.min(due.length, REVIEW_BATCH)} ตัว)
+                เริ่มทบทวน ({Math.min(due.length, REVIEW_BATCH)} ตัว)
               </Link>
             )}
           </div>
@@ -217,24 +217,24 @@ export default function ReviewPage() {
       <section className="card stack">
         <div className={styles.overviewHead}>
           <h2 className={styles.h2}>
-            <Target size={20} aria-hidden /> ตัวที่ผิดบ่อย
+            ตัวที่ผิดบ่อย
           </h2>
           {weak.length > 0 && (
             <button type="button" className="btn" onClick={startWeakReview}>
-              <ClipboardCheck size={18} aria-hidden /> ทบทวนด้วยแบบทดสอบ ({Math.min(weak.length, MAX_WEAK_REVIEW)} ตัว)
+              ทบทวนด้วยแบบทดสอบ ({Math.min(weak.length, MAX_WEAK_REVIEW)} ตัว)
             </button>
           )}
         </div>
 
         {weak.length === 0 ? (
           <div className={styles.empty}>
-            <p>{hasAny ? 'ยังไม่มีตัวที่ผิดบ่อย เยี่ยมมาก! 🎉' : 'ยังไม่มีข้อมูล — ลองทำแบบทดสอบหรือฝึกเขียนก่อนนะ'}</p>
+            <p>{hasAny ? 'ยังไม่มีตัวที่ผิดบ่อย' : 'ยังไม่มีข้อมูล — ลองทำแบบทดสอบหรือฝึกเขียนก่อนนะ'}</p>
             <div className="row" style={{ justifyContent: 'center' }}>
               <Link to={`/${pack.id}/quiz`} className="btn btn-primary">
-                <ClipboardCheck size={18} aria-hidden /> ทำแบบทดสอบ
+                ทำแบบทดสอบ
               </Link>
               <Link to={`/${pack.id}/practice`} className="btn">
-                <PenLine size={18} aria-hidden /> ฝึกเขียน
+                ฝึกเขียน
               </Link>
             </div>
           </div>
@@ -260,7 +260,7 @@ export default function ReviewPage() {
                   aria-label={`ฝึกเขียน ${entry.char}`}
                   title="ฝึกเขียน"
                 >
-                  <PenLine size={16} aria-hidden />
+                  <PenLine size={16} strokeWidth={1.6} aria-hidden />
                 </Link>
               </li>
             ))}

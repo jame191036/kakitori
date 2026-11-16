@@ -1,4 +1,4 @@
-import { ArrowRight, Check, HelpCircle, Volume2, X } from 'lucide-react';
+import { Check, Volume2, X } from 'lucide-react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { SpeakButton } from '../../components/SpeakButton';
 import { counterpartOf, romajiLabel } from '../../data/scripts';
@@ -89,7 +89,7 @@ export function QuizRunner({ pack, questions, onFinish, onQuit }: QuizRunnerProp
     <div className={styles.runner}>
       <div className={styles.progressRow}>
         <button type="button" className="btn btn-ghost btn-sm" onClick={onQuit}>
-          <X size={16} aria-hidden /> ออก
+          <X size={16} strokeWidth={1.6} aria-hidden /> ออก
         </button>
         <div
           className={styles.progress}
@@ -136,7 +136,7 @@ export function QuizRunner({ pack, questions, onFinish, onQuit }: QuizRunnerProp
             onClick={() => speak(q.answer.char)}
             disabled={!audioOk}
           >
-            <Volume2 size={36} aria-hidden />
+            <Volume2 size={36} strokeWidth={1.4} aria-hidden />
             <span>ฟังอีกครั้ง</span>
           </button>
         )}
@@ -166,7 +166,7 @@ export function QuizRunner({ pack, questions, onFinish, onQuit }: QuizRunnerProp
             )}
             {!answered && (
               <button type="button" className="btn btn-ghost" onClick={() => answer(false)}>
-                <HelpCircle size={18} aria-hidden /> ไม่รู้ / ดูเฉลย
+                ไม่รู้ / ดูเฉลย
               </button>
             )}
           </div>
@@ -202,8 +202,8 @@ export function QuizRunner({ pack, questions, onFinish, onQuit }: QuizRunnerProp
                       {c.char}
                     </span>
                   )}
-                  {state === 'correct' && <Check className={styles.mark} size={20} aria-label="คำตอบที่ถูก" />}
-                  {state === 'wrong' && <X className={styles.mark} size={20} aria-label="คำตอบที่เลือก" />}
+                  {state === 'correct' && <Check className={styles.mark} size={20} strokeWidth={2} aria-label="คำตอบที่ถูก" />}
+                  {state === 'wrong' && <X className={styles.mark} size={20} strokeWidth={2} aria-label="คำตอบที่เลือก" />}
                 </button>
               );
             })}
@@ -232,7 +232,7 @@ export function QuizRunner({ pack, questions, onFinish, onQuit }: QuizRunnerProp
             <SpeakButton text={q.answer.char} size="sm" />
             {(!answered.correct || q.type === 'readingToWrite') && (
               <button type="button" className="btn btn-primary btn-sm" onClick={() => goNext()} autoFocus>
-                {isLast ? 'ดูผลสอบ' : 'ข้อถัดไป'} <ArrowRight size={16} aria-hidden />
+                {isLast ? 'ดูผลสอบ' : 'ข้อถัดไป'} →
               </button>
             )}
           </div>

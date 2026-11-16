@@ -1,4 +1,3 @@
-import { Check, Eraser, PlayCircle, RotateCcw, Undo2 } from 'lucide-react';
 import { useMemo, useState, type CSSProperties } from 'react';
 import type { StrokeData } from '../../data/types';
 import { cx } from '../../lib/cx';
@@ -155,11 +154,11 @@ export function FreeWriteBoard({ data, leniency, label, onResult, onShowOrder }:
 
         <div className={styles.controls}>
           <button type="button" className="btn btn-primary" onClick={reset}>
-            <RotateCcw size={18} aria-hidden /> เขียนอีกครั้ง
+            เขียนอีกครั้ง
           </button>
           {onShowOrder && (
             <button type="button" className="btn" onClick={onShowOrder}>
-              <PlayCircle size={18} aria-hidden /> ดูลำดับขีด
+              ดูลำดับขีด
             </button>
           )}
         </div>
@@ -190,10 +189,10 @@ export function FreeWriteBoard({ data, leniency, label, onResult, onShowOrder }:
           onClick={() => setStrokes((s) => s.slice(0, -1))}
           disabled={strokes.length === 0}
         >
-          <Undo2 size={18} aria-hidden /> ย้อนขีด
+          ย้อนขีด
         </button>
         <button type="button" className="btn" onClick={reset} disabled={strokes.length === 0}>
-          <Eraser size={18} aria-hidden /> ล้าง
+          ล้าง
         </button>
         <button
           type="button"
@@ -201,7 +200,7 @@ export function FreeWriteBoard({ data, leniency, label, onResult, onShowOrder }:
           onClick={check}
           disabled={strokes.length === 0}
         >
-          <Check size={18} aria-hidden /> ตรวจ
+          ตรวจ
         </button>
       </div>
     </div>

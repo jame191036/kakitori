@@ -1,4 +1,3 @@
-import { ArrowRight, ClipboardCheck, PartyPopper, PenLine } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router';
 import type { ScriptPack } from '../data/types';
@@ -22,13 +21,13 @@ export function ContinueCard({ packs }: ContinueCardProps) {
   if (!step) {
     return (
       <section className={cx('card', styles.card)}>
-        <p className={styles.eyebrow}>
-          <PartyPopper size={16} aria-hidden /> ผ่านครบทุกแถวแล้ว
-        </p>
-        <p>เยี่ยมมาก! ฝึกทบทวนต่อเรื่อยๆ เพื่อไม่ให้ลืม</p>
-        <Link to={`/${packs[0]!.id}/review`} className="btn btn-primary">
-          ไปหน้าทบทวน <ArrowRight size={18} aria-hidden />
-        </Link>
+        <p className={styles.eyebrow}>ผ่านครบทุกแถวแล้ว</p>
+        <p>เยี่ยมมาก ฝึกทบทวนต่อเรื่อยๆ เพื่อไม่ให้ลืม</p>
+        <div>
+          <Link to={`/${packs[0]!.id}/review`} className="btn btn-primary">
+            ไปหน้าทบทวน
+          </Link>
+        </div>
       </section>
     );
   }
@@ -79,11 +78,11 @@ export function ContinueCard({ packs }: ContinueCardProps) {
         <Link to={stepHref(step)} className="btn btn-primary">
           {status.kind === 'write' ? (
             <>
-              <PenLine size={18} aria-hidden /> ฝึกเขียน <span className="kana">{status.next.char}</span>
+              ฝึกเขียน <span className="kana">{status.next.char}</span>
             </>
           ) : (
             <>
-              <ClipboardCheck size={18} aria-hidden /> ทดสอบแถว <span className="kana">{step.group.head}</span>
+              ทดสอบแถว <span className="kana">{step.group.head}</span>
             </>
           )}
         </Link>

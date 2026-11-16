@@ -17,8 +17,8 @@
   display: grid;
   gap: 8px;
   padding: 14px 16px;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
+  border: 1px solid var(--grid);
+  background: var(--pad);
 }
 
 .sentence {
@@ -31,24 +31,22 @@
   line-height: 1.4;
 }
 
+/* แยก 3 ระบบตัวอักษรด้วยเส้นใต้คนละแบบ (แดงชาด / เส้นประหมึก / เขียว) — ไม่ใช้พื้นสี */
 .seg {
-  padding: 0 6px;
-  border-radius: 6px;
+  padding: 0 4px;
   border-bottom: 3px solid;
 }
 
 .hira {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
   border-color: var(--accent);
 }
 
 .kata {
-  background: color-mix(in srgb, var(--focus) 12%, transparent);
-  border-color: var(--focus);
+  border-bottom-style: dashed;
+  border-color: var(--text);
 }
 
 .kanji {
-  background: color-mix(in srgb, var(--good) 14%, transparent);
   border-color: var(--good);
 }
 
@@ -64,8 +62,7 @@
 }
 
 .table {
-  border-collapse: separate;
-  border-spacing: 4px;
+  border-collapse: collapse;
   margin-inline: auto;
 }
 
@@ -80,8 +77,8 @@
   min-width: 56px;
   padding: 6px 4px;
   text-align: center;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
+  border: 1px solid var(--grid);
+  background: var(--pad);
 }
 
 .table td :global(.kana) {
@@ -95,6 +92,9 @@
 }
 
 .irregular {
-  color: var(--accent);
   font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
 }

@@ -1,43 +1,59 @@
+/*
+ * ภาษาการออกแบบ: "สมุดฝึกเขียน" (練習帳)
+ * - กระดาษสีนวล หมึกดำ เส้นบรรทัดบางๆ — แยกส่วนด้วยเส้นและพื้นที่ว่าง ไม่ใช่การ์ดลอยๆ
+ * - มุมเกือบเหลี่ยม ไม่มีเงา (ยกเว้นของที่ลอยเหนือหน้า เช่นแจ้งเตือน)
+ * - สีแดงชาด (朱) ใช้น้อยมาก: จุดเริ่มขีด ขีดที่กำลังเขียน ตราประทับ
+ * - ปุ่มหลักเป็นสีหมึก ไม่ใช่สีแดง
+ */
+
 /* ───────────── Theme tokens ───────────── */
 :root {
   color-scheme: light;
   --font-ui: 'Noto Sans Thai', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-kana: 'Klee One', 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif JP', serif;
 
-  --bg: #faf7f2;
-  --surface: #ffffff;
-  --surface-2: #f3eee6;
-  --border: #e5ddd0;
-  --text: #24211d;
-  --text-2: #6d665c;
+  /* กระดาษ */
+  --bg: #f6f3ec;
+  --surface: #fbf9f4;
+  --surface-2: #ece7dc;
+  --pad: #fdfbf6;
+  /* เส้น */
+  --border: #ddd6c8;
+  --border-strong: #b5ac9c;
+  /* เส้นตารางของสมุดคัด (ช่องฝึกเขียน ตารางตัวอักษร) */
+  --grid: #d6c4b4;
+  --guide: #e2d4c7;
+  /* หมึก */
+  --text: #1d1b18;
+  --text-2: #6a645a;
+  --text-3: #9a9285;
+  --ink: #1d1b18;
+  --ghost: #ddd5c6;
+
+  /* แดงชาด — ใช้ให้น้อยที่สุด */
   --accent: #d9462b;
   --accent-hover: #c23c23;
   --accent-ink: #ffffff;
-  --accent-soft: #fbe6e0;
-  --focus: #2f6bd9;
+  --accent-soft: #f5e2da;
+  --focus: #1d1b18;
 
-  --good: #23804a;
-  --good-soft: #dff2e6;
-  --warn: #a8670c;
-  --warn-soft: #fbefd6;
-  --bad: #c53030;
-  --bad-soft: #fbe2e2;
+  --good: #2f7650;
+  --good-soft: #e1ebe2;
+  --warn: #94650f;
+  --warn-soft: #f1e7d0;
+  --bad: #b4372a;
+  --bad-soft: #f4e1dc;
 
-  --ink: #24211d;
-  --ghost: #ddd4c6;
-  --guide: #cdc3b3;
-  --pad: #fffdf9;
+  --m0: #e6e0d4;
+  --m1: #e2c6a5;
+  --m2: #9fc3a9;
+  --m3: #2f7650;
 
-  --m0: #e8e2d8;
-  --m1: #f4c7a1;
-  --m2: #8fc9a3;
-  --m3: #23804a;
-
-  --radius: 14px;
-  --radius-sm: 9px;
-  /* เงา 2 ระดับ: sm = การ์ด/ของที่วางบนหน้า, lg = ของที่ลอยเหนือหน้า (แจ้งเตือน แถบเริ่มสอบ) */
-  --shadow-sm: 0 1px 2px rgb(60 40 20 / 6%);
-  --shadow-lg: 0 2px 6px rgb(60 40 20 / 6%), 0 12px 32px rgb(60 40 20 / 14%);
+  --radius: 4px;
+  --radius-sm: 3px;
+  /* ไม่มีเงาบนหน้า — เงาเฉพาะของที่ลอยอยู่ (แจ้งเตือน แถบเริ่มสอบ) */
+  --shadow-sm: none;
+  --shadow-lg: 0 1px 2px rgb(40 30 20 / 8%), 0 8px 24px rgb(40 30 20 / 10%);
   --header-h: 60px;
   --bottom-nav-h: 64px;
 
@@ -47,69 +63,73 @@
   --press: 160ms var(--ease-out);
 }
 
+/* โหมดมืด: "สมุดตอนกลางคืน" — กระดาษเทาอุ่น หมึกสีครีม */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --bg: #17161b;
-    --surface: #211f26;
-    --surface-2: #2b2931;
-    --border: #3a3741;
-    --text: #eeeae3;
-    --text-2: #a8a197;
-    --accent: #ff7b5e;
-    --accent-hover: #ff9378;
-    --accent-ink: #1b1210;
-    --accent-soft: #3d2620;
-    --focus: #7aa7ff;
-    --good: #5ccb85;
-    --good-soft: #1e3427;
-    --warn: #f0b552;
-    --warn-soft: #3a2f1a;
-    --bad: #ff7676;
-    --bad-soft: #3d2222;
-    --ink: #f3efe8;
-    --ghost: #45414d;
-    --guide: #514c59;
-    --pad: #1c1b21;
-    --m0: #34313b;
-    --m1: #8a5a3c;
-    --m2: #3f7d55;
-    --m3: #5ccb85;
-    /* โหมดมืด: การ์ดแยกจากพื้นด้วยสีพื้นการ์ด + ขอบ เงาแทบไม่มี */
-    --shadow-sm: 0 1px 1px rgb(0 0 0 / 20%);
-    --shadow-lg: 0 4px 12px rgb(0 0 0 / 35%), 0 16px 40px rgb(0 0 0 / 40%);
+    --bg: #1a1916;
+    --surface: #201f1c;
+    --surface-2: #2b2925;
+    --pad: #1e1d1a;
+    --border: #36332e;
+    --border-strong: #59534a;
+    --grid: #4b453d;
+    --guide: #3a362f;
+    --text: #ece6da;
+    --text-2: #a39b8e;
+    --text-3: #7a7368;
+    --ink: #efe9de;
+    --ghost: #3b3832;
+    --accent: #e3735a;
+    --accent-hover: #ec8a73;
+    --accent-ink: #1a1210;
+    --accent-soft: #3a2620;
+    --focus: #ece6da;
+    --good: #72bf90;
+    --good-soft: #1f2e24;
+    --warn: #d6a24a;
+    --warn-soft: #33291a;
+    --bad: #e8735f;
+    --bad-soft: #3a221d;
+    --m0: #302d28;
+    --m1: #7a5a3e;
+    --m2: #3d6b4e;
+    --m3: #72bf90;
+    --shadow-lg: 0 8px 24px rgb(0 0 0 / 45%);
   }
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #17161b;
-  --surface: #211f26;
-  --surface-2: #2b2931;
-  --border: #3a3741;
-  --text: #eeeae3;
-  --text-2: #a8a197;
-  --accent: #ff7b5e;
-  --accent-hover: #ff9378;
-  --accent-ink: #1b1210;
-  --accent-soft: #3d2620;
-  --focus: #7aa7ff;
-  --good: #5ccb85;
-  --good-soft: #1e3427;
-  --warn: #f0b552;
-  --warn-soft: #3a2f1a;
-  --bad: #ff7676;
-  --bad-soft: #3d2222;
-  --ink: #f3efe8;
-  --ghost: #45414d;
-  --guide: #514c59;
-  --pad: #1c1b21;
-  --m0: #34313b;
-  --m1: #8a5a3c;
-  --m2: #3f7d55;
-  --m3: #5ccb85;
-  --shadow-sm: 0 1px 1px rgb(0 0 0 / 20%);
-  --shadow-lg: 0 4px 12px rgb(0 0 0 / 35%), 0 16px 40px rgb(0 0 0 / 40%);
+  --bg: #1a1916;
+  --surface: #201f1c;
+  --surface-2: #2b2925;
+  --pad: #1e1d1a;
+  --border: #36332e;
+  --border-strong: #59534a;
+  --grid: #4b453d;
+  --guide: #3a362f;
+  --text: #ece6da;
+  --text-2: #a39b8e;
+  --text-3: #7a7368;
+  --ink: #efe9de;
+  --ghost: #3b3832;
+  --accent: #e3735a;
+  --accent-hover: #ec8a73;
+  --accent-ink: #1a1210;
+  --accent-soft: #3a2620;
+  --focus: #ece6da;
+  --good: #72bf90;
+  --good-soft: #1f2e24;
+  --warn: #d6a24a;
+  --warn-soft: #33291a;
+  --bad: #e8735f;
+  --bad-soft: #3a221d;
+  --m0: #302d28;
+  --m1: #7a5a3e;
+  --m2: #3d6b4e;
+  --m3: #72bf90;
+  --shadow-lg: 0 8px 24px rgb(0 0 0 / 45%);
 }
 
 /* ───────────── Base ───────────── */
@@ -131,7 +151,7 @@ body {
   color: var(--text);
   font-family: var(--font-ui);
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
@@ -142,21 +162,26 @@ h3,
 h4 {
   line-height: 1.3;
   margin: 0;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 p {
   margin: 0;
 }
 
+/* ลิงก์ในเนื้อหา: สีหมึก ขีดเส้นใต้บางๆ (แบบเอกสาร ไม่ใช่สีแบรนด์) */
 a {
-  color: var(--accent);
-  text-decoration: none;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--border-strong);
+  transition: text-decoration-color 150ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   a:hover {
-    text-decoration: underline;
+    text-decoration-color: currentColor;
   }
 }
 
@@ -188,9 +213,9 @@ select {
 }
 
 :focus-visible {
-  outline: 2.5px solid var(--focus);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
-  border-radius: 6px;
+  border-radius: 2px;
 }
 
 svg {
@@ -224,28 +249,43 @@ svg {
 /* มือถือแนวนอน: เว้นขอบให้พ้นรอยบากจอ (safe area) */
 .container {
   width: 100%;
-  max-width: 1120px;
+  max-width: 1080px;
   margin: 0 auto;
   padding-block: 0;
-  padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px));
+  padding-inline: max(20px, env(safe-area-inset-left, 0px)) max(20px, env(safe-area-inset-right, 0px));
 }
 
 /* grid ทุกตัวใช้ minmax(0, 1fr) เพื่อไม่ให้เนื้อหากว้างๆ ดันจนล้นจอมือถือ */
 .page {
-  padding-block: 24px 40px;
+  padding-block: 28px 48px;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 24px;
+  gap: 32px;
+}
+
+/* หัวหน้า: ชื่อหน้าแล้วขีดเส้นหมึกใต้ เหมือนหัวกระดาษสมุด */
+.page > header:first-child {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--text);
+}
+
+/* ส่วนแรกใต้หัวหน้าไม่ต้องมีเส้นบนซ้ำ (เส้นหมึกของหัวหน้าทำหน้าที่แทน) */
+.page > header:first-child + .card,
+.page > header:first-child + * > .card:first-child {
+  border-top: 0;
+  padding-top: 0;
 }
 
 .page-title {
-  font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2rem);
+  font-size: clamp(1.5rem, 1.25rem + 1vw, 1.875rem);
+  font-weight: 600;
+  letter-spacing: -0.005em;
 }
 
 .stack {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 12px;
+  gap: 14px;
 }
 
 .row {
@@ -255,19 +295,16 @@ svg {
   gap: 8px;
 }
 
+/*
+ * "การ์ด" = ส่วนหนึ่งของหน้าสมุด: ไม่มีกล่อง ไม่มีเงา
+ * แยกจากส่วนอื่นด้วยเส้นบรรทัดด้านบนและพื้นที่ว่าง
+ */
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  padding: 20px;
-}
-
-/* มือถือ: ขอบในการ์ดแคบลง ให้เนื้อหา (เช่นตารางตัวอักษร 5 ช่อง) มีที่มากขึ้น */
-@media (max-width: 560px) {
-  .card {
-    padding: 16px;
-  }
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  padding: 20px 0 0;
 }
 
 /* ───────────── Buttons ───────────── */
@@ -277,17 +314,19 @@ svg {
   justify-content: center;
   gap: 8px;
   min-height: 44px;
-  padding: 8px 16px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--surface);
+  padding: 8px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  background: transparent;
   color: var(--text);
   font-weight: 500;
+  line-height: 1.3;
   cursor: pointer;
   text-decoration: none !important;
   transition:
     background-color 150ms ease,
     border-color 150ms ease,
+    color 150ms ease,
     transform var(--press);
   user-select: none;
   -webkit-user-select: none;
@@ -298,31 +337,37 @@ svg {
 @media (hover: hover) and (pointer: fine) {
   .btn:hover:not(:disabled) {
     background: var(--surface-2);
+    border-color: var(--text-2);
   }
 
   .btn-primary:hover:not(:disabled) {
-    background: var(--accent-hover);
-    border-color: var(--accent-hover);
+    background: color-mix(in srgb, var(--ink) 86%, var(--bg));
+    border-color: color-mix(in srgb, var(--ink) 86%, var(--bg));
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    border-color: transparent;
   }
 }
 
-/* กดแล้วย่อเล็กน้อย = บอกว่า "แตะติดแล้ว" (ใช้กับทุกอย่างที่กดได้) */
+/* กดแล้วยุบลงเล็กน้อย = บอกว่า "แตะติดแล้ว" (ใช้กับทุกอย่างที่กดได้) */
 .btn:active:not(:disabled),
 .chip:active,
 .segmented button:active,
 .segmented a:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 .btn:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
+/* ปุ่มหลัก = หมึกดำ (แดงชาดเก็บไว้ให้สิ่งที่สำคัญจริงๆ บนกระดาน) */
 .btn-primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
 }
 
 .btn-ghost {
@@ -332,7 +377,7 @@ svg {
 
 .btn-danger {
   color: var(--bad);
-  border-color: color-mix(in srgb, var(--bad) 40%, var(--border));
+  border-color: color-mix(in srgb, var(--bad) 45%, var(--border));
 }
 
 .btn-sm {
@@ -361,45 +406,47 @@ svg {
   }
 }
 
-/* ───────────── Chips / segmented ───────────── */
+/* ───────────── Chips (ช่องติ๊กเลือก) ───────────── */
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: 38px;
+  gap: 8px;
+  min-height: 40px;
   padding: 4px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: transparent;
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   font-size: 0.95rem;
-  transition: transform var(--press);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    transform var(--press);
 }
 
 .chip[aria-pressed='true'],
 .chip:has(input:checked) {
-  background: var(--accent-soft);
-  border-color: var(--accent);
+  background: var(--surface);
+  border-color: var(--text);
   color: var(--text);
 }
 
 .chip input {
-  accent-color: var(--accent);
+  accent-color: var(--ink);
   margin: 0;
 }
 
+/* ───────────── Tabs (เดิมเป็นปุ่มแคปซูล → แท็บขีดเส้นใต้แบบสมุด) ───────────── */
 .segmented {
   display: inline-flex;
-  padding: 4px;
   gap: 4px;
-  background: var(--surface-2);
-  border-radius: 999px;
-  border: 1px solid var(--border);
+  padding: 0;
   max-width: 100%;
   overflow-x: auto;
   scrollbar-width: none;
+  border-bottom: 1px solid var(--border);
 }
 
 .segmented button,
@@ -409,30 +456,40 @@ svg {
   align-items: center;
   justify-content: center;
   border: 0;
+  border-radius: 0;
   background: transparent;
-  padding: 6px 14px;
-  min-height: 38px;
-  border-radius: 999px;
+  padding: 6px 12px;
+  min-height: 40px;
   cursor: pointer;
   color: var(--text-2);
   font-weight: 500;
   white-space: nowrap;
   text-decoration: none !important;
-  transition: transform var(--press);
+  box-shadow: inset 0 -2px 0 transparent;
+  transition:
+    color 150ms ease,
+    box-shadow 150ms ease,
+    transform var(--press);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .segmented button:hover,
+  .segmented a:hover {
+    color: var(--text);
+  }
 }
 
 .segmented button[aria-pressed='true'],
 .segmented button[aria-selected='true'],
 .segmented a[aria-current='page'] {
-  background: var(--surface);
   color: var(--text);
-  box-shadow: var(--shadow-sm);
+  box-shadow: inset 0 -2px 0 var(--ink);
 }
 
 /* ───────────── Feedback ───────────── */
 .notice {
   padding: 10px 14px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: var(--surface-2);
   font-size: 0.95rem;
 }
@@ -466,6 +523,7 @@ svg {
     --ink: #000;
     --ghost: #c8c8c8;
     --guide: #b5b5b5;
+    --grid: #9a9a9a;
     --pad: #fff;
     --surface-2: #f2f2f2;
     --accent: #d9462b;

@@ -5,7 +5,6 @@ import {
   Moon,
   PenLine,
   Printer,
-  Sparkles,
   Sun,
   Target,
   X,
@@ -88,7 +87,7 @@ function ThemeToggle() {
       aria-label={`${label} (กดเพื่อเปลี่ยน)`}
       title={label}
     >
-      <Icon size={20} aria-hidden />
+      <Icon size={20} strokeWidth={1.6} aria-hidden />
     </button>
   );
 }
@@ -125,9 +124,8 @@ export function AppLayout() {
           </Link>
           <ScriptSwitcher current={current?.id} />
           <nav className={styles.topNav} aria-label={`เมนู${pack.name}`}>
-            {items.map(({ to, label, short, icon: Icon, end }) => (
+            {items.map(({ to, label, short, end }) => (
               <NavLink key={to} to={to} end={end} className={styles.topLink}>
-                <Icon size={17} aria-hidden />
                 <span className={styles.long}>{label}</span>
                 <span className={styles.short}>{short}</span>
               </NavLink>
@@ -140,9 +138,7 @@ export function AppLayout() {
       {showIntro && (
         <div className={`${styles.intro} no-print`} role="note">
           <div className={`container ${styles.introInner}`}>
-            <span>
-              <Sparkles size={16} aria-hidden /> เพิ่งเริ่มเรียนภาษาญี่ปุ่น? อ่านพื้นฐาน 5 นาทีก่อนเริ่มเขียน
-            </span>
+            <span>เพิ่งเริ่มเรียนภาษาญี่ปุ่น? อ่านพื้นฐาน 5 นาทีก่อนเริ่มเขียน</span>
             <span className="row">
               <Link to="/start" className="btn btn-primary btn-sm">
                 เริ่มต้นที่นี่
@@ -178,7 +174,7 @@ export function AppLayout() {
       <nav className={`${styles.bottomNav} no-print`} aria-label="เมนูหลัก">
         {items.map(({ to, short, icon: Icon, end }) => (
           <NavLink key={to} to={to} end={end} className={styles.bottomLink}>
-            <Icon size={22} aria-hidden />
+            <Icon size={22} strokeWidth={1.6} aria-hidden />
             <span>{short}</span>
           </NavLink>
         ))}

@@ -1,4 +1,3 @@
-import { Play } from 'lucide-react';
 import { useState } from 'react';
 import { GroupSelector } from '../../components/GroupSelector';
 import { charsInGroups } from '../../data/scripts';
@@ -101,7 +100,7 @@ export function QuizSetup({ pack, onStart }: QuizSetupProps) {
           {usableTypes.length === 0 && ' · ยังไม่ได้เลือกรูปแบบคำถาม'}
         </span>
         <button type="button" className="btn btn-primary" onClick={start} disabled={!canStart}>
-          <Play size={18} aria-hidden /> เริ่มทำแบบทดสอบ
+          เริ่มทำแบบทดสอบ
         </button>
       </div>
     </div>

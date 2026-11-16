@@ -1,51 +1,55 @@
 .hero {
   display: grid;
   gap: 6px;
-  max-width: 720px;
 }
 
-.hero .kana {
-  color: var(--accent);
+.hero :global(.kana) {
+  color: var(--text-3);
+  font-weight: 400;
 }
 
+/* เมนูการเรียน: รายการแบบสารบัญ 2 คอลัมน์ คั่นด้วยเส้นบรรทัด */
 .actions {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  gap: 0 40px;
+  border-top: 1px solid var(--border);
 }
 
 .action {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 16px;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
   color: var(--text);
   text-decoration: none !important;
-  transition:
-    border-color 150ms ease,
-    transform var(--press);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .action:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
-  }
+  transition: background-color 150ms ease;
+  -webkit-touch-callout: none;
 }
 
 .action:active {
-  transform: scale(0.98);
+  background: var(--surface-2);
 }
 
-.actionIcon {
-  flex: none;
+.actionText {
   display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  flex: 1;
+  gap: 2px;
+}
+
+.arrow {
+  color: var(--text-3);
+  transition:
+    transform var(--press),
+    color 150ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .action:hover .arrow {
+    color: var(--text);
+    transform: translateX(3px);
+  }
 }
 
 .tableHead {
@@ -57,5 +61,5 @@
 }
 
 .h2 {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
 }

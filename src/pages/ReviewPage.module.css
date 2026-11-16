@@ -1,8 +1,5 @@
 .h2 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
 }
 
 .overviewHead {
@@ -14,18 +11,20 @@
 }
 
 .strong {
-  color: var(--good);
+  color: var(--text);
   font-size: 1.2rem;
+  font-weight: 600;
 }
 
+/* ภาพรวม: แถบเดียวแบ่งช่องตามระดับ มุมเหลี่ยม */
 .stack {
   display: flex;
-  height: 28px;
-  border-radius: 8px;
+  height: 24px;
   overflow: hidden;
   gap: 2px;
   font-size: 0.8rem;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .stack span {
@@ -52,7 +51,7 @@
 
 .m3 {
   background: var(--m3);
-  color: var(--surface);
+  color: var(--bg);
 }
 
 .empty {
@@ -63,28 +62,32 @@
   padding: 16px 0;
 }
 
+/* ตัวที่ผิดบ่อย: รายการคั่นเส้นบรรทัด ไม่ใช่กล่องพื้นสี */
 .weakGrid {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0 32px;
 }
 
 .weakItem {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
 }
 
 .weakChar {
-  font-size: 2.2rem;
-  width: 2.6rem;
-  text-align: center;
+  display: grid;
+  place-items: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  font-size: 1.9rem;
+  border: 1px solid var(--grid);
+  background: var(--pad);
 }
 
 .weakInfo {
@@ -95,16 +98,20 @@
 }
 
 .dueCard {
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-top-color: var(--text);
 }
 
+/* ตัวที่ถึงรอบ: ช่องกระดาษเรียงติดกัน ใช้เส้นร่วม */
 .dueList {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  border-left: 1px solid var(--grid);
+  border-top: 1px solid var(--grid);
+  width: fit-content;
+  max-width: 100%;
 }
 
 .dueList li {
@@ -112,16 +119,14 @@
   place-items: center;
   width: 44px;
   height: 44px;
-  border-radius: 10px;
   font-size: 1.5rem;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  background: var(--pad);
+  border-right: 1px solid var(--grid);
+  border-bottom: 1px solid var(--grid);
 }
 
 .data {
-  box-shadow: none;
-  background: transparent;
-  border-style: dashed;
+  border-top-style: dashed;
 }
 
 /* ปุ่มเลือกไฟล์: input ถูกซ่อน จึงแสดงกรอบโฟกัสที่ปุ่มแทน (ใช้คีย์บอร์ดได้) */

@@ -1,11 +1,11 @@
+/* คำตัวอย่าง: โน้ตข้างหน้ากระดาษ — เส้นตั้งด้านซ้าย ไม่มีพื้นสี */
 .example {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 10px;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
+  gap: 4px 12px;
+  padding: 2px 0 2px 12px;
+  border-left: 2px solid var(--border-strong);
 }
 
 .label {
@@ -17,10 +17,14 @@
   font-size: 1.25rem;
 }
 
+/* ตัวที่กำลังฝึกในคำ: ขีดเส้นใต้สีแดงชาดแบบครูขีดในสมุด */
 .mark {
   background: transparent;
-  color: var(--accent);
-  font-weight: 700;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
 }
 
 .kanji {

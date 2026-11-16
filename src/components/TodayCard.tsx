@@ -1,4 +1,3 @@
-import { CalendarCheck, Flame } from 'lucide-react';
 import { Link } from 'react-router';
 import type { ScriptPack } from '../data/types';
 import { GOAL_OPTIONS, streakInfo } from '../features/progress/activity';
@@ -45,27 +44,19 @@ export function TodayCard({ packs }: TodayCardProps) {
 
   const remaining = Math.max(0, dailyGoal - streak.todayCount);
   const goalText = streak.todayMet
-    ? 'ถึงเป้าวันนี้แล้ว ✓'
+    ? 'ถึงเป้าวันนี้แล้ว'
     : streak.current > 0
       ? `อีก ${remaining} ครั้ง จะนับต่อเป็น ${streak.current + 1} วัน`
       : `อีก ${remaining} ครั้ง จะเริ่มนับวันที่ฝึกต่อเนื่อง`;
 
+  const filled = Math.min(streak.todayCount, dailyGoal);
+
   return (
     <section className={cx('card', styles.card)} aria-labelledby="today-title">
-      <div className={styles.top}>
-        <div className={styles.streak}>
-          <span className={cx(styles.flame, streak.current > 0 && styles.flameOn)} aria-hidden>
-            <Flame size={26} />
-          </span>
-          <div>
-            <h2 id="today-title" className={styles.title}>
-              {streak.current > 0 ? `ฝึกต่อเนื่อง ${streak.current} วัน` : 'วันนี้'}
-            </h2>
-            <p className="small muted">
-              {streak.best > 0 ? `สถิติสูงสุด ${streak.best} วัน` : 'ฝึกให้ถึงเป้าทุกวันเพื่อสะสมวันต่อเนื่อง'}
-            </p>
-          </div>
-        </div>
+      <div className={styles.head}>
+        <h2 id="today-title" className={styles.title}>
+          วันนี้
+        </h2>
         <div className={styles.goalPick}>
           <span className="small muted" id="goal-label">
             เป้าต่อวัน
@@ -86,38 +77,44 @@ export function TodayCard({ packs }: TodayCardProps) {
         </div>
       </div>
 
-      <div className={styles.goal}>
-        <div className={styles.goalHead}>
+      <div className={styles.body}>
+        {/* วันที่ฝึกต่อเนื่อง: ตัวเลขใหญ่แบบจดสถิติในสมุด */}
+        <div className={styles.streak}>
+          <span className={styles.streakNum}>{streak.current}</span>
           <span>
-            เป้าวันนี้{' '}
+            <span className={styles.streakLabel}>วันติดต่อกัน</span>
+            <span className="small muted" style={{ display: 'block' }}>
+              {streak.best > 0 ? `สถิติสูงสุด ${streak.best} วัน` : 'ฝึกให้ถึงเป้าทุกวันเพื่อสะสมวัน'}
+            </span>
+          </span>
+        </div>
+
+        {/* เป้าวันนี้: ช่องสี่เหลี่ยมแบบช่องติ๊กในสมุด ฝึก 1 ครั้ง = ระบาย 1 ช่อง */}
+        <div className={styles.goal}>
+          <div
+            className={styles.tally}
+            role="progressbar"
+            aria-label="ความคืบหน้าเป้าวันนี้"
+            aria-valuemin={0}
+            aria-valuemax={dailyGoal}
+            aria-valuenow={filled}
+          >
+            {Array.from({ length: dailyGoal }, (_, i) => (
+              <span key={i} className={i < filled ? styles.done : undefined} />
+            ))}
+          </div>
+          <p className="small">
             <strong className={streak.todayMet ? styles.met : undefined}>
               {streak.todayCount}/{dailyGoal}
             </strong>{' '}
-            ครั้ง
-          </span>
-          <span className="small muted">{goalText}</span>
+            <span className="muted">ครั้ง · {goalText}</span>
+          </p>
+          <p className="small muted">1 ครั้ง = ตอบคำถาม 1 ข้อ หรือเขียนเสร็จ 1 ตัว</p>
         </div>
-        <div
-          className={cx(styles.bar, streak.todayMet && styles.barMet)}
-          role="progressbar"
-          aria-label="ความคืบหน้าเป้าวันนี้"
-          aria-valuemin={0}
-          aria-valuemax={dailyGoal}
-          aria-valuenow={Math.min(streak.todayCount, dailyGoal)}
-        >
-          <span
-            style={{
-              transform: `translateX(${Math.min(100, (streak.todayCount / dailyGoal) * 100) - 100}%)`,
-            }}
-          />
-        </div>
-        <p className="small muted">1 ครั้ง = ตอบคำถาม 1 ข้อ หรือเขียนเสร็จ 1 ตัว</p>
       </div>
 
       <div className={styles.review}>
-        <p className={styles.reviewTitle}>
-          <CalendarCheck size={18} aria-hidden /> ถึงรอบทบทวน
-        </p>
+        <p className={styles.reviewTitle}>ถึงรอบทบทวน</p>
         {due.length > 0 ? (
           <div className="row">
             {due.map(({ pack, chars }) => (
@@ -130,7 +127,7 @@ export function TodayCard({ packs }: TodayCardProps) {
         ) : (
           <p className="small muted">
             {answered
-              ? `ไม่มีตัวที่ต้องทบทวนวันนี้ ✓${upcoming ? ` · รอบถัดไป ${daysFromNowLabel(upcoming.inDays)} (${upcoming.count} ตัว)` : ''}`
+              ? `ไม่มีตัวที่ต้องทบทวนวันนี้${upcoming ? ` · รอบถัดไป ${daysFromNowLabel(upcoming.inDays)} (${upcoming.count} ตัว)` : ''}`
               : 'ทำแบบทดสอบหรือฝึกแบบตรวจทีละขีด แล้วระบบจะนัดวันทบทวนให้'}
           </p>
         )}

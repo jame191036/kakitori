@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, ListOrdered, Pause, Play, RotateCcw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { StrokeData } from '../../data/types';
 import { cx } from '../../lib/cx';
@@ -135,16 +135,16 @@ export function StrokeAnimator({
         <div className={styles.controls}>
           {finished ? (
             <button type="button" className="btn btn-primary" onClick={replay}>
-              <RotateCcw size={18} aria-hidden /> เล่นซ้ำ
+              เล่นซ้ำ
             </button>
           ) : (
             <button type="button" className="btn" onClick={() => setPaused((p) => !p)}>
-              {paused ? <Play size={18} aria-hidden /> : <Pause size={18} aria-hidden />}
+              {paused ? <Play size={18} strokeWidth={1.6} aria-hidden /> : <Pause size={18} strokeWidth={1.6} aria-hidden />}
               {paused ? 'เล่นต่อ' : 'หยุด'}
             </button>
           )}
           <button type="button" className="btn" onClick={startStep}>
-            <ListOrdered size={18} aria-hidden /> ดูทีละขีด
+            ดูทีละขีด
           </button>
         </div>
       ) : (
@@ -156,7 +156,7 @@ export function StrokeAnimator({
             disabled={step <= 1}
             aria-label="ขีดก่อนหน้า"
           >
-            <ChevronLeft size={20} aria-hidden />
+            <ChevronLeft size={20} strokeWidth={1.6} aria-hidden />
           </button>
           <span className={styles.stepLabel} aria-live="polite">
             ขีดที่ {step} / {total}
@@ -168,10 +168,10 @@ export function StrokeAnimator({
             disabled={step >= total}
             aria-label="ขีดถัดไป"
           >
-            <ChevronRight size={20} aria-hidden />
+            <ChevronRight size={20} strokeWidth={1.6} aria-hidden />
           </button>
           <button type="button" className="btn" onClick={replay}>
-            <Play size={18} aria-hidden /> เล่นทั้งหมด
+            <Play size={18} strokeWidth={1.6} aria-hidden /> เล่นทั้งหมด
           </button>
         </div>
       )}

@@ -23,7 +23,7 @@ export function SpeakButton({ text, label = 'ฟังเสียง', size = '
       aria-label={label}
       title={label}
     >
-      <Volume2 size={icon} aria-hidden />
+      <Volume2 size={icon} strokeWidth={1.6} aria-hidden />
     </button>
   );
 }

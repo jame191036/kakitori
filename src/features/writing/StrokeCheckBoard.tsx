@@ -1,4 +1,3 @@
-import { Lightbulb, RotateCcw } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { StrokeData } from '../../data/types';
 import { cx } from '../../lib/cx';
@@ -81,6 +80,8 @@ export function StrokeCheckBoard({
   });
 
   const complete = isComplete(session);
+  // เขียนครบโดยไม่ผิดเลยและไม่ใช้คำใบ้ → ประทับตรา よくできました (ทำได้ดีมาก)
+  const perfect = complete && session.mistakes === 0 && session.hintsUsed + manualHints === 0;
   const { x: ox, y: oy } = session.offset;
   const shift = `translate(${-ox} ${-oy})`;
   const next = refs[session.done];
@@ -100,7 +101,7 @@ export function StrokeCheckBoard({
           tone: 'good',
           text:
             state.mistakes === 0
-              ? 'เยี่ยมมาก! เขียนถูกทุกขีด 🎉'
+              ? 'เขียนถูกทุกขีด'
               : `เขียนครบแล้ว (ผิด ${state.mistakes} ครั้ง)`,
         });
         onComplete?.({ mistakes: state.mistakes, hintsUsed });
@@ -175,6 +176,19 @@ export function StrokeCheckBoard({
           />
         )}
 
+        {/* ตราประทับแดงแบบที่ครูญี่ปุ่นประทับในสมุดนักเรียน — มุมขวาบน เอียงเล็กน้อย */}
+        {perfect && (
+          <g className={styles.stamp} transform="translate(91 19) rotate(-12)" lang="ja" aria-hidden>
+            <g className={styles.stampInner}>
+              <circle r={15} className={styles.ringOuter} />
+              <circle r={12.6} className={styles.ringInner} />
+              <text y={-6}>よく</text>
+              <text y={0.2}>でき</text>
+              <text y={6.4}>ました</text>
+            </g>
+          </g>
+        )}
+
         {settle && (
           <path key={`settle-${settle.n}`} d={toPathData(settle.points)} className={styles.settleOut} />
         )}
@@ -200,7 +214,7 @@ export function StrokeCheckBoard({
       <div className={styles.controls}>
         {!complete && (
           <button type="button" className="btn" onClick={showHint} disabled={disabled}>
-            <Lightbulb size={18} aria-hidden /> ใบ้ขีดนี้
+            ใบ้ขีดนี้
           </button>
         )}
         {!hideRestart && (
@@ -209,7 +223,7 @@ export function StrokeCheckBoard({
             className={cx('btn', complete && 'btn-primary')}
             onClick={restart}
           >
-            <RotateCcw size={18} aria-hidden /> เขียนใหม่
+            เขียนใหม่
           </button>
         )}
         <span className="small muted" aria-live="off">

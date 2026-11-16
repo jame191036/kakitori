@@ -1,4 +1,3 @@
-import { Printer } from 'lucide-react';
 import { useState } from 'react';
 import { useScriptPack } from '../app/ScriptContext';
 import { GroupSelector } from '../components/GroupSelector';
@@ -68,7 +67,7 @@ export default function WorksheetPage() {
             onClick={() => window.print()}
             disabled={chars.length === 0}
           >
-            <Printer size={18} aria-hidden /> พิมพ์ / บันทึก PDF
+            พิมพ์ / บันทึก PDF
           </button>
         </div>
       </section>

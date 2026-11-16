@@ -20,8 +20,9 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'any',
-        theme_color: '#d9462b',
-        background_color: '#faf7f2',
+        // สีกระดาษ (ตรงกับ --bg) — แถบด้านบนของแอปที่ติดตั้งจะกลืนกับหน้าเว็บ
+        theme_color: '#f6f3ec',
+        background_color: '#f6f3ec',
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
