@@ -1,6 +1,49 @@
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+}
+
 .controls {
   display: grid;
   gap: 20px;
+}
+
+/*
+ * จอกว้าง: ตัวเลือกซ้าย (ติดจอ เลื่อนดูกระดาษได้ยาวๆ โดยตัวเลือกยังอยู่) | ตัวอย่างกระดาษขวา
+ * เปลี่ยนแถว/รูปแบบแล้วเห็นผลทันทีโดยไม่ต้องเลื่อนขึ้นลง
+ */
+@media (min-width: 1200px) {
+  .workspace {
+    grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
+    column-gap: 56px;
+    align-items: start;
+  }
+
+  .controls {
+    position: sticky;
+    top: calc(var(--header-h) + 16px);
+    max-height: calc(100svh - var(--header-h) - 32px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+
+  /* ปุ่มพิมพ์เต็มความกว้างคอลัมน์ อยู่ท้ายตัวเลือก */
+  .controls .options button {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+
+  .workspace .sheet {
+    max-width: 960px;
+  }
+}
+
+@media print {
+  .workspace {
+    display: block;
+  }
 }
 
 .options {
@@ -40,6 +83,8 @@
   width: 100%;
   margin-inline: auto;
   display: grid;
+  /* minmax(0, 1fr): เนื้อหาข้างในไม่ดันแผ่นให้กว้างเกินจอ (จอ 320px) */
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
 }
 
@@ -57,9 +102,11 @@
   font-size: 1.25rem;
 }
 
+/* "ชื่อ ___ วันที่ ___": แต่ละช่องไม่ตัดกลาง แต่ลงบรรทัดใหม่ทั้งช่องได้ถ้าจอแคบ */
 .nameLines {
   display: flex;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 4px 16px;
   font-size: 0.9rem;
   white-space: nowrap;
 }

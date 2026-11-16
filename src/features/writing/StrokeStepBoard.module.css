@@ -17,6 +17,26 @@
   width: max(220px, min(480px, calc(100svh - var(--header-h) - 190px)));
 }
 
+/*
+ * จอกว้าง (หน้าฝึกแบบ 3 คอลัมน์): กระดานโตได้ถึง 560px ถ้าจอสูงพอ (ไม่เล็กกว่าเดิม)
+ * แผงลำดับขีดยืดเต็มที่ที่เหลือ ชิดซ้ายต่อจากกระดาน
+ */
+@media (min-width: 1440px) {
+  .wrap {
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+    justify-content: stretch;
+    gap: 48px;
+  }
+
+  .canvasCol {
+    width: max(
+      220px,
+      min(480px, calc(100svh - var(--header-h) - 190px)),
+      min(560px, calc(100svh - var(--header-h) - 350px))
+    );
+  }
+}
+
 /* ── ความคืบหน้าแบ่งช่องตามจำนวนขีด ── */
 .progress {
   display: flex;

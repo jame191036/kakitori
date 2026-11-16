@@ -1,0 +1,95 @@
+/* จอแคบ: บทความคอลัมน์เดียวกึ่งกลาง ไม่มีสารบัญ */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.article {
+  width: 100%;
+  max-width: 820px;
+  margin-inline: auto;
+}
+
+/* กดจากสารบัญ: หัวข้อเลื่อนมาอยู่ใต้แถบด้านบน ไม่โดนบัง */
+.article section[id] {
+  scroll-margin-top: calc(var(--header-h) + env(safe-area-inset-top, 0px) + 20px);
+}
+
+.article section[id]:focus {
+  outline: none;
+}
+
+.toc {
+  display: none;
+}
+
+/*
+ * จอกว้าง: สารบัญชิดซ้าย (ตรงแนวโลโก้ ติดจอ) | บทความอยู่กลางพื้นที่ที่เหลือ
+ * บทความกว้างไม่เกิน 960px + ตัวหนังสือใหญ่ขึ้นเล็กน้อย บรรทัดจึงไม่ยาวจนอ่านเหนื่อย
+ */
+@media (min-width: 1100px) {
+  .layout {
+    grid-template-columns: 240px minmax(0, 1fr);
+    column-gap: 72px;
+  }
+
+  .article {
+    max-width: 960px;
+  }
+
+  .toc {
+    display: grid;
+    gap: 12px;
+    align-self: start;
+    position: sticky;
+    top: calc(var(--header-h) + 28px);
+    /* ตรงแนวกับชื่อหน้า (บทความเว้นบน 28px) */
+    margin-top: 34px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .article {
+    font-size: 1.0625rem;
+  }
+}
+
+.tocLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+/* รายการคั่นด้วยเส้นตั้งด้านซ้าย หัวข้อที่กำลังอ่านมีขีดหมึกทับเส้น */
+.tocList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 1px solid var(--border);
+}
+
+.tocLink {
+  display: block;
+  margin-left: -1px;
+  padding: 7px 0 7px 16px;
+  border-left: 2px solid transparent;
+  color: var(--text-2);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  text-decoration: none !important;
+  transition:
+    color 150ms ease,
+    border-color 150ms ease;
+}
+
+.tocActive {
+  color: var(--text);
+  font-weight: 600;
+  border-left-color: var(--ink);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tocLink:hover {
+    color: var(--text);
+  }
+}

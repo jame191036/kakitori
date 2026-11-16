@@ -1,15 +1,22 @@
 import { SITE_NAME, SITE_NAME_JA } from '../app/config';
+import { ArticleLayout, type TocItem } from '../components/ArticleLayout';
 import styles from './AboutPage.module.css';
+
+const TOC: TocItem[] = [
+  { id: 'privacy', label: 'ความเป็นส่วนตัว' },
+  { id: 'install', label: 'ติดตั้งเป็นแอป' },
+  { id: 'credits', label: 'เครดิตและสัญญาอนุญาต' },
+];
 
 export default function AboutPage() {
   return (
-    <div className={`container page ${styles.about}`}>
+    <ArticleLayout toc={TOC}>
       <h1 className="page-title">เกี่ยวกับ {SITE_NAME}</h1>
       <p className="muted">
         ชื่อ {SITE_NAME} มาจากคำว่า <span lang="ja">{SITE_NAME_JA}</span> ในภาษาญี่ปุ่น หมายถึงแบบฝึกคัดเขียนตัวอักษร
       </p>
 
-      <section className="card stack">
+      <section id="privacy" className="card stack">
         <h2 className={styles.h2}>ความเป็นส่วนตัว</h2>
         <p>
           เว็บนี้ไม่มีระบบสมาชิก ไม่มีฐานข้อมูล และไม่ส่งข้อมูลการเรียนของคุณออกไปที่ไหน
@@ -22,7 +29,7 @@ export default function AboutPage() {
         </p>
       </section>
 
-      <section className="card stack">
+      <section id="install" className="card stack">
         <h2 className={styles.h2}>ติดตั้งเป็นแอป (ใช้ออฟไลน์ได้)</h2>
         <ul className={styles.list}>
           <li>
@@ -40,7 +47,7 @@ export default function AboutPage() {
         </p>
       </section>
 
-      <section className="card stack">
+      <section id="credits" className="card stack">
         <h2 className={styles.h2}>เครดิตและสัญญาอนุญาต</h2>
         <ul className={styles.list}>
           <li>
@@ -74,6 +81,6 @@ export default function AboutPage() {
           </li>
         </ul>
       </section>
-    </div>
+    </ArticleLayout>
   );
 }

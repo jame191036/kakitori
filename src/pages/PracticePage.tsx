@@ -93,6 +93,19 @@ export default function PracticePage() {
     scrolledOnce.current = true;
   }, [charId, modeKey]);
 
+  // ตารางข้าง (จอกว้าง) เลื่อนภายในตัวเองได้ → เปลี่ยนตัวแล้วให้ช่องที่เลือกอยู่ในส่วนที่มองเห็น
+  // เลื่อนเฉพาะแผงนี้ ไม่ใช้ scrollIntoView (จะพาทั้งหน้าเลื่อนตามไปด้วย)
+  const sideRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const side = sideRef.current;
+    const cell = side?.querySelector<HTMLElement>('[aria-current="true"]');
+    if (!side || !cell || side.clientHeight === 0) return;
+    const s = side.getBoundingClientRect();
+    const c = cell.getBoundingClientRect();
+    if (c.top < s.top + 40) side.scrollTop += c.top - s.top - 40;
+    else if (c.bottom > s.bottom - 16) side.scrollTop += c.bottom - s.bottom + 16;
+  }, [charId]);
+
   const entry = findChar(pack, charId);
   const strokes = useStrokeData(pack, entry?.char ?? '');
   if (!entry || !strokes) return <NotFoundPage />;
@@ -221,137 +234,152 @@ export default function PracticePage() {
           )}
         </header>
 
-        <div className={styles.modeBar}>
-          <div className="segmented" role="tablist" aria-label="โหมดฝึก">
-            {MODES.map(({ id, label }) => (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                aria-selected={mode === id}
-                aria-controls="practice-board"
-                onClick={() => setMode(id)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div id="practice-board" role="tabpanel" className={styles.board} ref={boardRef}>
-          {mode === 'animate' && (
-            <div className={step.wrap}>
-              <div className={step.canvasCol}>
-                <StrokeAnimator
-                  key={entry.id}
-                  data={strokes}
-                  speed={settings.animationSpeed}
-                  showNumbers={settings.showStrokeNumbers}
-                  label={`แอนิเมชันลำดับขีดของ ${entry.char}`}
-                />
-              </div>
-              <aside className={step.panel} aria-label="ลำดับขีด">
-                <p className={step.panelLabel}>ลำดับขีด</p>
-                <StrokeStepList data={strokes} refs={referenceStrokes(strokes)} />
-              </aside>
+        {/* คอลัมน์งาน: แท็บโหมด + กระดาน (+ แผงลำดับขีด) + ส่วนพับ */}
+        <div className={styles.work}>
+          <div className={styles.modeBar}>
+            <div className="segmented" role="tablist" aria-label="โหมดฝึก">
+              {MODES.map(({ id, label }) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === id}
+                  aria-controls="practice-board"
+                  onClick={() => setMode(id)}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
-          )}
-          {mode === 'trace' && (
-            <StrokeStepBoard
-              key={`${entry.id}-trace-${settings.strictness}`}
-              data={strokes}
-              guide
-              leniency={leniency}
-              showNumbers={settings.showStrokeNumbers}
-              label={boardLabel}
-              onComplete={onTraceDone}
-              completeActions={completeActions}
-            />
-          )}
-          {mode === 'check' && (
-            <StrokeStepBoard
-              key={`${entry.id}-check-${settings.strictness}`}
-              data={strokes}
-              guide={false}
-              leniency={leniency}
-              label={boardLabel}
-              onComplete={onCheckDone}
-              completeActions={completeActions}
-            />
-          )}
-          {mode === 'free' && (
-            <FreeWriteBoard
-              key={`${entry.id}-free`}
-              data={strokes}
-              leniency={leniency}
-              label={boardLabel}
-              completeActions={completeActions}
-              onShowOrder={() => setMode('animate')}
-              onResult={(r) =>
-                recordPractice(pack.id, entry.id, {
-                  score: r.score,
-                  correct: r.score >= 70 ? true : r.score < 40 ? false : undefined,
-                })
-              }
-            />
-          )}
-        </div>
-
-        {/*
-          เขียนครบทั้งแถวแล้ว แต่ยังไม่เคยตอบถูกครบ → ชวนไปทดสอบแถวนี้ (ตามเส้นทาง "เรียนต่อ")
-          อยู่ใต้กระดาน ไม่ดันกระดานลงไปจนต้องเลื่อนจอ
-        */}
-        {rowQuiz && (
-          <p className={styles.rowReady}>
-            เขียนครบทั้งแถว <span className="kana">{rowQuiz.head}</span> แล้ว —{' '}
-            <Link to={`/${pack.id}/quiz?groups=${rowQuiz.id}`}>ทดสอบแถวนี้ →</Link>
-          </p>
-        )}
-
-        {/* ตารางเลือกตัวอักษร: พับเก็บใต้กระดาน (เปลี่ยนตัวปกติใช้ลูกศรด้านบน) */}
-        <details className={styles.picker}>
-          <summary>เลือกตัวอักษร</summary>
-          <div className={styles.pickerBody}>
-            <KanaTable
-              pack={pack}
-              progress={progress}
-              hrefFor={(c) => hrefFor(c.id)}
-              activeId={entry.id}
-              compact
-            />
           </div>
-        </details>
 
-        {/* ตั้งค่าที่ไม่ได้ใช้บ่อย: พับเก็บไว้ ไม่ให้แย่งความสนใจจากกระดาน */}
-        <details className={styles.settings}>
-          <summary>วิธีฝึกและตั้งค่า</summary>
-          <div className={styles.settingsBody}>
-            <p className={styles.tip}>{modeInfo.tip}</p>
-            <label className="chip">
-              <input
-                type="checkbox"
-                checked={settings.showStrokeNumbers}
-                onChange={(e) => updateSettings({ showStrokeNumbers: e.target.checked })}
+          <div id="practice-board" role="tabpanel" className={styles.board} ref={boardRef}>
+            {mode === 'animate' && (
+              <div className={step.wrap}>
+                <div className={step.canvasCol}>
+                  <StrokeAnimator
+                    key={entry.id}
+                    data={strokes}
+                    speed={settings.animationSpeed}
+                    showNumbers={settings.showStrokeNumbers}
+                    label={`แอนิเมชันลำดับขีดของ ${entry.char}`}
+                  />
+                </div>
+                <aside className={step.panel} aria-label="ลำดับขีด">
+                  <p className={step.panelLabel}>ลำดับขีด</p>
+                  <StrokeStepList data={strokes} refs={referenceStrokes(strokes)} />
+                </aside>
+              </div>
+            )}
+            {mode === 'trace' && (
+              <StrokeStepBoard
+                key={`${entry.id}-trace-${settings.strictness}`}
+                data={strokes}
+                guide
+                leniency={leniency}
+                showNumbers={settings.showStrokeNumbers}
+                label={boardLabel}
+                onComplete={onTraceDone}
+                completeActions={completeActions}
               />
-              แสดงเลขลำดับขีด
-            </label>
-            <div className="row">
-              <span className="small muted">ความเข้มงวดในการตรวจ</span>
-              <div className="segmented" role="group" aria-label="ความเข้มงวดในการตรวจ">
-                {STRICTNESS_ORDER.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    aria-pressed={settings.strictness === s}
-                    onClick={() => updateSettings({ strictness: s })}
-                  >
-                    {STRICTNESS_LABEL[s]}
-                  </button>
-                ))}
+            )}
+            {mode === 'check' && (
+              <StrokeStepBoard
+                key={`${entry.id}-check-${settings.strictness}`}
+                data={strokes}
+                guide={false}
+                leniency={leniency}
+                label={boardLabel}
+                onComplete={onCheckDone}
+                completeActions={completeActions}
+              />
+            )}
+            {mode === 'free' && (
+              <FreeWriteBoard
+                key={`${entry.id}-free`}
+                data={strokes}
+                leniency={leniency}
+                label={boardLabel}
+                completeActions={completeActions}
+                onShowOrder={() => setMode('animate')}
+                onResult={(r) =>
+                  recordPractice(pack.id, entry.id, {
+                    score: r.score,
+                    correct: r.score >= 70 ? true : r.score < 40 ? false : undefined,
+                  })
+                }
+              />
+            )}
+          </div>
+
+          {/*
+            เขียนครบทั้งแถวแล้ว แต่ยังไม่เคยตอบถูกครบ → ชวนไปทดสอบแถวนี้ (ตามเส้นทาง "เรียนต่อ")
+            อยู่ใต้กระดาน ไม่ดันกระดานลงไปจนต้องเลื่อนจอ
+          */}
+          {rowQuiz && (
+            <p className={styles.rowReady}>
+              เขียนครบทั้งแถว <span className="kana">{rowQuiz.head}</span> แล้ว —{' '}
+              <Link to={`/${pack.id}/quiz?groups=${rowQuiz.id}`}>ทดสอบแถวนี้ →</Link>
+            </p>
+          )}
+
+          {/* ตารางเลือกตัวอักษร: พับเก็บใต้กระดาน (เปลี่ยนตัวปกติใช้ลูกศรด้านบน) */}
+          <details className={styles.picker}>
+            <summary>เลือกตัวอักษร</summary>
+            <div className={styles.pickerBody}>
+              <KanaTable
+                pack={pack}
+                progress={progress}
+                hrefFor={(c) => hrefFor(c.id)}
+                activeId={entry.id}
+                compact
+              />
+            </div>
+          </details>
+
+          {/* ตั้งค่าที่ไม่ได้ใช้บ่อย: พับเก็บไว้ ไม่ให้แย่งความสนใจจากกระดาน */}
+          <details className={styles.settings}>
+            <summary>วิธีฝึกและตั้งค่า</summary>
+            <div className={styles.settingsBody}>
+              <p className={styles.tip}>{modeInfo.tip}</p>
+              <label className="chip">
+                <input
+                  type="checkbox"
+                  checked={settings.showStrokeNumbers}
+                  onChange={(e) => updateSettings({ showStrokeNumbers: e.target.checked })}
+                />
+                แสดงเลขลำดับขีด
+              </label>
+              <div className="row">
+                <span className="small muted">ความเข้มงวดในการตรวจ</span>
+                <div className="segmented" role="group" aria-label="ความเข้มงวดในการตรวจ">
+                  {STRICTNESS_ORDER.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      aria-pressed={settings.strictness === s}
+                      onClick={() => updateSettings({ strictness: s })}
+                    >
+                      {STRICTNESS_LABEL[s]}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </details>
+          </details>
+        </div>
+
+        {/* จอกว้าง (≥ 1440px): ตารางเลือกตัวอักษรเปิดค้างเป็นคอลัมน์ขวา แทนส่วนพับ "เลือกตัวอักษร" */}
+        <aside className={styles.sidePicker} aria-label="เลือกตัวอักษร" ref={sideRef}>
+          <p className={styles.sideLabel}>เลือกตัวอักษร</p>
+          <KanaTable
+            pack={pack}
+            progress={progress}
+            hrefFor={(c) => hrefFor(c.id)}
+            activeId={entry.id}
+            compact
+          />
+        </aside>
       </section>
     </div>
   );

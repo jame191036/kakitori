@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router';
+import { ArticleLayout, type TocItem } from '../components/ArticleLayout';
 import { ContinueCard } from '../components/ContinueCard';
 import { SpeakButton } from '../components/SpeakButton';
 import { scriptList } from '../data/scripts';
@@ -28,6 +29,17 @@ const SENTENCE: [string, Kind][] = [
 
 const KIND_LABEL: Record<Kind, string> = { hira: 'ฮิรางานะ', kata: 'คาตาคานะ', kanji: 'คันจิ' };
 
+/** สารบัญ (จอกว้าง) — ชื่อย่อของแต่ละหัวข้อ */
+const TOC: TocItem[] = [
+  { id: 'scripts', label: '1. ตัวอักษร 3 แบบ' },
+  { id: 'start-hiragana', label: '2. เริ่มจากฮิรางานะ' },
+  { id: 'read-table', label: '3. อ่านตารางตัวอักษร' },
+  { id: 'marks', label: '4. ตัวขุ่นและตัวครึ่งขุ่น' },
+  { id: 'stroke-order', label: '5. ทำไมต้องตามลำดับขีด' },
+  { id: 'long-vowel', label: '6. เครื่องหมายเสียงยาว' },
+  { id: 'how-to', label: '7. วิธีเรียนในเว็บนี้' },
+];
+
 const TABLE: [string, string[], string[]][] = [
   ['', ['a', 'i', 'u', 'e', 'o'], []],
   ['–', ['あ', 'い', 'う', 'え', 'お'], ['a', 'i', 'u', 'e', 'o']],
@@ -41,13 +53,13 @@ export default function StartPage() {
   }, []);
 
   return (
-    <div className={`container page ${styles.page}`}>
+    <ArticleLayout toc={TOC}>
       <header className="stack" style={{ gap: 6 }}>
         <h1 className="page-title">เริ่มต้นที่นี่</h1>
         <p className="muted">พื้นฐานที่ควรรู้ก่อนเริ่มเขียน — ใช้เวลาอ่านประมาณ 5 นาที ไม่ต้องรู้ภาษาญี่ปุ่นมาก่อน</p>
       </header>
 
-      <section className="card stack">
+      <section id="scripts" className="card stack">
         <h2 className={styles.h2}>1. ภาษาญี่ปุ่นใช้ตัวอักษร 3 แบบ</h2>
         <ul className={styles.list}>
           <li>
@@ -90,7 +102,7 @@ export default function StartPage() {
         </div>
       </section>
 
-      <section className="card stack">
+      <section id="start-hiragana" className="card stack">
         <h2 className={styles.h2}>2. เริ่มจากฮิรางานะ แล้วต่อด้วยคาตาคานะ</h2>
         <p>
           เด็กญี่ปุ่นก็เริ่มเรียนจากฮิรางานะ ทั้งสองชุดมีตัวพื้นฐาน 46 ตัวที่<strong>เสียงตรงกันทีละคู่</strong> เช่น{' '}
@@ -99,7 +111,7 @@ export default function StartPage() {
         </p>
       </section>
 
-      <section className="card stack">
+      <section id="read-table" className="card stack">
         <h2 className={styles.h2}>3. อ่านตารางตัวอักษรยังไง</h2>
         <p>
           ตัวอักษรเรียงเป็นตาราง: <strong>แต่ละแถว</strong>ขึ้นต้นด้วยพยัญชนะเดียวกัน <strong>แต่ละคอลัมน์</strong>
@@ -142,7 +154,7 @@ export default function StartPage() {
         </p>
       </section>
 
-      <section className="card stack">
+      <section id="marks" className="card stack">
         <h2 className={styles.h2}>4. เครื่องหมายเล็กๆ ที่มุมขวาบน</h2>
         <ul className={styles.list}>
           <li>
@@ -159,7 +171,7 @@ export default function StartPage() {
         </ul>
       </section>
 
-      <section className="card stack">
+      <section id="stroke-order" className="card stack">
         <h2 className={styles.h2}>5. ทำไมต้องเขียนตามลำดับขีด</h2>
         <ul className={styles.list}>
           <li>ตัวอักษรจะได้สัดส่วนสวยและอ่านง่าย เขียนได้เร็วและเป็นธรรมชาติ</li>
@@ -175,7 +187,7 @@ export default function StartPage() {
         </ul>
       </section>
 
-      <section className="card stack">
+      <section id="long-vowel" className="card stack">
         <h2 className={styles.h2}>
           6. เครื่องหมายเสียงยาว <span className="kana">ー</span> (ในคาตาคานะ)
         </h2>
@@ -185,7 +197,7 @@ export default function StartPage() {
         </p>
       </section>
 
-      <section className="card stack">
+      <section id="how-to" className="card stack">
         <h2 className={styles.h2}>7. วิธีเรียนในเว็บนี้ (แนะนำ)</h2>
         <p>เรียนทีละแถว โดยแต่ละแถวทำตามนี้:</p>
         <ol className={styles.list}>
@@ -216,6 +228,6 @@ export default function StartPage() {
       <p className="small muted" style={{ textAlign: 'center' }}>
         อยากดูตัวอักษรทั้งหมดก่อน? <Link to={`/${scriptList[0]!.id}`}>ดูตาราง{scriptList[0]!.name}</Link>
       </p>
-    </div>
+    </ArticleLayout>
   );
 }
