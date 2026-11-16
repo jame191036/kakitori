@@ -105,7 +105,11 @@ export function TodayCard({ packs }: TodayCardProps) {
           aria-valuemax={dailyGoal}
           aria-valuenow={Math.min(streak.todayCount, dailyGoal)}
         >
-          <span style={{ width: `${Math.min(100, (streak.todayCount / dailyGoal) * 100)}%` }} />
+          <span
+            style={{
+              transform: `translateX(${Math.min(100, (streak.todayCount / dailyGoal) * 100) - 100}%)`,
+            }}
+          />
         </div>
         <p className="small muted">1 ครั้ง = ตอบคำถาม 1 ข้อ หรือเขียนเสร็จ 1 ตัว</p>
       </div>

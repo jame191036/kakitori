@@ -9,7 +9,15 @@ import {
   Sparkles,
   type LucideIcon,
 } from 'lucide-react';
-import { Link, Navigate, useParams, useSearchParams } from 'react-router';
+import { useEffect, useRef, type CSSProperties } from 'react';
+import {
+  Link,
+  Navigate,
+  useLocation,
+  useNavigationType,
+  useParams,
+  useSearchParams,
+} from 'react-router';
 import { useScriptPack } from '../app/ScriptContext';
 import { KanaTable } from '../components/KanaTable';
 import { SpeakButton } from '../components/SpeakButton';
@@ -76,6 +84,25 @@ export default function PracticePage() {
   const [params, setParams] = useSearchParams();
   const settings = useSettings();
   const progress = useScriptProgress(pack.id);
+  // ทิศที่เปลี่ยนตัว (ลูกศรด้านบน / ปุ่ม "ตัวถัดไป" ด้านล่าง) — ใช้เลื่อนตัวอักษรเข้ามาจากทิศนั้น
+  // เฉพาะการกดลิงก์ (PUSH) ไม่ใช่ตอนกดย้อนกลับของเบราว์เซอร์
+  const navType = useNavigationType();
+  const { state } = useLocation();
+  const dir = navType === 'PUSH' ? ((state as { dir?: number } | null)?.dir ?? 0) : 0;
+
+  // มือถือจอเล็ก/แนวนอน: เปิดหน้า เปลี่ยนตัว หรือเปลี่ยนโหมด → เลื่อนให้กระดานอยู่ในจอครบทั้งอัน
+  // (ระหว่างเขียนบนกระดานเลื่อนหน้าไม่ได้) — ถ้าเห็นครบอยู่แล้วจะไม่เลื่อน
+  const boardRef = useRef<HTMLDivElement>(null);
+  const scrolledOnce = useRef(false);
+  const modeKey = params.get('mode');
+  useEffect(() => {
+    // เลื่อนแค่ตัวกระดาน (svg แรก) ไม่รวมข้อความ/ปุ่มด้านล่าง → เลื่อนน้อยที่สุด การ์ดตัวอักษรด้านบนยังเห็นมากที่สุด
+    const el = boardRef.current?.querySelector('svg');
+    if (!el) return;
+    const smooth = scrolledOnce.current && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ block: 'nearest', behavior: smooth ? 'smooth' : 'auto' });
+    scrolledOnce.current = true;
+  }, [charId, modeKey]);
 
   const entry = findChar(pack, charId);
   const strokes = useStrokeData(pack, entry?.char ?? '');
@@ -108,6 +135,9 @@ export default function PracticePage() {
     });
 
   const boardLabel = `กระดานเขียนตัว ${entry.char}`;
+  // key = ตัวอักษร → เล่นแอนิเมชันใหม่ทุกครั้งที่เปลี่ยนตัว
+  const slide = dir !== 0 ? styles.slideIn : undefined;
+  const slideStyle = { '--dir': dir } as CSSProperties;
 
   return (
     <div className={`container ${styles.layout}`}>
@@ -128,10 +158,16 @@ export default function PracticePage() {
 
       <section className={styles.main} aria-labelledby="char-title">
         <header className={cx('card', styles.charHeader)}>
-          <div className={cx('kana', styles.bigChar)} id="char-title" lang="ja">
+          <div
+            key={`c-${entry.id}`}
+            className={cx('kana', styles.bigChar, slide)}
+            style={slideStyle}
+            id="char-title"
+            lang="ja"
+          >
             {entry.char}
           </div>
-          <div className={styles.charInfo}>
+          <div key={`i-${entry.id}`} className={cx(styles.charInfo, slide)} style={slideStyle}>
             <div className={styles.reading}>
               <span className={styles.romaji}>{romajiLabel(entry)}</span>
               <span className={styles.thai}>{entry.thai}</span>
@@ -150,14 +186,24 @@ export default function PracticePage() {
           </div>
           <div className={styles.nav}>
             {prev ? (
-              <Link to={hrefFor(prev.id)} className="btn btn-icon" aria-label={`ตัวก่อนหน้า ${prev.char}`}>
+              <Link
+                to={hrefFor(prev.id)}
+                state={{ dir: -1 }}
+                className="btn btn-icon"
+                aria-label={`ตัวก่อนหน้า ${prev.char}`}
+              >
                 <ChevronLeft size={20} aria-hidden />
               </Link>
             ) : (
               <span className="btn btn-icon" aria-hidden style={{ visibility: 'hidden' }} />
             )}
             {next ? (
-              <Link to={hrefFor(next.id)} className="btn btn-icon" aria-label={`ตัวถัดไป ${next.char}`}>
+              <Link
+                to={hrefFor(next.id)}
+                state={{ dir: 1 }}
+                className="btn btn-icon"
+                aria-label={`ตัวถัดไป ${next.char}`}
+              >
                 <ChevronRight size={20} aria-hidden />
               </Link>
             ) : (
@@ -192,7 +238,7 @@ export default function PracticePage() {
           </div>
         </div>
 
-        <div id="practice-board" role="tabpanel" className={styles.board}>
+        <div id="practice-board" role="tabpanel" className={styles.board} ref={boardRef}>
           {mode === 'animate' && (
             <StrokeAnimator
               key={entry.id}
@@ -281,6 +327,7 @@ export default function PracticePage() {
             {next && (
               <Link
                 to={hrefFor(next.id)}
+                state={{ dir: 1 }}
                 className={rowState.kind === 'quiz' ? 'btn' : 'btn btn-primary'}
               >
                 ตัวถัดไป <span className="kana">{next.char}</span>

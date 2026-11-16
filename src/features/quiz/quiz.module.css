@@ -42,7 +42,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 999px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-lg);
 }
 
 /* ── Runner ── */
@@ -69,12 +69,14 @@
   overflow: hidden;
 }
 
+/* แถบเต็มความกว้าง แล้วเลื่อนออกทางซ้าย (transform ไม่ทำให้จัดหน้าใหม่ทุกเฟรมเหมือน width) */
 .progress span {
   display: block;
+  width: 100%;
   height: 100%;
   background: var(--accent);
   border-radius: inherit;
-  transition: width 0.3s;
+  transition: transform 250ms var(--ease-out);
 }
 
 .question {
@@ -130,17 +132,19 @@
   background: var(--surface);
   cursor: pointer;
   transition:
-    border-color 0.15s,
-    background 0.15s,
-    transform 0.05s;
+    border-color 150ms ease,
+    background-color 150ms ease,
+    transform var(--press);
 }
 
-.choice:hover:not(:disabled) {
-  border-color: var(--accent);
+@media (hover: hover) and (pointer: fine) {
+  .choice:hover:not(:disabled) {
+    border-color: var(--accent);
+  }
 }
 
 .choice:active:not(:disabled) {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .choice:disabled {
@@ -178,10 +182,27 @@
   color: var(--good);
 }
 
+/* ตอบผิด: ส่ายเล็กน้อยครั้งเดียว — ภาษาเดียวกับตอนเขียนผิดบนกระดาน */
 .wrong {
   border-color: var(--bad);
   background: var(--bad-soft);
   color: var(--bad);
+  animation: choice-shake 320ms var(--ease-out);
+}
+
+@keyframes choice-shake {
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
 }
 
 .dim {
@@ -243,10 +264,27 @@
   overflow: hidden;
 }
 
+/* หน้าผลคะแนน (เห็นไม่บ่อย): แถบค่อยๆ เติมจาก 0 ให้รู้สึกว่าทำสำเร็จ */
 .meter span {
   display: block;
+  width: 100%;
   height: 100%;
   background: var(--good);
+  border-radius: inherit;
+  animation: meter-fill 700ms var(--ease-out) 150ms both;
+}
+
+@keyframes meter-fill {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrong,
+  .meter span {
+    animation: none;
+  }
 }
 
 .wrongList {

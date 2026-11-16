@@ -1,9 +1,11 @@
+/* จัดกึ่งกลางด้วย margin (ไม่ใช้ transform) เพื่อให้ transform ใช้กับการเคลื่อนไหวได้อย่างเดียว */
 .toast {
   position: fixed;
   z-index: 50;
-  left: 50%;
+  left: 0;
+  right: 0;
   top: calc(var(--header-h) + 12px);
-  transform: translateX(-50%);
+  margin-inline: auto;
   width: min(400px, calc(100% - 32px));
   display: flex;
   align-items: center;
@@ -12,11 +14,27 @@
   background: var(--surface);
   border: 1px solid color-mix(in srgb, var(--good) 45%, var(--border));
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  animation: drop-in 0.25s ease-out;
+  box-shadow: var(--shadow-lg);
+  transition:
+    opacity 250ms var(--ease-out),
+    transform 250ms var(--ease-out);
 }
 
-.toast > span:nth-child(2) {
+/* เข้า: เลื่อนลงจากด้านบน / ออก: กลับขึ้นทางเดิม และเร็วกว่าตอนเข้า */
+@starting-style {
+  .toast {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.closing {
+  opacity: 0;
+  transform: translateY(-8px);
+  transition-duration: 150ms;
+}
+
+.toast > span:nth-child(3) {
   flex: 1;
   min-width: 0;
 }
@@ -32,15 +50,33 @@
   color: var(--accent);
 }
 
-@keyframes drop-in {
-  from {
+/* ตัวนับเวลา 6 วินาที (มองไม่เห็น) */
+.timer {
+  position: absolute;
+  width: 0;
+  height: 0;
+  animation: toast-timer 6000ms linear forwards;
+}
+
+@keyframes toast-timer {
+  to {
     opacity: 0;
-    transform: translate(-50%, -8px);
+  }
+}
+
+.paused .timer {
+  animation-play-state: paused;
+}
+
+/* หยุดนับเวลาเมื่อเอาเมาส์ชี้ — เฉพาะเครื่องที่มีเมาส์ (บนจอสัมผัส hover ค้างหลังแตะ แจ้งเตือนจะไม่ปิดเอง) */
+@media (hover: hover) and (pointer: fine) {
+  .toast:hover .timer {
+    animation-play-state: paused;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .toast {
-    animation: none;
+    transition-property: opacity;
   }
 }

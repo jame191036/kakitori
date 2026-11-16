@@ -1,13 +1,32 @@
 import { Check, Eraser, PlayCircle, RotateCcw, Undo2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 import type { StrokeData } from '../../data/types';
 import { cx } from '../../lib/cx';
-import { toPathData, type Point } from './engine/geometry';
+import { boundingBox, toPathData, type Point } from './engine/geometry';
 import { scoreFreeWrite, type FreeWriteResult, type StrokeStatus } from './engine/freeWrite';
 import { referenceStrokes } from './engine/refStrokes';
 import { GridGuides, VIEWBOX } from './CharSvg';
 import { WritingPad } from './WritingPad';
 import styles from './writing.module.css';
+
+/**
+ * transform ที่พาลายมือที่ปรับขนาดแล้ว กลับไปอยู่ตำแหน่ง/ขนาดที่ผู้ใช้เขียนจริง
+ * (ใช้เป็นจุดเริ่มของแอนิเมชัน แล้วเลื่อนเข้าหาต้นแบบ) — การปรับขนาดเป็นสัดส่วนเดียวกันทั้งตัว
+ */
+function morphFrom(
+  original: readonly Point[][],
+  normalized: readonly Point[][],
+): { transform: string; k: number } | undefined {
+  const ob = boundingBox(original.flat());
+  const nb = boundingBox(normalized.flat());
+  const ns = Math.max(nb.width, nb.height);
+  if (ns < 1) return undefined;
+  const k = Math.max(ob.width, ob.height) / ns;
+  return { transform: `translate(${ob.cx - nb.cx * k}px, ${ob.cy - nb.cy * k}px) scale(${k})`, k };
+}
+
+/** ความหนาเส้นลายมือ (ตรงกับ .userInk ใน writing.module.css) */
+const INK_WIDTH = 4.5;
 
 const STATUS_LABEL: Record<StrokeStatus, string> = {
   good: 'ดีมาก',
@@ -55,6 +74,7 @@ export function FreeWriteBoard({ data, leniency, label, onResult, onShowOrder }:
   };
 
   if (result) {
+    const from = morphFrom(strokes, result.normalized);
     return (
       <div className={styles.board}>
         <svg
@@ -72,26 +92,43 @@ export function FreeWriteBoard({ data, leniency, label, onResult, onShowOrder }:
           {result.strokes
             .filter((s) => s.status === 'missing')
             .map((s) => (
-              <path key={`m${s.index}`} d={data.strokes[s.index]} className={styles.missing} />
+              <path
+                key={`m${s.index}`}
+                d={data.strokes[s.index]}
+                className={cx(styles.missing, styles.missingIn)}
+              />
             ))}
-          <g className={styles.userInk}>
+          <g
+            className={cx(styles.userInk, styles.reveal, from && styles.morph)}
+            style={
+              from
+                ? // --sw0: ความหนาตอนเริ่ม ชดเชยการย่อ/ขยาย ให้เส้นหนาเท่าตอนที่เพิ่งเขียน
+                  ({ '--from': from.transform, '--sw0': INK_WIDTH / from.k } as CSSProperties)
+                : undefined
+            }
+          >
             {result.normalized.map((pts, i) => (
               <path
                 key={i}
                 d={toPathData(pts)}
                 className={styles[`res-${result.strokes[i]?.status ?? 'extra'}`]}
+                style={{ '--i': i } as CSSProperties}
               />
             ))}
           </g>
         </svg>
 
-        <div className="card stack">
+        <div className={cx('card', 'stack', styles.resultCard)}>
           <div className={styles.score}>
             <span className={styles.scoreValue}>{result.score}</span>
             <span className="muted">/ 100</span>
             <span className={styles.stars} aria-label={`${result.stars} ดาว`}>
               {[1, 2, 3].map((n) => (
-                <span key={n} className={n > result.stars ? styles.starOff : undefined}>
+                <span
+                  key={n}
+                  className={cx(styles.star, n > result.stars && styles.starOff)}
+                  style={{ '--n': n - 1 } as CSSProperties}
+                >
                   ★
                 </span>
               ))}

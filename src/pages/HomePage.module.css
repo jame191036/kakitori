@@ -31,6 +31,12 @@
   font-size: 1.2rem;
 }
 
+.daily {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
 .scripts {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -44,13 +50,19 @@
   color: var(--text);
   text-decoration: none !important;
   transition:
-    border-color 0.15s,
-    transform 0.1s;
+    border-color 150ms ease,
+    transform var(--press);
 }
 
-.scriptCard:hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .scriptCard:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+}
+
+.scriptCard:active {
+  transform: scale(0.98);
 }
 
 .scriptGlyph {

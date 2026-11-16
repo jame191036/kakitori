@@ -36,7 +36,7 @@ export function QuizResult({ pack, records, onRetry, onReviewWrong, onSetup }: Q
           <span className="muted"> / {records.length}</span>
         </p>
         <div className={styles.meter} aria-hidden>
-          <span style={{ width: `${pct}%` }} />
+          <span style={{ transform: `translateX(${pct - 100}%)` }} />
         </div>
         <p>{verdict(pct)}</p>
       </section>

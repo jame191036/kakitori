@@ -71,6 +71,8 @@ export function StrokeCheckBoard({
 
   const [session, setSession] = useState(() => createSession(total));
   const [flash, setFlash] = useState<{ points: Point[]; n: number } | null>(null);
+  /** ลายมือของขีดที่เพิ่งถูก — จางหายบนเส้นต้นแบบ */
+  const [settle, setSettle] = useState<{ points: Point[]; n: number } | null>(null);
   const [hint, setHint] = useState<{ index: number; n: number } | null>(null);
   const [manualHints, setManualHints] = useState(0);
   const [message, setMessage] = useState<{ tone: Tone; text: string }>({
@@ -91,6 +93,7 @@ export function StrokeCheckBoard({
     if (feedback.kind === 'correct') {
       setFlash(null);
       setHint(null);
+      setSettle((s) => ({ points, n: (s?.n ?? 0) + 1 }));
       if (isComplete(state)) {
         const hintsUsed = state.hintsUsed + manualHints;
         setMessage({
@@ -121,6 +124,7 @@ export function StrokeCheckBoard({
   const restart = () => {
     setSession(createSession(total));
     setFlash(null);
+    setSettle(null);
     setHint(null);
     setManualHints(0);
     setMessage({ tone: 'neutral', text: initialMessage });
@@ -139,9 +143,15 @@ export function StrokeCheckBoard({
         {guide && showNumbers && <StrokeNumbers data={data} />}
 
         <g transform={shift}>
-          <g className={styles.ink}>
+          {/* ขีดที่ผ่านแล้ว: ขีดใหม่แวบเป็นสีเขียว / เขียนครบแล้วไล่สีเขียวทีละขีดตามลำดับ */}
+          <g className={cx(styles.ink, styles.inkMatch, complete && styles.celebrate)}>
             {data.strokes.slice(0, session.done).map((d, i) => (
-              <path key={i} d={d} className={styles.snap} />
+              <path
+                key={i}
+                d={d}
+                className={complete ? undefined : styles.accept}
+                style={complete ? { animationDelay: `${i * 70}ms` } : undefined}
+              />
             ))}
           </g>
           {hint && !complete && (
@@ -155,7 +165,18 @@ export function StrokeCheckBoard({
         </g>
 
         {guide && next && !complete && (
-          <circle className={styles.startDot} cx={next[0]!.x} cy={next[0]!.y} r={2.6} />
+          // key: เริ่มกะพริบใหม่ทุกครั้งที่ขึ้นขีดถัดไป
+          <circle
+            key={session.done}
+            className={styles.startDot}
+            cx={next[0]!.x}
+            cy={next[0]!.y}
+            r={2.6}
+          />
+        )}
+
+        {settle && (
+          <path key={`settle-${settle.n}`} d={toPathData(settle.points)} className={styles.settleOut} />
         )}
 
         {flash && (

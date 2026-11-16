@@ -99,7 +99,11 @@ export function QuizRunner({ pack, questions, onFinish, onQuit }: QuizRunnerProp
           aria-valuenow={index + 1}
           aria-label="ความคืบหน้า"
         >
-          <span style={{ width: `${((index + (answered ? 1 : 0)) / questions.length) * 100}%` }} />
+          <span
+            style={{
+              transform: `translateX(${((index + (answered ? 1 : 0)) / questions.length) * 100 - 100}%)`,
+            }}
+          />
         </div>
         <span className="small muted" style={{ fontVariantNumeric: 'tabular-nums' }}>
           {index + 1}/{questions.length} · ถูก {score}

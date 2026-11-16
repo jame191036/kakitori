@@ -71,6 +71,13 @@
   font-size: 0.95rem;
 }
 
+/* จอสัมผัส: ปุ่มสลับ ひらがな/カタカナ สูงขึ้นให้กดง่าย (ยังพอดีกับแถบด้านบนสูง 60px) */
+@media (pointer: coarse) {
+  .switcher a {
+    min-height: 40px;
+  }
+}
+
 .short {
   display: none;
 }
@@ -96,17 +103,22 @@
   font-weight: 500;
   white-space: nowrap;
   text-decoration: none !important;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
-.topLink:hover {
-  background: var(--surface-2);
-  color: var(--text);
+@media (hover: hover) and (pointer: fine) {
+  .topLink:hover {
+    background: var(--surface-2);
+    color: var(--text);
+  }
 }
 
 .topLink[aria-current='page'] {
   background: var(--surface);
   color: var(--text);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-sm);
 }
 
 .main {
@@ -148,8 +160,16 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  min-height: 50vh;
+  min-height: 50svh;
   color: var(--text-2);
+  /* หน้าที่โหลดเร็วจะไม่เห็นตัวหมุนแวบขึ้นมา (ทำให้รู้สึกว่าเว็บช้า) */
+  animation: loading-appear 200ms ease-out 250ms both;
+}
+
+@keyframes loading-appear {
+  from {
+    opacity: 0;
+  }
 }
 
 .spinner {
@@ -192,6 +212,8 @@
     grid-template-columns: repeat(5, 1fr);
     height: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
     padding-bottom: env(safe-area-inset-bottom);
+    /* แนวนอน: ไอคอนซ้าย/ขวาสุดไม่ไปอยู่ใต้รอยบากจอ */
+    padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
     background: color-mix(in srgb, var(--surface) 94%, transparent);
     backdrop-filter: blur(10px);
     border-top: 1px solid var(--border);
@@ -206,11 +228,23 @@
     color: var(--text-2);
     font-size: 0.75rem;
     text-decoration: none !important;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
 
   .bottomLink[aria-current='page'] {
     color: var(--accent);
     font-weight: 700;
+  }
+
+  /* แตะแล้วไอคอนย่อ — บอกว่าแตะติดแล้ว ระหว่างรอหน้าใหม่โหลด */
+  .bottomLink svg {
+    transition: transform var(--press);
+  }
+
+  .bottomLink:active svg {
+    transform: scale(0.88);
   }
 }
 

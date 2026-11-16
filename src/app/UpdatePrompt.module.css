@@ -1,9 +1,11 @@
+/* จัดกึ่งกลางด้วย margin (ไม่ใช้ transform) เพื่อให้ transform ใช้กับการเคลื่อนไหวได้อย่างเดียว */
 .toast {
   position: fixed;
   z-index: 50;
-  left: 50%;
+  left: 0;
+  right: 0;
   bottom: calc(16px + env(safe-area-inset-bottom));
-  transform: translateX(-50%);
+  margin-inline: auto;
   width: min(440px, calc(100% - 32px));
   display: flex;
   align-items: center;
@@ -13,11 +15,34 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-lg);
+  transition:
+    opacity 250ms var(--ease-out),
+    transform 250ms var(--ease-out);
+}
+
+/* เข้า: เลื่อนขึ้นจากด้านล่าง / ออก: ลงทางเดิม และเร็วกว่าตอนเข้า (ชุดเดียวกับแจ้งเตือนถึงเป้า) */
+@starting-style {
+  .toast {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.closing {
+  opacity: 0;
+  transform: translateY(8px);
+  transition-duration: 150ms;
 }
 
 @media (max-width: 860px) {
   .toast {
     bottom: calc(var(--bottom-nav-h) + 12px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    transition-property: opacity;
   }
 }

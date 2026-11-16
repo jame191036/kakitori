@@ -5,20 +5,38 @@
   overflow: visible;
 }
 
+/*
+ * ขนาดกระดาน: กว้างสุด 400px แต่ไม่สูงเกินพื้นที่ที่มองเห็นจริง (svh = ตอนแถบเบราว์เซอร์แสดงอยู่)
+ * ไม่อย่างนั้นมือถือแนวนอนจะเห็นกระดานไม่ครบเลย และระหว่างเขียนเลื่อนหน้าจอไม่ได้
+ */
 .board {
   width: 100%;
-  max-width: 400px;
+  max-width: max(220px, min(400px, calc(100svh - var(--header-h) - 32px)));
   margin-inline: auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 12px;
 }
 
+@media (max-width: 860px) {
+  .board {
+    max-width: max(
+      220px,
+      min(400px, calc(100svh - var(--header-h) - var(--bottom-nav-h) - env(safe-area-inset-bottom, 0px) - 24px))
+    );
+  }
+}
+
+/* หน้าที่มีกระดานเขียน: กันดึงลงแล้วหน้ารีโหลด/เด้ง ตอนลากนิ้วเลยขอบกระดาน (เสียขีดที่เขียนค้างไว้) */
+:global(html):has(.pad) {
+  overscroll-behavior: none;
+}
+
 .surface {
   background: var(--pad);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-sm);
 }
 
 .pad {
@@ -155,18 +173,37 @@
   }
 }
 
+/* ── ขีดที่เขียนผิด: ส่ายเล็กน้อย ("ไม่ใช่") แล้วจางหายเร็วๆ ── */
 .flashBad {
   fill: none;
   stroke: var(--bad);
   stroke-width: 4.5;
   stroke-linecap: round;
   stroke-linejoin: round;
-  animation: flashOut 0.9s ease-in forwards;
+  animation:
+    bad-shake 280ms var(--ease-out),
+    bad-fade 600ms ease-out forwards;
 }
 
-@keyframes flashOut {
-  0%,
+/* หน่วยเป็นพิกัดของกระดาน (กรอบ 109) — 2 หน่วยบนจอประมาณ 6–8px */
+@keyframes bad-shake {
+  20% {
+    transform: translateX(-2px);
+  }
   40% {
+    transform: translateX(2px);
+  }
+  60% {
+    transform: translateX(-1.5px);
+  }
+  80% {
+    transform: translateX(1px);
+  }
+}
+
+@keyframes bad-fade {
+  0%,
+  30% {
     opacity: 0.95;
   }
   100% {
@@ -174,22 +211,64 @@
   }
 }
 
-.snap {
-  animation: snapIn 0.25s ease-out;
+/* ── ขีดที่เขียนถูก: หนาเท่าเส้นที่เพิ่งเขียน เป็นสีเขียวแวบหนึ่งแล้วกลายเป็นสีหมึก ── */
+.inkMatch path {
+  stroke-width: 4.5;
 }
 
-@keyframes snapIn {
+.accept {
+  animation: accept 600ms var(--ease-out) both;
+}
+
+@keyframes accept {
+  0%,
+  35% {
+    stroke: var(--good);
+  }
+  100% {
+    stroke: var(--ink);
+  }
+}
+
+/* ลายมือจริงของขีดที่ถูก: ซ้อนบนเส้นต้นแบบแล้วจางหาย ให้ดูเหมือนเส้น "จัดตัว" เข้าที่ ไม่ใช่สลับวับ */
+.settleOut {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  animation: settle-out 180ms var(--ease-out) forwards;
+}
+
+@keyframes settle-out {
   from {
-    opacity: 0.3;
+    opacity: 0.7;
   }
   to {
-    opacity: 1;
+    opacity: 0;
   }
 }
 
+/* ── เขียนครบทั้งตัว: ไล่สีเขียวทีละขีดตามลำดับ (เวลาหน่วงตั้งต่อขีดใน StrokeCheckBoard) ── */
+.celebrate path {
+  animation: celebrate 650ms var(--ease-out) both;
+}
+
+@keyframes celebrate {
+  0%,
+  100% {
+    stroke: var(--ink);
+  }
+  40% {
+    stroke: var(--good);
+  }
+}
+
+/* จุดเริ่มของขีดถัดไป: กะพริบ 3 รอบแล้วหยุดนิ่ง ไม่ขยับตลอดเวลาที่กำลังเขียน */
 .startDot {
   fill: var(--accent);
-  animation: pulse 1.4s ease-in-out infinite;
+  animation: pulse 1.2s ease-in-out 3;
   transform-box: fill-box;
   transform-origin: center;
 }
@@ -207,19 +286,19 @@
 }
 
 /* ── ผลเขียนอิสระ ── */
-.res-good,
-.res-ok {
-  stroke: var(--good) !important;
+.userInk .res-good,
+.userInk .res-ok {
+  stroke: var(--good);
 }
 
-.res-direction,
-.res-order {
-  stroke: var(--warn) !important;
+.userInk .res-direction,
+.userInk .res-order {
+  stroke: var(--warn);
 }
 
-.res-shape,
-.res-extra {
-  stroke: var(--bad) !important;
+.userInk .res-shape,
+.userInk .res-extra {
+  stroke: var(--bad);
 }
 
 .missing {
@@ -229,6 +308,78 @@
   stroke-dasharray: 3 3;
   stroke-linecap: round;
   opacity: 0.7;
+}
+
+/*
+ * เปิดผลเขียนอิสระ (เกิดครั้งละครั้งต่อการกด "ตรวจ"):
+ * 1) ลายมือเลื่อน/ย่อจากตำแหน่งที่เขียนจริงเข้าหาต้นแบบ — อธิบายว่าระบบปรับขนาดก่อนตรวจ
+ * 2) จากนั้นแต่ละขีดเปลี่ยนเป็นสีผลตรวจทีละขีดตามลำดับ
+ */
+.morph {
+  animation: res-morph 450ms var(--ease-in-out) both;
+}
+
+@keyframes res-morph {
+  from {
+    transform: var(--from);
+  }
+}
+
+/* ความหนาเส้นปรับตามการย่อ/ขยายไปพร้อมกัน → เส้นหนาเท่าเดิมตลอดการเลื่อน */
+.reveal path {
+  animation:
+    res-width 450ms var(--ease-in-out) both,
+    res-color 300ms ease both;
+  animation-delay:
+    0ms,
+    calc(450ms + var(--i, 0) * 70ms);
+}
+
+@keyframes res-width {
+  from {
+    stroke-width: var(--sw0, 4.5);
+  }
+}
+
+@keyframes res-color {
+  from {
+    stroke: var(--ink);
+  }
+}
+
+.missingIn {
+  animation: fade-in-late 300ms ease both;
+  animation-delay: 450ms;
+}
+
+@keyframes fade-in-late {
+  from {
+    opacity: 0;
+  }
+}
+
+.resultCard {
+  animation: rise-in 250ms var(--ease-out) 100ms both;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.star {
+  display: inline-block;
+  animation: star-pop 300ms var(--ease-out) both;
+  animation-delay: calc(450ms + var(--n, 0) * 90ms);
+}
+
+@keyframes star-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
 }
 
 .controls {
@@ -245,6 +396,9 @@
   align-items: center;
   justify-content: center;
   text-align: center;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
 }
 
 .stepLabel {
@@ -316,9 +470,38 @@
   color: var(--ghost);
 }
 
+/* ลดการเคลื่อนไหว: ตัดการส่าย/การขยาย เหลือแค่การจางและการเปลี่ยนสี */
 @media (prefers-reduced-motion: reduce) {
-  .hint,
-  .startDot {
+  .hint {
     animation-duration: 3s;
+  }
+
+  .startDot {
+    animation-name: dot-fade;
+  }
+
+  .flashBad {
+    animation: bad-fade 600ms ease-out forwards;
+  }
+
+  /* ไม่เลื่อน/ไม่ขยาย — ลายมืออยู่ที่ตำแหน่งต้นแบบทันที เหลือแค่การจางและการเปลี่ยนสี */
+  .morph {
+    animation: none;
+  }
+
+  .reveal path {
+    animation: res-color 300ms ease both;
+    animation-delay: calc(450ms + var(--i, 0) * 70ms);
+  }
+
+  .resultCard,
+  .star {
+    animation-name: fade-in-late;
+  }
+}
+
+@keyframes dot-fade {
+  50% {
+    opacity: 0.4;
   }
 }

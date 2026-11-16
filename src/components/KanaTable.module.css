@@ -41,14 +41,24 @@
   color: var(--text);
   text-decoration: none !important;
   overflow: hidden;
+  /* กดค้างที่ช่องตัวอักษร: ไม่เลือกข้อความ ไม่เด้งพรีวิวลิงก์ */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   transition:
-    transform 0.1s,
-    border-color 0.15s;
+    transform var(--press),
+    border-color 150ms ease;
 }
 
-.cell:hover {
-  border-color: var(--accent);
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .cell:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+}
+
+.cell:active {
+  transform: scale(0.96);
 }
 
 .active {

@@ -111,6 +111,33 @@
   gap: 6px;
 }
 
+/*
+ * เปลี่ยนตัวด้วยลูกศร/ปุ่มตัวถัดไป: ตัวอักษรเลื่อนเข้ามาจากทิศที่ไป (ถัดไป = มาจากขวา)
+ * กดบ่อย จึงเบาและเร็ว — ไม่ขยับกระดานเขียน (กันลายมือเพี้ยนถ้าเริ่มเขียนทันที)
+ */
+.slideIn {
+  animation: char-in 180ms var(--ease-out) both;
+}
+
+@keyframes char-in {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--dir, 0) * 10px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slideIn {
+    animation-name: char-fade;
+  }
+}
+
+@keyframes char-fade {
+  from {
+    opacity: 0;
+  }
+}
+
 .modeBar {
   display: flex;
   justify-content: center;
@@ -124,6 +151,18 @@
 
 .board {
   min-height: 420px;
+}
+
+/* scroll-margin: ตอนเลื่อนกระดานเข้าจอ ให้พ้นแถบด้านบน (และเมนูล่างบนมือถือ) */
+.board :global(svg) {
+  scroll-margin-top: calc(var(--header-h) + env(safe-area-inset-top, 0px) + 12px);
+  scroll-margin-bottom: 16px;
+}
+
+@media (max-width: 860px) {
+  .board :global(svg) {
+    scroll-margin-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px) + 12px);
+  }
 }
 
 .footerBar {

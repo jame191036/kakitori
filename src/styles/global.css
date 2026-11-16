@@ -35,9 +35,16 @@
 
   --radius: 14px;
   --radius-sm: 9px;
-  --shadow: 0 1px 2px rgb(60 40 20 / 6%), 0 6px 20px rgb(60 40 20 / 6%);
+  /* เงา 2 ระดับ: sm = การ์ด/ของที่วางบนหน้า, lg = ของที่ลอยเหนือหน้า (แจ้งเตือน แถบเริ่มสอบ) */
+  --shadow-sm: 0 1px 2px rgb(60 40 20 / 6%);
+  --shadow-lg: 0 2px 6px rgb(60 40 20 / 6%), 0 12px 32px rgb(60 40 20 / 14%);
   --header-h: 60px;
   --bottom-nav-h: 64px;
+
+  /* การเคลื่อนไหว: ใช้ชุดเดียวกันทั้งเว็บ */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --press: 160ms var(--ease-out);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -68,7 +75,9 @@
     --m1: #8a5a3c;
     --m2: #3f7d55;
     --m3: #5ccb85;
-    --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 6px 20px rgb(0 0 0 / 25%);
+    /* โหมดมืด: การ์ดแยกจากพื้นด้วยสีพื้นการ์ด + ขอบ เงาแทบไม่มี */
+    --shadow-sm: 0 1px 1px rgb(0 0 0 / 20%);
+    --shadow-lg: 0 4px 12px rgb(0 0 0 / 35%), 0 16px 40px rgb(0 0 0 / 40%);
   }
 }
 
@@ -99,7 +108,8 @@
   --m1: #8a5a3c;
   --m2: #3f7d55;
   --m3: #5ccb85;
-  --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 6px 20px rgb(0 0 0 / 25%);
+  --shadow-sm: 0 1px 1px rgb(0 0 0 / 20%);
+  --shadow-lg: 0 4px 12px rgb(0 0 0 / 35%), 0 16px 40px rgb(0 0 0 / 40%);
 }
 
 /* ───────────── Base ───────────── */
@@ -144,8 +154,30 @@ a {
   text-decoration: none;
 }
 
-a:hover {
-  text-decoration: underline;
+@media (hover: hover) and (pointer: fine) {
+  a:hover {
+    text-decoration: underline;
+  }
+}
+
+/*
+ * จอสัมผัส: ทุกอย่างที่กดได้ตอบสนองทันที (ไม่รอดูว่าจะแตะสองครั้งเพื่อซูมไหม)
+ * และกดค้างแล้วไม่ไปเลือกข้อความบนปุ่ม/ไม่เด้งเมนูพรีวิวลิงก์ — ข้อความเนื้อหายังเลือกได้ตามปกติ
+ */
+button,
+a,
+label,
+summary,
+[role='button'] {
+  touch-action: manipulation;
+}
+
+button,
+summary,
+[role='button'],
+.segmented a {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 button,
@@ -189,11 +221,13 @@ svg {
 }
 
 /* ───────────── Layout helpers ───────────── */
+/* มือถือแนวนอน: เว้นขอบให้พ้นรอยบากจอ (safe area) */
 .container {
   width: 100%;
   max-width: 1120px;
   margin: 0 auto;
-  padding: 0 16px;
+  padding-block: 0;
+  padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px));
 }
 
 /* grid ทุกตัวใช้ minmax(0, 1fr) เพื่อไม่ให้เนื้อหากว้างๆ ดันจนล้นจอมือถือ */
@@ -225,8 +259,15 @@ svg {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-sm);
   padding: 20px;
+}
+
+/* มือถือ: ขอบในการ์ดแคบลง ให้เนื้อหา (เช่นตารางตัวอักษร 5 ช่อง) มีที่มากขึ้น */
+@media (max-width: 560px) {
+  .card {
+    padding: 16px;
+  }
 }
 
 /* ───────────── Buttons ───────────── */
@@ -245,18 +286,32 @@ svg {
   cursor: pointer;
   text-decoration: none !important;
   transition:
-    background 0.15s,
-    border-color 0.15s,
-    transform 0.05s;
+    background-color 150ms ease,
+    border-color 150ms ease,
+    transform var(--press);
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
-.btn:hover:not(:disabled) {
-  background: var(--surface-2);
+/* hover เฉพาะอุปกรณ์ที่มีเมาส์จริง — บนจอสัมผัส hover จะค้างหลังแตะ */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
 }
 
-.btn:active:not(:disabled) {
-  transform: translateY(1px);
+/* กดแล้วย่อเล็กน้อย = บอกว่า "แตะติดแล้ว" (ใช้กับทุกอย่างที่กดได้) */
+.btn:active:not(:disabled),
+.chip:active,
+.segmented button:active,
+.segmented a:active {
+  transform: scale(0.97);
 }
 
 .btn:disabled {
@@ -268,11 +323,6 @@ svg {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
 }
 
 .btn-ghost {
@@ -300,6 +350,17 @@ svg {
   width: 36px;
 }
 
+/* จอสัมผัส: ปุ่มเล็กสูงอย่างน้อย 40px ให้นิ้วกดไม่พลาด */
+@media (pointer: coarse) {
+  .btn-sm {
+    min-height: 40px;
+  }
+
+  .btn-icon.btn-sm {
+    width: 40px;
+  }
+}
+
 /* ───────────── Chips / segmented ───────────── */
 .chip {
   display: inline-flex;
@@ -312,7 +373,9 @@ svg {
   background: var(--surface);
   cursor: pointer;
   user-select: none;
+  -webkit-user-select: none;
   font-size: 0.95rem;
+  transition: transform var(--press);
 }
 
 .chip[aria-pressed='true'],
@@ -355,6 +418,7 @@ svg {
   font-weight: 500;
   white-space: nowrap;
   text-decoration: none !important;
+  transition: transform var(--press);
 }
 
 .segmented button[aria-pressed='true'],
@@ -362,7 +426,7 @@ svg {
 .segmented a[aria-current='page'] {
   background: var(--surface);
   color: var(--text);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-sm);
 }
 
 /* ───────────── Feedback ───────────── */
@@ -405,7 +469,8 @@ svg {
     --pad: #fff;
     --surface-2: #f2f2f2;
     --accent: #d9462b;
-    --shadow: none;
+    --shadow-sm: none;
+    --shadow-lg: none;
   }
 
   body {

@@ -67,8 +67,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      <TodayCard packs={scriptList} />
-      <ContinueCard packs={scriptList} />
+      {/* การ์ด "วันนี้" กับ "เรียนต่อ" เป็นเรื่องเดียวกัน จึงวางชิดกันกว่าส่วนอื่น */}
+      <div className={styles.daily}>
+        <TodayCard packs={scriptList} />
+        <ContinueCard packs={scriptList} />
+      </div>
 
       <section className="stack">
         <h2 className={styles.h2}>เลือกชุดตัวอักษร</h2>
