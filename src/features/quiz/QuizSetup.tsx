@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { GroupSelector } from '../../components/GroupSelector';
-import { charsInGroups } from '../../data/scripts';
-import type { ScriptPack } from '../../data/types';
+import { charsInGroups, isCompound, isQuizzable } from '../../data/scripts';
+import type { GroupKind, ScriptPack } from '../../data/types';
 import { cx } from '../../lib/cx';
 import {
   getQuizPrefs,
@@ -16,6 +16,9 @@ import { isTypeAvailable, questionTypeInfo } from './quizText';
 import styles from './quiz.module.css';
 
 const COUNTS = [10, 20, 30, 0] as const; // 0 = ทุกตัวที่เลือก
+
+/** ตัวเล็ก/ー ไม่มีเสียงของตัวเอง จึงไม่มีให้เลือกในแบบทดสอบ */
+const QUIZ_KINDS: readonly GroupKind[] = ['basic', 'dakuten', 'handakuten', 'yoon'];
 
 interface QuizSetupProps {
   pack: ScriptPack;
@@ -35,8 +38,12 @@ export function QuizSetup({ pack, onStart }: QuizSetupProps) {
   const usableTypes = types.filter((t) => isTypeAvailable(t, pack, audioOk));
   // ซ่อนรูปแบบที่ชุดนี้ไม่มี (เช่น จับคู่ ถ้าไม่มีชุดคู่) แต่แสดงแบบฟังเสียงไว้เป็นปุ่มที่กดไม่ได้
   const shownTypes = QUESTION_TYPES.filter((t) => t === 'audioToChar' || isTypeAvailable(t, pack, audioOk));
-  const poolSize = charsInGroups(pack, groups).length;
-  const canStart = poolSize > 0 && usableTypes.length > 0;
+  const pool = charsInGroups(pack, groups).filter((c) => isQuizzable(pack, c));
+  const poolSize = pool.length;
+  // ตัวควบออกข้อแบบเขียนไม่ได้ — ถ้าเลือกไว้แค่แบบเขียนและมีแต่แถวตัวควบ จะไม่มีข้อให้ทำ
+  const onlyWrite = usableTypes.length > 0 && usableTypes.every((t) => t === 'readingToWrite');
+  const writeBlocked = onlyWrite && poolSize > 0 && pool.every(isCompound);
+  const canStart = poolSize > 0 && usableTypes.length > 0 && !writeBlocked;
 
   const toggleType = (t: QuestionType) =>
     setTypes((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
@@ -50,7 +57,13 @@ export function QuizSetup({ pack, onStart }: QuizSetupProps) {
   return (
     <div className={styles.setup}>
       <section className="card">
-        <GroupSelector pack={pack} value={groups} onChange={setGroups} legend="1. เลือกแถวที่จะสอบ" />
+        <GroupSelector
+          pack={pack}
+          value={groups}
+          onChange={setGroups}
+          legend="1. เลือกแถวที่จะสอบ"
+          kinds={QUIZ_KINDS}
+        />
       </section>
 
       <section className="card stack">
@@ -78,6 +91,12 @@ export function QuizSetup({ pack, onStart }: QuizSetupProps) {
         {!audioOk && (
           <p className="small muted">
             เครื่อง/เบราว์เซอร์นี้ไม่มีเสียงภาษาญี่ปุ่น จึงปิดข้อสอบแบบฟังเสียงไว้
+          </p>
+        )}
+        {pool.some(isCompound) && types.includes('readingToWrite') && (
+          <p className="small muted">
+            ตัวควบ (เช่น {pack.chars.find(isCompound)?.char}) ไม่มีข้อแบบเขียน จะใช้รูปแบบอื่นที่เลือกไว้แทน
+            {writeBlocked && ' — เลือกรูปแบบอื่นเพิ่มอย่างน้อย 1 แบบ'}
           </p>
         )}
       </section>

@@ -11,7 +11,7 @@ import {
 import { useScriptPack } from '../app/ScriptContext';
 import { KanaTable } from '../components/KanaTable';
 import { SpeakButton } from '../components/SpeakButton';
-import { findChar, groupLabel, romajiLabel } from '../data/scripts';
+import { findChar, groupLabel, isCompound, romajiLabel } from '../data/scripts';
 import { useStrokeData } from '../data/useStrokes';
 import { masteryLevel, MASTERY_LABEL } from '../features/progress/progressLogic';
 import { recordPractice, useScriptProgress } from '../features/progress/progressStore';
@@ -30,7 +30,8 @@ import step from '../features/writing/StrokeStepBoard.module.css';
 import { referenceStrokes } from '../features/writing/engine/refStrokes';
 import { cx } from '../lib/cx';
 import { ExampleWord } from '../components/ExampleWord';
-import { rowStatus } from '../features/progress/learningPath';
+import { rowNeeds, rowStatus } from '../features/progress/learningPath';
+import { CompoundPanel } from '../features/writing/CompoundPanel';
 import NotFoundPage from './NotFoundPage';
 import styles from './PracticePage.module.css';
 
@@ -87,7 +88,8 @@ export default function PracticePage() {
   const modeKey = params.get('mode');
   useEffect(() => {
     const el = boardRef.current;
-    if (!el) return;
+    // หน้าตัวควบไม่มีกระดานเขียน — ไม่ต้องเลื่อน (จะทำให้หัวหน้าที่มีคำอ่านเลื่อนหายไป)
+    if (!el || el.dataset.noscroll !== undefined) return;
     const smooth = scrolledOnce.current && !matchMedia('(prefers-reduced-motion: reduce)').matches;
     el.scrollIntoView({ block: 'nearest', behavior: smooth ? 'smooth' : 'auto' });
     scrolledOnce.current = true;
@@ -96,19 +98,70 @@ export default function PracticePage() {
   // ตารางข้าง (จอกว้าง) เลื่อนภายในตัวเองได้ → เปลี่ยนตัวแล้วให้ช่องที่เลือกอยู่ในส่วนที่มองเห็น
   // เลื่อนเฉพาะแผงนี้ ไม่ใช้ scrollIntoView (จะพาทั้งหน้าเลื่อนตามไปด้วย)
   const sideRef = useRef<HTMLElement>(null);
+
+  // ความสูงตารางข้าง = ส่วนที่เหลือของจอใต้ขอบบนของแผง (ก่อนเลื่อนหน้า แผงยังไม่ติดจอและเริ่มต่ำกว่า
+  // ถ้าใช้ความสูงตอนติดจอ ส่วนล่างของแผงจะเลยขอบจอ ช่องท้ายตารางจะมองไม่เห็นแม้เลื่อนในแผงสุดแล้ว)
   useEffect(() => {
     const side = sideRef.current;
-    const cell = side?.querySelector<HTMLElement>('[aria-current="true"]');
-    if (!side || !cell || side.clientHeight === 0) return;
-    const s = side.getBoundingClientRect();
-    const c = cell.getBoundingClientRect();
-    if (c.top < s.top + 40) side.scrollTop += c.top - s.top - 40;
-    else if (c.bottom > s.bottom - 16) side.scrollTop += c.bottom - s.bottom + 16;
+    if (!side) return;
+    let frame = 0;
+    const fit = () => {
+      frame = 0;
+      if (side.offsetParent === null) return; // จอแคบ: ไม่มีตารางข้าง
+      const top = Math.max(side.getBoundingClientRect().top, 0);
+      side.style.maxHeight = `${Math.max(240, Math.floor(window.innerHeight - top - 16))}px`;
+    };
+    const onChange = () => {
+      if (!frame) frame = requestAnimationFrame(fit);
+    };
+    fit();
+    window.addEventListener('scroll', onChange, { passive: true });
+    window.addEventListener('resize', onChange);
+    return () => {
+      window.removeEventListener('scroll', onChange);
+      window.removeEventListener('resize', onChange);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  useEffect(() => {
+    const side = sideRef.current;
+    if (!side || side.clientHeight === 0) return;
+    const align = () => {
+      const cell = side.querySelector<HTMLElement>('[aria-current="true"]');
+      if (!cell) return;
+      const s = side.getBoundingClientRect();
+      const c = cell.getBoundingClientRect();
+      // ส่วนที่มองเห็นจริง: แผงอาจยาวเลยขอบล่างจอ (ตอนหน้ายังไม่ได้เลื่อน แผงยังไม่ติดจอ)
+      const top = Math.max(s.top, 0);
+      const bottom = Math.min(s.bottom, window.innerHeight);
+      if (c.top < top + 40 || c.bottom > bottom - 16) {
+        side.scrollTop += (c.top + c.bottom) / 2 - (top + bottom) / 2;
+      }
+    };
+    align();
+    // ฟอนต์ญี่ปุ่นโหลดเสร็จทีหลัง → แถวสูงขึ้นและช่องที่เลือกเลื่อนตำแหน่ง: จัดใหม่เมื่อขนาดตารางเปลี่ยน
+    // เฉพาะช่วงแรก และหยุดทันทีถ้าผู้ใช้เลื่อน/แตะแผงเอง (ไม่แย่งการเลื่อนของผู้ใช้)
+    const content = side.lastElementChild;
+    const ro = new ResizeObserver(() => align());
+    if (content) ro.observe(content);
+    const stop = () => ro.disconnect();
+    const timer = window.setTimeout(stop, 2000);
+    side.addEventListener('wheel', stop, { passive: true, once: true });
+    side.addEventListener('pointerdown', stop, { once: true });
+    return () => {
+      stop();
+      window.clearTimeout(timer);
+      side.removeEventListener('wheel', stop);
+      side.removeEventListener('pointerdown', stop);
+    };
   }, [charId]);
 
   const entry = findChar(pack, charId);
   const strokes = useStrokeData(pack, entry?.char ?? '');
-  if (!entry || !strokes) return <NotFoundPage />;
+  // ตัวควบ (きゃ) ไม่มีลำดับขีดของตัวเอง → แสดงหน้าวิธีเขียน/วิธีอ่านแทนกระดาน
+  if (!entry || (!strokes && !isCompound(entry))) return <NotFoundPage />;
+  const compound = isCompound(entry);
 
   const modeParam = params.get('mode');
   const mode: Mode = isMode(modeParam) ? modeParam : 'animate';
@@ -119,9 +172,12 @@ export default function PracticePage() {
   const prev = pack.chars[index - 1];
   const next = pack.chars[index + 1];
   const group = pack.groups.find((g) => g.id === entry.group);
+  // ตัวเล็ก/ー ไม่มีเสียงของตัวเอง: ไม่มีปุ่มฟังเสียง
+  const silent = group?.kind === 'small';
   const rowState = rowStatus(
     pack.chars.filter((c) => c.group === entry.group),
     progress,
+    rowNeeds(group?.kind),
   );
   const level = masteryLevel(progress?.[entry.id]);
   const hrefFor = (id: string, m: Mode = mode) =>
@@ -169,7 +225,7 @@ export default function PracticePage() {
         <header className={cx('card', styles.charHeader)}>
           <div
             key={`c-${entry.id}`}
-            className={cx('kana', styles.bigChar, slide)}
+            className={cx('kana', styles.bigChar, compound && styles.bigCompound, slide)}
             style={slideStyle}
             id="char-title"
             lang="ja"
@@ -180,10 +236,18 @@ export default function PracticePage() {
             <div className={styles.reading}>
               <span className={styles.romaji}>{romajiLabel(entry)}</span>
               <span className={styles.thai}>{entry.thai}</span>
-              <SpeakButton text={entry.char} label={`ฟังเสียง ${entry.char}`} size="sm" />
+              {!silent && <SpeakButton text={entry.char} label={`ฟังเสียง ${entry.char}`} size="sm" />}
             </div>
             <p className="small muted">
-              {group && groupLabel(group)} · {strokes.strokes.length} ขีด ·{' '}
+              {group && groupLabel(group)} ·{' '}
+              {compound ? (
+                <>
+                  ตัวควบ <span className="kana">{entry.parts!.join(' + ')}</span>
+                </>
+              ) : (
+                `${strokes!.strokes.length} ขีด`
+              )}{' '}
+              ·{' '}
               <span className={styles[`level${level}`]}>{MASTERY_LABEL[level]}</span>
               {entry.base && (
                 <>
@@ -234,93 +298,107 @@ export default function PracticePage() {
           )}
         </header>
 
-        {/* คอลัมน์งาน: แท็บโหมด + กระดาน (+ แผงลำดับขีด) + ส่วนพับ */}
+        {/* คอลัมน์งาน: แท็บโหมด + กระดาน (+ แผงลำดับขีด) + ส่วนพับ — ตัวควบ: วิธีเขียน/วิธีอ่านแทน */}
         <div className={styles.work}>
-          <div className={styles.modeBar}>
-            <div className="segmented" role="tablist" aria-label="โหมดฝึก">
-              {MODES.map(({ id, label }) => (
-                <button
-                  key={id}
-                  type="button"
-                  role="tab"
-                  aria-selected={mode === id}
-                  aria-controls="practice-board"
-                  onClick={() => setMode(id)}
-                >
-                  {label}
-                </button>
-              ))}
+          {compound || !strokes ? (
+            <div id="practice-board" className={styles.board} ref={boardRef} data-noscroll>
+              <CompoundPanel
+                key={entry.id}
+                pack={pack}
+                entry={entry}
+                hrefFor={(id) => hrefFor(id, 'animate')}
+                actions={completeActions}
+              />
             </div>
-          </div>
-
-          <div id="practice-board" role="tabpanel" className={styles.board} ref={boardRef}>
-            {mode === 'animate' && (
-              <div className={step.wrap}>
-                <div className={step.canvasCol}>
-                  <StrokeAnimator
-                    key={entry.id}
-                    data={strokes}
-                    speed={settings.animationSpeed}
-                    showNumbers={settings.showStrokeNumbers}
-                    label={`แอนิเมชันลำดับขีดของ ${entry.char}`}
-                  />
-                </div>
-                <aside className={step.panel} aria-label="ลำดับขีด">
-                  <p className={step.panelLabel}>ลำดับขีด</p>
-                  <StrokeStepList data={strokes} refs={referenceStrokes(strokes)} />
-                </aside>
+          ) : (
+          <>
+            <div className={styles.modeBar}>
+              <div className="segmented" role="tablist" aria-label="โหมดฝึก">
+                {MODES.map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    role="tab"
+                    aria-selected={mode === id}
+                    aria-controls="practice-board"
+                    onClick={() => setMode(id)}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
-            )}
-            {mode === 'trace' && (
-              <StrokeStepBoard
-                key={`${entry.id}-trace-${settings.strictness}`}
-                data={strokes}
-                guide
-                leniency={leniency}
-                showNumbers={settings.showStrokeNumbers}
-                label={boardLabel}
-                onComplete={onTraceDone}
-                completeActions={completeActions}
-              />
-            )}
-            {mode === 'check' && (
-              <StrokeStepBoard
-                key={`${entry.id}-check-${settings.strictness}`}
-                data={strokes}
-                guide={false}
-                leniency={leniency}
-                label={boardLabel}
-                onComplete={onCheckDone}
-                completeActions={completeActions}
-              />
-            )}
-            {mode === 'free' && (
-              <FreeWriteBoard
-                key={`${entry.id}-free`}
-                data={strokes}
-                leniency={leniency}
-                label={boardLabel}
-                completeActions={completeActions}
-                onShowOrder={() => setMode('animate')}
-                onResult={(r) =>
-                  recordPractice(pack.id, entry.id, {
-                    score: r.score,
-                    correct: r.score >= 70 ? true : r.score < 40 ? false : undefined,
-                  })
-                }
-              />
-            )}
-          </div>
+            </div>
 
-          {/*
-            เขียนครบทั้งแถวแล้ว แต่ยังไม่เคยตอบถูกครบ → ชวนไปทดสอบแถวนี้ (ตามเส้นทาง "เรียนต่อ")
-            อยู่ใต้กระดาน ไม่ดันกระดานลงไปจนต้องเลื่อนจอ
-          */}
-          {rowQuiz && (
-            <p className={styles.rowReady}>
-              เขียนครบทั้งแถว <span className="kana">{rowQuiz.head}</span> แล้ว —{' '}
-              <Link to={`/${pack.id}/quiz?groups=${rowQuiz.id}`}>ทดสอบแถวนี้ →</Link>
-            </p>
+            <div id="practice-board" role="tabpanel" className={styles.board} ref={boardRef}>
+              {mode === 'animate' && (
+                <div className={step.wrap}>
+                  <div className={step.canvasCol}>
+                    <StrokeAnimator
+                      key={entry.id}
+                      data={strokes}
+                      speed={settings.animationSpeed}
+                      showNumbers={settings.showStrokeNumbers}
+                      label={`แอนิเมชันลำดับขีดของ ${entry.char}`}
+                    />
+                  </div>
+                  <aside className={step.panel} aria-label="ลำดับขีด">
+                    <p className={step.panelLabel}>ลำดับขีด</p>
+                    <StrokeStepList data={strokes} refs={referenceStrokes(strokes)} />
+                  </aside>
+                </div>
+              )}
+              {mode === 'trace' && (
+                <StrokeStepBoard
+                  key={`${entry.id}-trace-${settings.strictness}`}
+                  data={strokes}
+                  guide
+                  leniency={leniency}
+                  showNumbers={settings.showStrokeNumbers}
+                  label={boardLabel}
+                  onComplete={onTraceDone}
+                  completeActions={completeActions}
+                />
+              )}
+              {mode === 'check' && (
+                <StrokeStepBoard
+                  key={`${entry.id}-check-${settings.strictness}`}
+                  data={strokes}
+                  guide={false}
+                  leniency={leniency}
+                  label={boardLabel}
+                  onComplete={onCheckDone}
+                  completeActions={completeActions}
+                />
+              )}
+              {mode === 'free' && (
+                <FreeWriteBoard
+                  key={`${entry.id}-free`}
+                  data={strokes}
+                  leniency={leniency}
+                  label={boardLabel}
+                  completeActions={completeActions}
+                  onShowOrder={() => setMode('animate')}
+                  onResult={(r) =>
+                    recordPractice(pack.id, entry.id, {
+                      score: r.score,
+                      correct: r.score >= 70 ? true : r.score < 40 ? false : undefined,
+                    })
+                  }
+                />
+              )}
+            </div>
+
+            {/*
+              เขียนครบทั้งแถวแล้ว แต่ยังไม่เคยตอบถูกครบ → ชวนไปทดสอบแถวนี้ (ตามเส้นทาง "เรียนต่อ")
+              อยู่ใต้กระดาน ไม่ดันกระดานลงไปจนต้องเลื่อนจอ
+            */}
+            {rowQuiz && (
+              <p className={styles.rowReady}>
+                เขียนครบทั้งแถว <span className="kana">{rowQuiz.head}</span> แล้ว —{' '}
+                <Link to={`/${pack.id}/quiz?groups=${rowQuiz.id}`}>ทดสอบแถวนี้ →</Link>
+              </p>
+            )}
+          </>
           )}
 
           {/* ตารางเลือกตัวอักษร: พับเก็บใต้กระดาน (เปลี่ยนตัวปกติใช้ลูกศรด้านบน) */}
@@ -337,36 +415,38 @@ export default function PracticePage() {
             </div>
           </details>
 
-          {/* ตั้งค่าที่ไม่ได้ใช้บ่อย: พับเก็บไว้ ไม่ให้แย่งความสนใจจากกระดาน */}
-          <details className={styles.settings}>
-            <summary>วิธีฝึกและตั้งค่า</summary>
-            <div className={styles.settingsBody}>
-              <p className={styles.tip}>{modeInfo.tip}</p>
-              <label className="chip">
-                <input
-                  type="checkbox"
-                  checked={settings.showStrokeNumbers}
-                  onChange={(e) => updateSettings({ showStrokeNumbers: e.target.checked })}
-                />
-                แสดงเลขลำดับขีด
-              </label>
-              <div className="row">
-                <span className="small muted">ความเข้มงวดในการตรวจ</span>
-                <div className="segmented" role="group" aria-label="ความเข้มงวดในการตรวจ">
-                  {STRICTNESS_ORDER.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      aria-pressed={settings.strictness === s}
-                      onClick={() => updateSettings({ strictness: s })}
-                    >
-                      {STRICTNESS_LABEL[s]}
-                    </button>
-                  ))}
+          {/* ตั้งค่าที่ไม่ได้ใช้บ่อย: พับเก็บไว้ ไม่ให้แย่งความสนใจจากกระดาน (ตัวควบไม่มีกระดาน) */}
+          {!compound && (
+            <details className={styles.settings}>
+              <summary>วิธีฝึกและตั้งค่า</summary>
+              <div className={styles.settingsBody}>
+                <p className={styles.tip}>{modeInfo.tip}</p>
+                <label className="chip">
+                  <input
+                    type="checkbox"
+                    checked={settings.showStrokeNumbers}
+                    onChange={(e) => updateSettings({ showStrokeNumbers: e.target.checked })}
+                  />
+                  แสดงเลขลำดับขีด
+                </label>
+                <div className="row">
+                  <span className="small muted">ความเข้มงวดในการตรวจ</span>
+                  <div className="segmented" role="group" aria-label="ความเข้มงวดในการตรวจ">
+                    {STRICTNESS_ORDER.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        aria-pressed={settings.strictness === s}
+                        onClick={() => updateSettings({ strictness: s })}
+                      >
+                        {STRICTNESS_LABEL[s]}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          </details>
+            </details>
+          )}
         </div>
 
         {/* จอกว้าง (≥ 1440px): ตารางเลือกตัวอักษรเปิดค้างเป็นคอลัมน์ขวา แทนส่วนพับ "เลือกตัวอักษร" */}

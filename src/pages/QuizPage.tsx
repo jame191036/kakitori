@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useScriptPack } from '../app/ScriptContext';
 import { ContinueCard } from '../components/ContinueCard';
-import { charsInGroups, findChar, scriptList } from '../data/scripts';
+import { charsInGroups, findChar, isCompound, isQuizzable, quizzableChars, scriptList } from '../data/scripts';
 import type { CharEntry, ScriptPack } from '../data/types';
 import { quizWeight } from '../features/progress/progressLogic';
 import { progressStore } from '../features/progress/progressStore';
@@ -31,11 +31,14 @@ type Phase =
   | { kind: 'run'; config: RunConfig; questions: QuizQuestion[]; runId: number }
   | { kind: 'result'; config: RunConfig; records: AnswerRecord[] };
 
+/** ตัวที่ออกข้อสอบได้ (ตัดตัวเล็ก/ー ที่ไม่มีเสียงของตัวเองออก) */
+const quizPool = (pack: ScriptPack, chars: readonly CharEntry[]) => chars.filter((c) => isQuizzable(pack, c));
+
 function makeQuestions(pack: ScriptPack, config: RunConfig): QuizQuestion[] {
   const progress = progressStore.get().scripts[pack.id];
   return buildQuiz({
     pool: config.pool,
-    all: pack.chars,
+    all: quizzableChars(pack),
     types: config.types,
     count: config.count > 0 ? config.count : config.pool.length,
     weightOf: (c) => quizWeight(progress?.[c.id]),
@@ -67,11 +70,11 @@ function QuizFlow({ quickStart }: { quickStart: QuickStart | null }) {
     const saved = getQuizPrefs(settingsStore.get(), pack.id).types.filter((t) =>
       isTypeAvailable(t, pack, isSpeechAvailable()),
     );
-    const config = focusedConfig(
-      quickStart.chars,
-      saved.length ? saved : DEFAULT_QUIZ_PREFS.types,
-      quickStart.title,
-    );
+    // ตัวควบออกข้อแบบเขียนไม่ได้ — ถ้าตั้งไว้แค่แบบเขียนแต่ทดสอบแถวตัวควบ ใช้รูปแบบเริ่มต้นแทน
+    const writeOnly = saved.length > 0 && saved.every((t) => t === 'readingToWrite');
+    const types =
+      !saved.length || (writeOnly && quickStart.chars.every(isCompound)) ? DEFAULT_QUIZ_PREFS.types : saved;
+    const config = focusedConfig(quickStart.chars, types, quickStart.title);
     return { kind: 'run', config, questions: makeQuestions(pack, config), runId: 0 };
   });
 
@@ -106,14 +109,15 @@ function QuizFlow({ quickStart }: { quickStart: QuickStart | null }) {
       {phase.kind === 'setup' && (
         <QuizSetup
           pack={pack}
-          onStart={({ groups, types, count }) =>
+          onStart={({ groups, types, count }) => {
+            const pool = quizPool(pack, charsInGroups(pack, groups));
             start({
-              pool: charsInGroups(pack, groups),
+              pool,
               types,
               count,
-              title: `${charsInGroups(pack, groups).length} ตัวที่เลือก · ${count || 'ทุกตัว'}${count ? ' ข้อ' : ''}`,
-            })
-          }
+              title: `${pool.length} ตัวที่เลือก · ${count || 'ทุกตัว'}${count ? ' ข้อ' : ''}`,
+            });
+          }}
         />
       )}
 
@@ -156,16 +160,20 @@ function QuizFlow({ quickStart }: { quickStart: QuickStart | null }) {
 function quickStartFrom(pack: ScriptPack, params: URLSearchParams): QuickStart | null {
   const groupIds = (params.get('groups') ?? '').split(',').filter(Boolean);
   const groups = pack.groups.filter((g) => groupIds.includes(g.id));
-  if (groups.length) {
+  const groupChars = quizPool(pack, charsInGroups(pack, groups.map((g) => g.id)));
+  if (groupChars.length) {
     return {
-      chars: charsInGroups(pack, groups.map((g) => g.id)),
+      chars: groupChars,
       title: `ทดสอบแถว ${groups.map((g) => g.head).join(' ')} — ตอบถูกครบทุกตัวเพื่อผ่านแถวนี้`,
     };
   }
-  const chars = (params.get('chars') ?? '')
-    .split(',')
-    .map((id) => findChar(pack, id))
-    .filter((c): c is CharEntry => !!c);
+  const chars = quizPool(
+    pack,
+    (params.get('chars') ?? '')
+      .split(',')
+      .map((id) => findChar(pack, id))
+      .filter((c): c is CharEntry => !!c),
+  );
   return chars.length ? { chars, title: `ทบทวน ${chars.length} ตัว` } : null;
 }
 

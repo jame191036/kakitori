@@ -1,3 +1,4 @@
+import { isQuizzable } from '../../data/scripts';
 import type { CharEntry, ScriptPack } from '../../data/types';
 import { dayNumber } from '../../lib/day';
 import { isRecord } from '../../lib/isRecord';
@@ -107,11 +108,15 @@ export interface WeakChar {
   stat: CharStat;
 }
 
-/** ตัวที่ผิดบ่อย: เคยผิดและยังไม่กลับมาแม่น เรียงจากน่าห่วงที่สุด */
+/**
+ * ตัวที่ผิดบ่อย: เคยผิดและยังไม่กลับมาแม่น เรียงจากน่าห่วงที่สุด
+ * (เฉพาะตัวที่ออกข้อสอบได้ — รายการนี้พาไปทำแบบทดสอบ ตัวเล็ก/ー จึงไม่อยู่ในนี้)
+ */
 export function weakChars(pack: ScriptPack, progress: ScriptProgress | undefined): WeakChar[] {
   if (!progress) return [];
   const out: WeakChar[] = [];
   for (const entry of pack.chars) {
+    if (!isQuizzable(pack, entry)) continue;
     const stat = progress[entry.id];
     if (stat && stat.wrong > 0 && stat.box <= 2) out.push({ entry, stat });
   }
@@ -138,7 +143,10 @@ export interface DueChar {
   overdue: number;
 }
 
-/** ตัวที่ถึงรอบทบทวนแล้ว เรียงจากกล่องต่ำ (น่าห่วง) และเลยรอบนานที่สุดก่อน */
+/**
+ * ตัวที่ถึงรอบทบทวนแล้ว เรียงจากกล่องต่ำ (น่าห่วง) และเลยรอบนานที่สุดก่อน
+ * (เฉพาะตัวที่ออกข้อสอบได้ เพราะการทบทวนคือแบบทดสอบ)
+ */
 export function dueChars(
   pack: ScriptPack,
   progress: ScriptProgress | undefined,
@@ -148,6 +156,7 @@ export function dueChars(
   const today = dayNumber(now);
   const out: DueChar[] = [];
   for (const entry of pack.chars) {
+    if (!isQuizzable(pack, entry)) continue;
     const stat = progress[entry.id];
     const due = dueDay(stat);
     if (stat && due !== null && due <= today) out.push({ entry, stat, overdue: today - due });
@@ -180,6 +189,7 @@ export function nextReview(
   let best: number | null = null;
   let count = 0;
   for (const entry of pack.chars) {
+    if (!isQuizzable(pack, entry)) continue;
     const due = dueDay(progress[entry.id]);
     if (due === null || due <= today) continue;
     if (best === null || due < best) {

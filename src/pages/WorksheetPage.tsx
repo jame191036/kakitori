@@ -33,7 +33,14 @@ export default function WorksheetPage() {
       {/* จอกว้าง: ตัวเลือก (ซ้าย ติดจอ) | ตัวอย่างกระดาษ (ขวา) — จอแคบเรียงบนลงล่าง */}
       <div className={styles.workspace}>
         <section className={cx('card no-print', styles.controls)}>
-          <GroupSelector pack={pack} value={groups} onChange={setGroups} legend="แถวที่จะพิมพ์" />
+          {/* ตัวควบไม่มีลำดับขีดของตัวเอง (ฝึกเขียนตัวเล็กแยกแทน) จึงไม่มีให้เลือกพิมพ์ */}
+          <GroupSelector
+            pack={pack}
+            value={groups}
+            onChange={setGroups}
+            legend="แถวที่จะพิมพ์"
+            kinds={['basic', 'dakuten', 'handakuten', 'small']}
+          />
           <div className={styles.options}>
             <label className={styles.field}>
               <span className="small muted">ช่องเขียนทับ (ตัวจาง)</span>

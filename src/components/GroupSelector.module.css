@@ -13,6 +13,13 @@
   padding: 0;
 }
 
+/* แท็บระดับ: ไม่ยืดเต็มจอกว้าง (หน้าแบบทดสอบ) */
+.levels {
+  display: grid;
+  gap: 6px;
+  max-width: 640px;
+}
+
 .kind {
   display: grid;
   gap: 6px;

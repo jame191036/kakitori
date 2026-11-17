@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { charsInGroups, findChar, sameReading } from '../../data/scripts';
+import { charsInGroups, findChar, quizzableChars, sameReading } from '../../data/scripts';
 import { hiragana } from '../../data/scripts/hiragana';
 import { katakana } from '../../data/scripts/katakana';
 import { rng } from '../writing/engine/testUtils';
@@ -125,5 +125,43 @@ describe('buildQuiz', () => {
     const di = findChar(hiragana, 'ぢ')!;
     expect(isCorrectChoice({ id: 0, type: 'readingToChar', answer: ji, choices: [] }, di)).toBe(true);
     expect(isCorrectChoice({ id: 0, type: 'charToReading', answer: ji, choices: [] }, di)).toBe(false);
+  });
+});
+
+describe('small kana and yoon', () => {
+  const quizzable = quizzableChars(hiragana);
+  const kyaRow = charsInGroups(hiragana, ['kya']);
+
+  it('keeps small kana and the long mark out of quizzes', () => {
+    expect(quizzable.some((c) => c.id.startsWith('small-'))).toBe(false);
+    expect(quizzableChars(katakana).some((c) => c.id === 'long' || c.id.startsWith('small-'))).toBe(false);
+    expect(quizzable.some((c) => c.char === 'きゃ')).toBe(true);
+  });
+
+  it('never asks to write a yoon (it has no stroke data of its own)', () => {
+    const qs = buildQuiz({
+      pool: kyaRow,
+      all: quizzable,
+      types: ['readingToWrite', 'charToReading'],
+      count: 30,
+      weightOf: () => 1,
+      random: rng(7),
+    });
+    expect(qs).toHaveLength(30);
+    expect(qs.every((q) => q.type === 'charToReading')).toBe(true);
+  });
+
+  it('returns no questions when only writing is chosen for a yoon-only pool', () => {
+    const qs = buildQuiz({ pool: kyaRow, all: quizzable, types: ['readingToWrite'], count: 5, weightOf: () => 1 });
+    expect(qs).toEqual([]);
+  });
+
+  it('uses the other yoon of the same row as look-alike distractors', () => {
+    const kya = findChar(hiragana, 'kya')!;
+    expect([...confusablesOf(kya, quizzable)]).toEqual(expect.arrayContaining(['きゅ', 'きょ', 'ぎゃ']));
+    // ขอบเขตมีแค่ตัวเดียว: ตัวหลอกที่เติมจากทั้งชุดต้องเป็นตัวควบด้วย
+    const ds = pickDistractors(kya, [kya], quizzable, rng(9));
+    expect(ds).toHaveLength(3);
+    expect(ds.every((d) => d.parts)).toBe(true);
   });
 });

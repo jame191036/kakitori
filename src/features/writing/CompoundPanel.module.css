@@ -1,0 +1,119 @@
+/* หน้าตัวควบ: ส่วนวิธีเขียน (2 ช่อง) + วิธีอ่าน คั่นด้วยเส้นบรรทัด */
+.panel {
+  display: grid;
+  gap: 24px;
+  max-width: 640px;
+}
+
+.block {
+  display: grid;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.block:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+/* 2 ช่องติดกันแบบกระดาษช่อง ใช้เส้นร่วมกัน */
+.cells {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 200px));
+}
+
+.cell {
+  display: grid;
+  gap: 6px;
+  color: var(--text);
+  text-decoration: none !important;
+  -webkit-touch-callout: none;
+}
+
+.pad {
+  display: block;
+  border: 1px solid var(--grid);
+  background: var(--pad);
+  transition: background-color 150ms ease;
+}
+
+.cell + .cell .pad {
+  border-left: 0;
+}
+
+.cell:active .pad {
+  background: var(--surface-2);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cell:hover .pad {
+    background: var(--surface-2);
+  }
+
+  .cell:hover .go {
+    color: var(--text);
+  }
+}
+
+.caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding-right: 8px;
+  font-size: 0.9rem;
+}
+
+.go {
+  color: var(--text-2);
+  font-size: 0.85rem;
+  transition: color 150ms ease;
+}
+
+.note,
+.explain {
+  font-size: 0.9rem;
+  color: var(--text-2);
+}
+
+.reading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+.reading :global(.kana) {
+  font-size: 2.4rem;
+  line-height: 1.2;
+}
+
+.reading strong {
+  font-size: 1.6rem;
+}
+
+.reading :global(.muted) {
+  font-size: 1.15rem;
+}
+
+.compare {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.compare :global(.btn) {
+  gap: 8px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

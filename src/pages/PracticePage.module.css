@@ -130,6 +130,12 @@
     var(--pad);
 }
 
+/* ตัวควบ (きゃ) กว้าง 2 ตัวอักษร: ย่อให้พอดีช่อง (มือถือย่อลงอีก ดูท้ายไฟล์) */
+.bigChar.bigCompound {
+  font-size: 2.5rem;
+  white-space: nowrap;
+}
+
 .charInfo {
   display: grid;
   gap: 4px;
@@ -326,6 +332,10 @@
     width: 4.4rem;
     height: 4.4rem;
     font-size: 3.2rem;
+  }
+
+  .bigChar.bigCompound {
+    font-size: 2rem;
   }
 
   .nav {

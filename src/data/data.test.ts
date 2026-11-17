@@ -23,18 +23,31 @@ describe.each(scriptList.map((p) => [p.id, p] as const))('script pack %s', (_, p
     }
   });
 
-  it('has stroke data for every character', async () => {
+  it('has stroke data for every character (compounds: for each part)', async () => {
     const strokes = await pack.loadStrokes();
     for (const c of pack.chars) {
-      const d = strokes.chars[c.char];
-      expect(d, c.char).toBeDefined();
-      expect(d!.strokes.length).toBeGreaterThan(0);
-      expect(d!.numbers).toHaveLength(d!.strokes.length);
+      for (const ch of c.parts ?? [c.char]) {
+        const d = strokes.chars[ch];
+        expect(d, `${c.char} → ${ch}`).toBeDefined();
+        expect(d!.strokes.length).toBeGreaterThan(0);
+        expect(d!.numbers).toHaveLength(d!.strokes.length);
+      }
+      // ตัวควบต้องเท่ากับตัวที่ประกอบต่อกัน และทุกส่วนต้องอยู่ในชุดเดียวกัน
+      if (c.parts) {
+        expect(c.parts.join(''), c.id).toBe(c.char);
+        for (const p of c.parts) expect(pack.chars.some((x) => x.char === p), `${c.char} → ${p}`).toBe(true);
+      }
     }
   });
 });
 
-/** จำนวนขีดมาตรฐานของ 46 ตัวพื้นฐาน (ตัวขุ่น +2, ตัวครึ่งขุ่น +1) */
+/** ตัวเล็ก → ตัวใหญ่ (จำนวนขีดเท่ากัน) */
+const SMALL_OF: Record<string, string> = {
+  ゃ: 'や', ゅ: 'ゆ', ょ: 'よ', っ: 'つ',
+  ャ: 'ヤ', ュ: 'ユ', ョ: 'ヨ', ッ: 'ツ',
+};
+
+/** จำนวนขีดมาตรฐานของ 46 ตัวพื้นฐาน + ー (ตัวขุ่น +2, ตัวครึ่งขุ่น +1, ตัวเล็กเท่าตัวใหญ่) */
 const STANDARD_STROKES: Record<string, number> = {
   あ: 3, い: 2, う: 2, え: 2, お: 3, か: 3, き: 4, く: 1, け: 3, こ: 2,
   さ: 3, し: 1, す: 2, せ: 3, そ: 1, た: 4, ち: 2, つ: 1, て: 1, と: 2,
@@ -46,20 +59,37 @@ const STANDARD_STROKES: Record<string, number> = {
   ナ: 2, ニ: 2, ヌ: 2, ネ: 4, ノ: 1, ハ: 2, ヒ: 2, フ: 1, ヘ: 1, ホ: 4,
   マ: 2, ミ: 3, ム: 2, メ: 2, モ: 3, ヤ: 2, ユ: 2, ヨ: 3, ラ: 2, リ: 2,
   ル: 2, レ: 1, ロ: 3, ワ: 2, ヲ: 3, ン: 2,
+  ー: 1,
 };
 
 describe.each([
   ['hiragana', hiragana, hiraganaStrokes],
   ['katakana', katakana, katakanaStrokes],
 ] as [string, ScriptPack, StrokeSet][])('kana set %s', (_, pack, strokes) => {
-  it('contains 46 basic + 25 voiced characters', () => {
-    expect(pack.chars).toHaveLength(71);
-    expect(pack.chars.filter((c) => !c.base)).toHaveLength(46);
+  it('contains 46 basic + 25 voiced + small + 33 yoon characters', () => {
+    const kindOf = (c: { group: string }) => pack.groups.find((g) => g.id === c.group)!.kind;
+    const count = (kind: string) => pack.chars.filter((c) => kindOf(c) === kind).length;
+    expect(count('basic')).toBe(46);
+    expect(count('dakuten') + count('handakuten')).toBe(25);
+    // คาตาคานะมี ー เพิ่มในกลุ่มตัวเล็ก
+    expect(count('small')).toBe(pack.id === 'katakana' ? 5 : 4);
+    expect(count('yoon')).toBe(33);
+    expect(pack.chars.filter((c) => c.parts)).toHaveLength(33);
+  });
+
+  it('places yoon in the ya / yu / yo columns of a row that starts with an i-column character', () => {
+    for (const c of pack.chars.filter((x) => x.parts)) {
+      expect([0, 2, 4], c.char).toContain(c.col);
+      const head = pack.chars.find((x) => x.char === c.parts![0])!;
+      expect(head.col, c.char).toBe(1);
+    }
   });
 
   it('matches the standard stroke counts', () => {
     for (const c of pack.chars) {
-      const base = c.base ?? c.char;
+      if (c.parts) continue;
+      const big = SMALL_OF[c.char] ?? c.char;
+      const base = c.base ?? big;
       const extra = c.base ? (c.group === 'pa' ? 1 : 2) : 0;
       expect(strokes.chars[c.char]!.strokes.length, c.char).toBe(STANDARD_STROKES[base]! + extra);
     }
@@ -68,8 +98,13 @@ describe.each([
   it('has example words that contain the character and only taught kana', () => {
     const taught = new Set([...pack.chars.map((c) => c.char), 'ー']);
     const withoutExample = pack.chars.filter((c) => !c.example).map((c) => c.char);
-    // ヲ ヂ ヅ แทบไม่ใช้ในคำทั่วไป จึงไม่มีคำตัวอย่าง
-    expect(withoutExample).toEqual(pack.id === 'katakana' ? ['ヲ', 'ヂ', 'ヅ'] : []);
+    // ตัวที่แทบไม่ใช้ในคำทั่วไป จึงไม่มีคำตัวอย่าง (ไม่แต่งคำแปลกๆ ขึ้นมา)
+    expect(withoutExample).toEqual(
+      pack.id === 'katakana'
+        ? ['ヲ', 'ヂ', 'ヅ', 'キョ', 'ニャ', 'ニョ', 'ヒャ', 'ヒュ', 'ヒョ', 'ミョ', 'リャ', 'リョ',
+           'ギュ', 'ギョ', 'ビャ', 'ビュ', 'ビョ', 'ピャ', 'ピュ', 'ピョ']
+        : ['にょ', 'ひゅ', 'みゅ', 'びゅ', 'ぴゅ'],
+    );
     for (const c of pack.chars) {
       if (!c.example) continue;
       expect(c.example.kana, c.char).toContain(c.char);
@@ -78,10 +113,14 @@ describe.each([
     }
   });
 
-  it('pairs every character with its counterpart by id', () => {
+  it('pairs every character with its counterpart by id (except katakana ー)', () => {
     const other = scripts[pack.counterpart!];
     expect(other.counterpart).toBe(pack.id);
     for (const c of pack.chars) {
+      if (c.id === 'long') {
+        expect(counterpartOf(pack, c)).toBeUndefined();
+        continue;
+      }
       const pair = counterpartOf(pack, c)!;
       expect(pair, c.char).toBeDefined();
       expect([pair.romaji, pair.thai, pair.group, pair.col]).toEqual([c.romaji, c.thai, c.group, c.col]);

@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router';
+import { groupLabel } from '../data/scripts';
 import type { ScriptPack } from '../data/types';
-import { buildPath, nextStep, stepHref } from '../features/progress/learningPath';
+import { buildPath, charState, nextStep, rowNeeds, stepHref } from '../features/progress/learningPath';
 import { progressStore } from '../features/progress/progressStore';
 import { useStore } from '../lib/persistentStore';
 import { cx } from '../lib/cx';
@@ -34,7 +35,13 @@ export function ContinueCard({ packs }: ContinueCardProps) {
 
   const progress = data.scripts[step.pack.id];
   const { status } = step;
+  const needs = rowNeeds(step.group.kind);
   const isStart = step.index === 1 && status.kind === 'write' && status.remaining === step.chars.length;
+  const STATE_TITLE = {
+    done: 'ผ่านแล้ว',
+    written: 'เขียนแล้ว ยังไม่เคยตอบถูก',
+    todo: needs.write ? 'ยังไม่ได้เขียน' : 'ยังไม่เคยตอบถูก',
+  } as const;
 
   return (
     <section className={cx('card', styles.card)} aria-labelledby="continue-title">
@@ -42,21 +49,27 @@ export function ContinueCard({ packs }: ContinueCardProps) {
         <div>
           <p className={styles.eyebrow}>{isStart ? 'เริ่มเรียน' : 'เรียนต่อ'}</p>
           <h2 id="continue-title" className={styles.title}>
-            {step.pack.name} แถว <span className="kana">{step.group.head}</span>
+            {step.pack.name}{' '}
+            {step.group.kind === 'small' ? (
+              groupLabel(step.group)
+            ) : (
+              <>
+                แถว <span className="kana">{step.group.head}</span>
+              </>
+            )}
           </h2>
           <p className="small muted">
-            ขั้นที่ {step.index} จาก {step.total} · ผ่านแล้ว {step.doneCount} แถว
+            ระดับ {step.level} · ขั้นที่ {step.index} จาก {step.total} · ผ่านแล้ว {step.doneCount} แถว
           </p>
         </div>
         <div className={styles.row} aria-label="สถานะตัวอักษรในแถวนี้">
           {step.chars.map((c) => {
-            const s = progress?.[c.id];
-            const state = s?.practiced && s.correct ? 'done' : s?.practiced ? 'written' : 'todo';
+            const state = charState(progress?.[c.id], needs);
             return (
               <span
                 key={c.id}
-                className={cx('kana', styles.char, styles[state])}
-                title={state === 'done' ? 'ผ่านแล้ว' : state === 'written' ? 'เขียนแล้ว ยังไม่เคยตอบถูก' : 'ยังไม่ได้เขียน'}
+                className={cx('kana', styles.char, styles[state], c.parts && styles.wide)}
+                title={STATE_TITLE[state]}
               >
                 {c.char}
               </span>
@@ -72,8 +85,12 @@ export function ContinueCard({ packs }: ContinueCardProps) {
       <div className={styles.foot}>
         <p className="small">
           {status.kind === 'write'
-            ? `ขั้นแรก: ฝึกเขียนให้ครบทุกตัวในแถว (เหลือ ${status.remaining} ตัว)`
-            : `เขียนครบแล้ว! ต่อไปทำแบบทดสอบแถวนี้ให้ตอบถูกครบทุกตัว (เหลือ ${status.remaining} ตัว)`}
+            ? needs.correct
+              ? `ขั้นแรก: ฝึกเขียนให้ครบทุกตัวในแถว (เหลือ ${status.remaining} ตัว)`
+              : `ฝึกเขียนตัวเล็กให้ครบทุกตัว (เหลือ ${status.remaining} ตัว)`
+            : needs.write
+              ? `เขียนครบแล้ว! ต่อไปทำแบบทดสอบแถวนี้ให้ตอบถูกครบทุกตัว (เหลือ ${status.remaining} ตัว)`
+              : `ตัวควบฝึกอ่านและฟัง: ทำแบบทดสอบแถวนี้ให้ตอบถูกครบทุกตัว (เหลือ ${status.remaining} ตัว)`}
         </p>
         <Link to={stepHref(step)} className="btn btn-primary">
           {status.kind === 'write' ? (

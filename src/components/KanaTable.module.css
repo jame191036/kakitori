@@ -1,6 +1,8 @@
 /*
- * แบ่งคอลัมน์ตาม "ที่ที่ตารางวางอยู่" (container query) ไม่ใช่ขนาดจอ:
- * ที่แคบ (มือถือ / แถบข้างหน้าฝึก) = คอลัมน์เดียว · ที่กว้าง = 2 คอลัมน์ (ตัวพื้นฐาน | ตัวขุ่น + ตัวครึ่งขุ่น)
+ * จัดคอลัมน์ตาม "ที่ที่ตารางวางอยู่" (container query) ไม่ใช่ขนาดจอ:
+ * ที่แคบ (มือถือ / แถบข้างหน้าฝึก) = หมวดเรียงต่อกันลงมา
+ * ที่กว้าง = 2 คอลัมน์แบบหน้าหนังสือพิมพ์ (CSS columns) เบราว์เซอร์แบ่งหมวดให้แต่ละคอลัมน์สูงพอๆ กัน
+ *   ระดับ 1: ตัวพื้นฐาน | ตัวขุ่น + ตัวครึ่งขุ่น · ระดับ 2: ตัวเล็ก | ตัวควบ
  * แต่ละคอลัมน์จำกัดความกว้าง ให้ช่องใกล้สี่เหลี่ยมแบบกระดาษช่อง ไม่ยืดเป็นแถบยาว
  */
 .wrap {
@@ -15,28 +17,39 @@
 .cols {
   display: grid;
   grid-template-columns: minmax(0, var(--col-max));
-  gap: 22px 56px;
-  align-items: start;
+  gap: 22px;
 }
 
-.col {
-  display: grid;
-  gap: 22px;
-  align-content: start;
-  min-width: 0;
+/* ตารางย่อ: เต็มความกว้างตอนอยู่คอลัมน์เดียว (แถบข้าง/จอมือถือ) */
+.compact .cols {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 @container (min-width: 880px) {
-  .cols {
-    grid-template-columns: repeat(2, minmax(0, var(--col-max)));
+  .cols,
+  .compact .cols {
+    display: block;
+    columns: 2;
+    column-gap: 56px;
+    max-width: calc(var(--col-max) * 2 + 56px);
+  }
+
+  /* หมวดไม่ถูกตัดข้ามคอลัมน์ · ระยะห่างระหว่างหมวดใช้ margin (columns ไม่มี gap แนวตั้ง) */
+  .section {
+    break-inside: avoid;
+    margin-bottom: 22px;
   }
 }
 
-/* ตารางย่อ: ไม่จำกัดความกว้างตอนอยู่คอลัมน์เดียว (เต็มแถบข้าง/จอมือถือ) */
-@container (max-width: 879px) {
-  .compact .cols {
-    grid-template-columns: minmax(0, 1fr);
-  }
+/* แท็บระดับเหนือตาราง: ตารางหลักกว้างไม่เกินคอลัมน์ตาราง / ตารางย่อเต็มความกว้าง */
+.levelTabs {
+  max-width: var(--col-max);
+  margin-bottom: 18px;
+}
+
+.compact .levelTabs {
+  max-width: none;
+  margin-bottom: 12px;
 }
 
 .section {
@@ -62,7 +75,9 @@
  */
 .grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--n, 5), minmax(0, 1fr));
+  /* กว้างตามจำนวนคอลัมน์ ช่องจึงเท่ากันทุกหมวด (ตัวควบ 3 คอลัมน์ = 3/5) */
+  width: calc(100% * var(--n, 5) / 5);
   border-top: 1px solid var(--grid);
   border-left: 1px solid var(--grid);
 }
@@ -78,7 +93,9 @@
  * อยู่ในกริดเดียวกับช่อง → แถว/คอลัมน์ตรงกันเสมอ · เส้นกรอบล้อมเฉพาะช่องตัวอักษร
  */
 .withAxes {
-  grid-template-columns: 1.6em repeat(5, minmax(0, 1fr));
+  --axis-w: 1.6rem;
+  grid-template-columns: var(--axis-w) repeat(var(--n, 5), minmax(0, 1fr));
+  width: calc((100% - var(--axis-w)) * var(--n, 5) / 5 + var(--axis-w));
   border: 0;
 }
 
@@ -155,6 +172,12 @@
 
 .char {
   font-size: 1.9rem;
+}
+
+/* ตัวควบ (きゃ) กว้าง 2 ตัวอักษร: ย่อลงเล็กน้อยให้พอดีช่องบนมือถือ */
+.compound .char {
+  font-size: 1.6rem;
+  white-space: nowrap;
 }
 
 .romaji {

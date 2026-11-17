@@ -1,4 +1,4 @@
-import { readingsOf, sameReading } from '../../data/scripts';
+import { isCompound, readingsOf, sameReading } from '../../data/scripts';
 import type { CharEntry } from '../../data/types';
 import type { QuestionType } from '../settings/settings';
 
@@ -49,6 +49,7 @@ export function weightedSample<T>(
  * - หน้าตาคล้ายกัน (similar)
  * - ตัวขุ่น/ไม่ขุ่นของกันและกัน (か↔が, ば↔ぱ)
  * - ตัวขุ่นของตัวที่หน้าคล้ายกัน (ぐ↔べ เพราะ く คล้าย へ)
+ * - ตัวควบในแถวเดียวกัน (きゃ↔きゅ↔きょ) — ต่างกันแค่ตัวเล็กท้าย
  */
 export function confusablesOf(answer: CharEntry, all: readonly CharEntry[]): Set<string> {
   const baseChar = answer.base ?? answer.char;
@@ -60,7 +61,8 @@ export function confusablesOf(answer: CharEntry, all: readonly CharEntry[]): Set
     if (c.id === answer.id) continue;
     const sameFamily = c.char === baseChar || c.base === baseChar;
     const voicedLookalike = !!answer.base && !!c.base && baseSimilar.has(c.base);
-    if (sameFamily || voicedLookalike) out.add(c.char);
+    const yoonSibling = isCompound(answer) && c.group === answer.group;
+    if (sameFamily || voicedLookalike || yoonSibling) out.add(c.char);
   }
   return out;
 }
@@ -95,8 +97,11 @@ export function pickDistractors(
     if (ok(c)) chosen.push(c);
   }
   if (chosen.length < n) {
-    // ขอบเขตแคบเกินไป — เติมจากตัวพื้นฐานของทั้งชุดก่อน แล้วค่อยตัวอื่น
-    const rest = shuffle(all, random).sort((a, b) => Number(!!a.base) - Number(!!b.base));
+    // ขอบเขตแคบเกินไป — เติมจากทั้งชุด: ตัวที่หน้าคล้ายกันก่อน (เช่น ぎゃ ของ きゃ)
+    // แล้วประเภทเดียวกับคำตอบ (ตัวควบ ↔ ตัวควบ) แล้วตัวไม่ขุ่นก่อนตัวขุ่น
+    const rank = (c: CharEntry) =>
+      (confusable.has(c.char) ? 0 : 4) + (isCompound(c) === isCompound(answer) ? 0 : 2) + (c.base ? 1 : 0);
+    const rest = shuffle(all, random).sort((a, b) => rank(a) - rank(b));
     for (const c of rest) {
       if (chosen.length >= n) break;
       if (ok(c)) chosen.push(c);
@@ -122,10 +127,14 @@ export function buildQuiz({
   weightOf,
   random = Math.random,
 }: BuildQuizOptions): QuizQuestion[] {
-  if (pool.length === 0 || types.length === 0) return [];
-  const answers = weightedSample(pool, weightOf, count, random);
+  // ตัวควบไม่มีลำดับขีดของตัวเอง จึงออกข้อแบบเขียนไม่ได้ — ใช้รูปแบบอื่นที่เลือกไว้แทน
+  const typesFor = (a: CharEntry) => types.filter((t) => t !== 'readingToWrite' || !isCompound(a));
+  const eligible = pool.filter((a) => typesFor(a).length > 0);
+  if (eligible.length === 0) return [];
+  const answers = weightedSample(eligible, weightOf, count, random);
   return answers.map((answer, id) => {
-    const type = types[Math.floor(random() * types.length)]!;
+    const allowed = typesFor(answer);
+    const type = allowed[Math.floor(random() * allowed.length)]!;
     const choices =
       type === 'readingToWrite'
         ? []

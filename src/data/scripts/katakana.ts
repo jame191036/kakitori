@@ -1,12 +1,14 @@
 import type { ScriptPack, StrokeSet } from '../types';
-import { buildKana, kanaGroups } from './kanaShared';
+import { buildKana, KATAKANA_ONLY_SOUNDS, kanaGroups } from './kanaShared';
 import { KATAKANA_WORDS } from './katakanaWords';
 
-// เรียงตาม KANA_SOUNDS (a i u e o, ka … , pa pi pu pe po)
+// ตัวเดี่ยวเรียงตาม KANA_SOUNDS (a i u e o, ka … , pa pi pu pe po, ตัวเล็ก) แล้วต่อด้วย ー
+// ตัวควบ (キャ …) ประกอบให้เอง
 const CHARS =
   'アイウエオ' + 'カキクケコ' + 'サシスセソ' + 'タチツテト' + 'ナニヌネノ' +
   'ハヒフヘホ' + 'マミムメモ' + 'ヤユヨ' + 'ラリルレロ' + 'ワヲ' + 'ン' +
-  'ガギグゲゴ' + 'ザジズゼゾ' + 'ダヂヅデド' + 'バビブベボ' + 'パピプペポ';
+  'ガギグゲゴ' + 'ザジズゼゾ' + 'ダヂヅデド' + 'バビブベボ' + 'パピプペポ' +
+  'ャュョッ' + 'ー';
 
 const chars = buildKana(CHARS, {
   a: { similar: 'マヤフ' },
@@ -73,7 +75,22 @@ const chars = buildKana(CHARS, {
   za: { note: 'เสียง z — คล้าย "ซ" แต่มีเสียงสั่นในลำคอ' },
   di: { note: 'ออกเสียงเหมือน ジ (ji) พบได้น้อยมาก' },
   du: { note: 'ออกเสียงเหมือน ズ (zu) พบได้น้อยมาก' },
-}, KATAKANA_WORDS);
+  'small-ya': {
+    note: 'ไม่อ่านแยกเดี่ยว ใช้ต่อท้ายตัวในคอลัมน์ i (キ シ チ ニ ヒ ミ リ ギ ジ ビ ピ) ให้อ่านรวบเป็นพยางค์เดียว เช่น キ + ャ = キャ (kya) ไม่ใช่ ki-ya · เขียนให้เล็กกว่า ヤ และค่อนลงด้านล่างของช่อง',
+  },
+  'small-yu': {
+    note: 'ใช้แบบเดียวกับ ャ เช่น キ + ュ = キュ (kyu) · เขียนให้เล็กกว่า ユ และค่อนลงด้านล่างของช่อง',
+  },
+  'small-yo': {
+    note: 'ใช้แบบเดียวกับ ャ เช่น キ + ョ = キョ (kyo) · เขียนให้เล็กกว่า ヨ และค่อนลงด้านล่างของช่อง',
+  },
+  'small-tsu': {
+    note: 'ไม่มีเสียงในตัว ทำให้พยัญชนะของตัวถัดไปซ้ำ (หยุดเสียงสั้นๆ ก่อน) เช่น カップ (kappu = ถ้วย) · เขียนให้เล็กกว่า ツ และค่อนลงด้านล่างของช่อง',
+  },
+  long: {
+    note: 'ลากเสียงสระของตัวก่อนหน้าให้ยาวขึ้น เช่น ケーキ (keeki = เค้ก) · ใช้กับคาตาคานะ ส่วนฮิรางานะเขียนสระซ้ำแทน (เช่น おかあさん) · ถ้าเขียนแนวตั้งจะเป็นขีดแนวตั้ง',
+  },
+}, KATAKANA_WORDS, KATAKANA_ONLY_SOUNDS);
 
 export const katakana: ScriptPack = {
   id: 'katakana',
@@ -83,7 +100,7 @@ export const katakana: ScriptPack = {
   description:
     'ตัวอักษรชุดที่สองของภาษาญี่ปุ่น ใช้เขียนคำทับศัพท์ ชื่อต่างชาติ และคำเลียนเสียง — มีเสียงเหมือนฮิรางานะทุกตัว แต่เส้นตรงและเป็นมุมมากกว่า',
   counterpart: 'hiragana',
-  groups: kanaGroups('アカサタナハマヤラワンガザダバパ'),
+  groups: kanaGroups(chars),
   chars,
   loadStrokes: () =>
     import('../strokes/katakana.json').then((m) => m.default as unknown as StrokeSet),
