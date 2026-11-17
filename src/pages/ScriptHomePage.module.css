@@ -1,56 +1,237 @@
-.hero {
+.page {
   display: grid;
-  gap: 6px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  padding-block: 28px 48px;
 }
 
-.hero :global(.kana) {
-  color: var(--text-3);
-  font-weight: 400;
+.muted {
+  color: var(--text-2);
+  font-size: 0.9rem;
 }
 
-/* เมนูการเรียน: รายการแบบสารบัญ 2 คอลัมน์ คั่นด้วยเส้นบรรทัด */
-.actions {
+/* ── หัวหน้า: ป้ายสาย (ตัวแรกเขียนตัวเอง) + ชื่อสาย ── */
+.head {
   display: grid;
-  /* 4 เมนู: สูงสุด 2 คอลัมน์ → จอกว้างเป็น 2×2 (ไม่ใช่ 3+1) / มือถือ 1 คอลัมน์ */
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, max(420px, (100% - 40px) / 2)), 1fr));
-  gap: 0 40px;
-  border-top: 1px solid var(--border);
-}
-
-.action {
-  display: flex;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 16px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
-  text-decoration: none !important;
-  transition: background-color 150ms ease;
+  gap: 28px;
+  padding: 26px;
+  background: var(--c-soft);
+  border: 1px solid color-mix(in srgb, var(--c) 18%, var(--border));
+  border-top: 8px solid var(--c);
+  border-radius: var(--radius-lg);
+}
+
+.art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(112px, 12vw, 150px);
+  aspect-ratio: 1;
+  padding: 12%;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 7px solid var(--c);
+  box-shadow: 0 16px 30px -22px var(--c);
+}
+
+.artText {
+  font-size: clamp(2.8rem, 5vw, 4rem);
+}
+
+.code {
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  translate: -50% 0;
+  padding: 1px 14px;
+  border-radius: 999px;
+  background: var(--c);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.85rem;
+  box-shadow: 0 0 0 3px var(--surface);
+}
+
+.headText {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.lineJa {
+  color: var(--c-text);
+  font-size: 1.05rem;
+}
+
+.h1 {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.stats {
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.transfer {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ป้าย 乗換 (ต่อรถ) แบบป้ายเปลี่ยนสายในสถานีญี่ปุ่น */
+.transferTag {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--c);
+  color: #ffffff;
+  font-size: 0.85em;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .transfer:hover {
+    text-decoration: underline;
+  }
+}
+
+/* ── แผนที่สาย ── */
+.routeCard,
+.tableCard {
+  padding: clamp(18px, 2.4vw, 30px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.routeHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 24px;
+}
+
+.h2 {
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.accentJa {
+  margin-right: 6px;
+  color: var(--accent);
+}
+
+.cta {
+  min-height: 48px;
+}
+
+.allDone {
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.level {
+  margin-top: 26px;
+}
+
+.levelLabel {
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.nextNote {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+}
+
+/* ── เครื่องมือ ── */
+.tools {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.tool {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    transform var(--press),
+    border-color 150ms ease,
+    box-shadow 200ms ease;
   -webkit-touch-callout: none;
 }
 
-.action:active {
-  background: var(--surface-2);
+.tool:active {
+  transform: scale(0.985);
 }
 
-.actionText {
+@media (hover: hover) and (pointer: fine) {
+  .tool:hover {
+    border-color: color-mix(in srgb, var(--c) 45%, var(--border));
+    box-shadow: 0 14px 28px -24px rgb(0 0 0 / 55%);
+  }
+
+  .tool:hover .toolArrow {
+    color: var(--c-text);
+    transform: translateX(3px);
+  }
+}
+
+.toolIcon {
   display: grid;
-  flex: 1;
-  gap: 2px;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--c-soft);
+  border: 2px solid var(--c);
+  color: var(--c-text);
 }
 
-.arrow {
+/* เครื่องมือหลัก (คัดตัวอักษร) เต็มสีสาย */
+.tool:first-child .toolIcon {
+  background: var(--c);
+  color: #ffffff;
+}
+
+.toolText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.toolText strong {
+  font-size: 1.05rem;
+}
+
+.toolArrow {
   color: var(--text-3);
   transition:
     transform var(--press),
     color 150ms ease;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .action:hover .arrow {
-    color: var(--text);
-    transform: translateX(3px);
-  }
+/* ── ตารางตัวอักษร ── */
+.tableCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
 }
 
 .tableHead {
@@ -61,6 +242,29 @@
   gap: 4px 16px;
 }
 
-.h2 {
-  font-size: 1.05rem;
+@media (max-width: 1280px) {
+  .tools {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .head {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    gap: 22px;
+    padding: 22px 18px;
+  }
+
+  .routeHead .cta {
+    width: 100%;
+  }
+
+  .tools {
+    grid-template-columns: 1fr;
+  }
+
+  .tool {
+    padding: 14px 16px;
+  }
 }

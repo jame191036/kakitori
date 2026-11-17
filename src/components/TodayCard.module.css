@@ -2,6 +2,11 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 18px;
+  padding: clamp(18px, 2.4vw, 28px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 6px solid var(--koji);
+  border-radius: var(--radius-lg);
 }
 
 .head {
@@ -13,7 +18,13 @@
 }
 
 .title {
-  font-size: 1.05rem;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.titleJa {
+  margin-right: 6px;
+  color: var(--accent);
 }
 
 .goalPick {
@@ -46,7 +57,8 @@
 .streakNum {
   font-size: 3rem;
   line-height: 1;
-  font-weight: 500;
+  font-weight: 800;
+  color: var(--primary);
   font-variant-numeric: tabular-nums;
   min-width: 1.2ch;
   text-align: right;
@@ -69,18 +81,20 @@
 }
 
 .tally span {
-  width: 16px;
-  height: 16px;
-  border: 1px solid var(--grid);
-  background: var(--pad);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--track-strong);
+  background: var(--surface);
   transition:
     background-color 200ms ease,
     border-color 200ms ease;
 }
 
+/* ระบายเป็นจุดสถานีสีแดงชาด */
 .tally .done {
-  background: var(--ink);
-  border-color: var(--ink);
+  background: var(--primary);
+  border-color: var(--primary);
 }
 
 .met {

@@ -52,10 +52,11 @@ export function TodayCard({ packs }: TodayCardProps) {
   const filled = Math.min(streak.todayCount, dailyGoal);
 
   return (
-    <section className={cx('card', styles.card)} aria-labelledby="today-title">
+    <section className={styles.card} aria-labelledby="today-title">
       <div className={styles.head}>
         <h2 id="today-title" className={styles.title}>
-          วันนี้
+          {/* 今日 (kyō) = วันนี้ */}
+          <span className={cx('kana', styles.titleJa)}>今日</span> วันนี้
         </h2>
         <div className={styles.goalPick}>
           <span className="small muted" id="goal-label">
@@ -78,7 +79,7 @@ export function TodayCard({ packs }: TodayCardProps) {
       </div>
 
       <div className={styles.body}>
-        {/* วันที่ฝึกต่อเนื่อง: ตัวเลขใหญ่แบบจดสถิติในสมุด */}
+        {/* วันที่ฝึกต่อเนื่อง: ตัวเลขใหญ่ */}
         <div className={styles.streak}>
           <span className={styles.streakNum}>{streak.current}</span>
           <span>
@@ -89,7 +90,7 @@ export function TodayCard({ packs }: TodayCardProps) {
           </span>
         </div>
 
-        {/* เป้าวันนี้: ช่องสี่เหลี่ยมแบบช่องติ๊กในสมุด ฝึก 1 ครั้ง = ระบาย 1 ช่อง */}
+        {/* เป้าวันนี้: ฝึก 1 ครั้ง = ระบาย 1 ช่อง */}
         <div className={styles.goal}>
           <div
             className={styles.tally}

@@ -1,7 +1,8 @@
-import { ArrowRight, BookOpen, ListChecks, PenLine, Printer, RotateCcw, TrainFront, type LucideIcon } from 'lucide-react';
+import { ArrowRight, BookOpen, TrainFront } from 'lucide-react';
 import { Suspense, useMemo } from 'react';
 import { Link } from 'react-router';
 import { scriptPath } from '../app/paths';
+import { TOOLS } from '../app/tools';
 import { RouteMap } from '../components/train/RouteMap';
 import { StampBook } from '../components/train/StampBook';
 import { LEVELS, scriptList } from '../data/scripts';
@@ -23,14 +24,6 @@ import { cx } from '../lib/cx';
 import { useStore } from '../lib/persistentStore';
 import { packTone, tone } from '../lib/tone';
 import styles from './KanaHubPage.module.css';
-
-/** เครื่องมือในแต่ละชุด (ปุ่มในการ์ด) */
-const TOOLS: { path: string; label: string; icon: LucideIcon }[] = [
-  { path: 'practice', label: 'คัดตัวอักษร', icon: PenLine },
-  { path: 'quiz', label: 'แบบทดสอบ', icon: ListChecks },
-  { path: 'review', label: 'ทบทวน', icon: RotateCcw },
-  { path: 'worksheet', label: 'พิมพ์แบบฝึก', icon: Printer },
-];
 
 const LESSONS = [
   // 始 = เริ่ม (始める hajimeru)

@@ -1,12 +1,11 @@
-/* จอกว้าง: สถานีเรียงแนวนอนเต็มความกว้าง */
+/* แนวนอน: สถานีเรียงเต็มความกว้าง เส้นรางวิ่งผ่านจุดกลางของทุกสถานี */
 .route {
   position: relative;
   display: grid;
   grid-template-columns: repeat(var(--n), minmax(0, 1fr));
   margin: 0;
-  padding: 0;
+  padding: 40px 0 0;
   list-style: none;
-  padding-top: 40px;
 }
 
 .route::before,
@@ -31,13 +30,39 @@
   background: var(--c);
 }
 
-.route li {
+.route > li {
   position: relative;
   z-index: 1;
+  min-width: 0;
+}
+
+.st {
+  position: relative;
   display: grid;
   justify-items: center;
   gap: 2px;
   min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.link {
+  border-radius: var(--radius-sm);
+  -webkit-touch-callout: none;
+}
+
+.link:active .dot {
+  transform: scale(0.85);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link:hover .kana {
+    color: var(--c-text);
+  }
+
+  .link:hover .dot {
+    border-color: var(--c);
+  }
 }
 
 .dot {
@@ -46,6 +71,9 @@
   border-radius: 50%;
   background: var(--surface);
   border: 4px solid var(--track-strong);
+  transition:
+    transform var(--press),
+    border-color 150ms ease;
 }
 
 .done .dot {
@@ -67,6 +95,7 @@
   line-height: 1.2;
   color: var(--text-2);
   white-space: nowrap;
+  transition: color 150ms ease;
 }
 
 .done .kana {
@@ -110,37 +139,49 @@
   border-top-color: var(--c);
 }
 
+/* ── แบบเลื่อนได้: แนวนอนเสมอ สถานีกว้างอย่างน้อย 64px ── */
+.scrollWrap {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  padding-bottom: 6px;
+}
+
+.scroll {
+  min-width: calc(var(--n) * 64px);
+}
+
 @media (max-width: 1100px) {
   .code {
     font-size: 0.6rem;
   }
 }
 
-/* มือถือ: สถานีเรียงแนวตั้ง (แถวละ 48px) */
+/* ── แบบอัตโนมัติ บนมือถือ: เรียงแนวตั้ง (แถวละ 48px) ── */
 @media (max-width: 760px) {
-  .route {
+  .auto {
     grid-template-columns: 1fr;
     padding-top: 0;
   }
 
-  .route::before,
-  .route::after {
+  .auto::before,
+  .auto::after {
     top: 24px;
     left: 11px;
     width: 6px;
   }
 
-  .route::before {
+  .auto::before {
     right: auto;
     bottom: 24px;
     height: auto;
   }
 
-  .route::after {
+  .auto::after {
     height: calc(var(--reached) * 48px);
   }
 
-  .route li {
+  .auto .st {
     grid-template-columns: 28px 48px auto 1fr;
     align-items: center;
     justify-items: start;
@@ -148,31 +189,35 @@
     height: 48px;
   }
 
-  .dot {
+  .auto .dot {
     justify-self: center;
   }
 
-  .current .dot {
+  .auto .current .dot {
     margin-top: 0;
   }
 
-  .kana {
+  .auto .kana {
     margin-top: 0;
     justify-self: center;
   }
 
-  .code {
+  .auto .code {
     font-size: 0.72rem;
   }
 
-  .here {
+  .auto .here {
     position: static;
     translate: none;
     grid-column: 4;
     grid-row: 1;
   }
 
-  .here::after {
+  .auto .here::after {
     display: none;
+  }
+
+  .scroll .code {
+    font-size: 0.62rem;
   }
 }

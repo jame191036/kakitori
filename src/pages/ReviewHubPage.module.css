@@ -1,0 +1,173 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  padding-block: 28px 48px;
+}
+
+.head {
+  padding-bottom: 4px;
+}
+
+.h1 {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 800;
+}
+
+.lead {
+  margin-top: 8px;
+  max-width: 44em;
+  color: var(--text-2);
+}
+
+.muted {
+  color: var(--text-2);
+  font-size: 0.9rem;
+}
+
+.sectionTitle {
+  margin-top: clamp(16px, 2vw, 28px);
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+/* ── การ์ดทบทวนของแต่ละสาย ── */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'badge text counts'
+    'badge text go';
+  align-items: center;
+  gap: 8px 18px;
+  padding: 20px 22px;
+  background: var(--c-soft);
+  border: 1px solid color-mix(in srgb, var(--c) 18%, var(--border));
+  border-left: 6px solid var(--c);
+  border-radius: var(--radius-lg);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    transform var(--press),
+    box-shadow 200ms ease;
+  -webkit-touch-callout: none;
+}
+
+.card:active {
+  transform: scale(0.99);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    box-shadow: 0 16px 30px -24px rgb(0 0 0 / 55%);
+  }
+}
+
+.badge {
+  grid-area: badge;
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 5px solid var(--c);
+  background: var(--surface);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.cardText {
+  grid-area: text;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lineJa {
+  color: var(--c-text);
+  font-size: 0.95rem;
+}
+
+.cardTitle {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.counts {
+  grid-area: counts;
+  display: flex;
+  gap: 10px;
+  justify-self: end;
+}
+
+.count {
+  display: grid;
+  justify-items: center;
+  min-width: 64px;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+  color: var(--text-2);
+}
+
+.count strong {
+  font-size: 1.4rem;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.countHot {
+  border-color: var(--c);
+}
+
+.countHot strong {
+  color: var(--c-text);
+}
+
+.go {
+  grid-area: go;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--c);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.note {
+  margin-top: -4px;
+}
+
+@media (max-width: 1100px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .card {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'badge text'
+      'counts counts'
+      'go go';
+    padding: 18px 16px;
+  }
+
+  .counts,
+  .go {
+    justify-self: start;
+  }
+}
