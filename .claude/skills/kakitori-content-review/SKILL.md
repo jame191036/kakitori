@@ -20,7 +20,8 @@ description: อัปเดตและสรุปตารางตรวจ�
 | หมายเหตุ, ตัวที่หน้าคล้ายกัน | `src/data/scripts/hiragana.ts`, `katakana.ts` |
 | คำตัวอย่าง | `src/data/scripts/hiraganaWords.ts`, `katakanaWords.ts` |
 | คำอธิบายแต่ละหมวด | `groupKindDescription` ใน `src/data/scripts/index.ts` |
-| หน้า "เริ่มต้นที่นี่" | `src/pages/StartPage.tsx` (**ไม่อยู่ในตาราง** ต้องบอกผู้ตรวจให้อ่านบนเว็บที่ `/start`) |
+| คู่คำฝึกฟัง (บทเรียนตัวเล็ก/เสียงยาว) | `src/data/minimalPairs.ts` (อยู่ท้ายตาราง ส่วน "คู่คำฝึกฟัง" · มีเทสต์ตรวจว่าแต่ละคู่ต่างกันแค่ตัวควบ/っ/เสียงยาว) |
+| หน้า "เริ่มต้นที่นี่" | `src/pages/StartPage.tsx` (ข้อความบทเรียน**ไม่อยู่ในตาราง** ต้องบอกผู้ตรวจให้อ่านบนเว็บที่ `/start`) |
 
 ## A. อัปเดตตารางหลังแก้เนื้อหา
 

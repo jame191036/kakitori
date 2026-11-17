@@ -27,7 +27,12 @@ const server = await createServer({
   optimizeDeps: { noDiscovery: true, include: [] },
 });
 const { scriptList, groupLabel, romajiLabel } = await server.ssrLoadModule('/src/data/scripts/index.ts');
+const { MINIMAL_PAIRS } = await server.ssrLoadModule('/src/data/minimalPairs.ts');
 await server.close();
+
+/** ชื่อชุดของแถวคู่คำ (บทเรียน "ตัวเล็กและเสียงยาว" ในหน้า /start) */
+const PAIRS_SET = 'คู่คำฝึกฟัง';
+const PAIR_KIND_LABEL = { yoon: 'ตัวควบ', sokuon: 'っ สะกดซ้ำ', long: 'เสียงยาว' };
 
 const COLUMNS = [
   'ชุด',
@@ -66,6 +71,17 @@ for (const pack of scriptList) {
   }
 }
 
+// คู่คำฝึกฟัง: 1 แถวต่อ 1 คำ — หมายเหตุบอกว่าคู่กับคำไหน
+const wordCell = (w) => (w.kanji ? `${w.kana}（${w.kanji}）` : w.kana);
+for (const p of MINIMAL_PAIRS) {
+  for (const [w, other] of [
+    [p.plain, p.marked],
+    [p.marked, p.plain],
+  ]) {
+    rows.push([PAIRS_SET, PAIR_KIND_LABEL[p.kind], '', '', '', `คู่กับ ${other.kana}`, wordCell(w), w.romaji, w.meaning, '', '', '']);
+  }
+}
+
 // ── CSV (มี BOM เพื่อให้ Excel แสดงภาษาไทย/ญี่ปุ่นถูกต้อง) ──
 const csvCell = (v) => (/[",\n]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v);
 const csv = '\uFEFF' + [COLUMNS, ...rows].map((r) => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
@@ -98,6 +114,7 @@ const md = [
   '- **โรมาจิของคำ** สะกดตามตัวคานะ (おう = ou, ー = สระซ้ำ) เพื่อให้มือใหม่เทียบทีละตัวได้',
   '- ลำดับขีดมาจากข้อมูล KanjiVG และตรวจจำนวนขีดกับตำราแล้ว — ถ้าเห็นตัวไหนลำดับขีดแปลก ช่วยบอกด้วย',
   '- อีกหน้าที่มีเนื้อหาภาษาญี่ปุ่นคือหน้า **“เริ่มต้นที่นี่”** (`/start`) ช่วยอ่านบนเว็บด้วย',
+  '  (คู่คำในบทเรียน "ตัวเล็กและเสียงยาว" ของหน้านั้นอยู่ท้ายตารางนี้แล้ว)',
   '',
   ...scriptList.flatMap((pack) => [
     `## ${pack.name} (${pack.nameJa}) — ${pack.chars.length} ตัว`,
@@ -105,6 +122,12 @@ const md = [
     mdTable(rows.filter((r) => r[0] === pack.name)),
     '',
   ]),
+  `## ${PAIRS_SET} — ${MINIMAL_PAIRS.length} คู่ (หน้า “เริ่มต้นที่นี่” หัวข้อ 6)`,
+  '',
+  'คู่คำที่ต่างกันแค่ตัวควบ / っ / เสียงยาว ใช้ฟังเทียบและในแบบฝึก "ฟังแล้วเลือกคำที่ได้ยิน" — ช่วยดูว่าเป็นคู่ที่ดี ความหมายถูก และออกเสียงต่างกันชัด',
+  '',
+  mdTable(rows.filter((r) => r[0] === PAIRS_SET)),
+  '',
 ].join('\n');
 
 await mkdir(OUT_DIR, { recursive: true });

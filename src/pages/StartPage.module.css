@@ -2,6 +2,13 @@
   font-size: 1.15rem;
 }
 
+/* หัวข้อย่อยในบทเรียน: เว้นห่างจากเนื้อหาก่อนหน้ามากกว่าย่อหน้าปกติ */
+.h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
 .list {
   margin: 0;
   padding-left: 1.3em;

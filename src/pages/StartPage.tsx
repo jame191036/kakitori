@@ -2,6 +2,9 @@ import { useEffect } from 'react';
 import { Link } from 'react-router';
 import { ArticleLayout, type TocItem } from '../components/ArticleLayout';
 import { ContinueCard } from '../components/ContinueCard';
+import { pairsOf } from '../data/minimalPairs';
+import { ListenQuiz } from '../features/listening/ListenQuiz';
+import { PairList } from '../features/listening/PairList';
 import { SpeakButton } from '../components/SpeakButton';
 import { scriptList } from '../data/scripts';
 import { updateSettings } from '../features/settings/settings';
@@ -36,7 +39,7 @@ const TOC: TocItem[] = [
   { id: 'read-table', label: '3. อ่านตารางตัวอักษร' },
   { id: 'marks', label: '4. ตัวขุ่นและตัวครึ่งขุ่น' },
   { id: 'stroke-order', label: '5. ทำไมต้องตามลำดับขีด' },
-  { id: 'long-vowel', label: '6. เครื่องหมายเสียงยาว' },
+  { id: 'small-long', label: '6. ตัวเล็กและเสียงยาว' },
   { id: 'how-to', label: '7. วิธีเรียนในเว็บนี้' },
 ];
 
@@ -187,14 +190,43 @@ export default function StartPage() {
         </ul>
       </section>
 
-      <section id="long-vowel" className="card stack">
-        <h2 className={styles.h2}>
-          6. เครื่องหมายเสียงยาว <span className="kana">ー</span> (ในคาตาคานะ)
-        </h2>
+      <section id="small-long" className="card stack">
+        <h2 className={styles.h2}>6. ตัวเล็กและเสียงยาว (ระดับ 2)</h2>
         <p>
-          ขีด <span className="kana">ー</span> ทำให้สระของตัวก่อนหน้าลากเสียงยาว เช่น <span className="kana">ケーキ</span> (keeki = เค้ก),{' '}
-          <span className="kana">ノート</span> (nooto = สมุด) — ในเว็บนี้โรมาจิจะเขียนเป็นสระซ้ำ
+          ต่างกันแค่ตัวเล็กหรือเสียงยาว ความหมายก็เปลี่ยนได้ — กดฟังเทียบทีละคู่ (คำซ้ายไม่มี · คำขวามี)
+          แล้วลองฝึกแยกเสียงท้ายหัวข้อนี้
         </p>
+
+        <h3 className={styles.h3}>
+          ตัวควบ: <span className="kana">ゃ ゅ ょ</span> ตัวเล็ก
+        </h3>
+        <p>
+          ต่อท้ายตัวในคอลัมน์ i (<span className="kana">き し ち に …</span>) ให้อ่าน<strong>รวบเป็นพยางค์เดียว</strong> เช่น{' '}
+          <span className="kana">きゃ</span> = kya ไม่ใช่ <span className="kana">きや</span> (ki-ya)
+        </p>
+        <PairList pairs={pairsOf('yoon')} />
+
+        <h3 className={styles.h3}>
+          <span className="kana">っ</span> ตัวเล็ก: สะกดซ้ำ
+        </h3>
+        <p>
+          ไม่มีเสียงในตัว ให้<strong>หยุดค้างสั้นๆ ประมาณ 1 จังหวะ</strong>ก่อนพยัญชนะตัวถัดไป
+          โรมาจิจึงเขียนพยัญชนะซ้ำ เช่น <span className="kana">おっと</span> = otto
+        </p>
+        <PairList pairs={pairsOf('sokuon')} />
+
+        <h3 className={styles.h3}>เสียงยาว</h3>
+        <p>
+          ลากเสียงสระให้ยาวประมาณ 2 จังหวะ — ฮิรางานะเขียนสระซ้ำ เช่น <span className="kana">おばあさん</span>{' '}
+          (ส่วนใหญ่แถว e ใช้ <span className="kana">い</span> เช่น <span className="kana">せんせい</span> และแถว o ใช้{' '}
+          <span className="kana">う</span> เช่น <span className="kana">おとうさん</span>) ส่วนคาตาคานะใช้ขีด{' '}
+          <span className="kana">ー</span> เช่น <span className="kana">ケーキ</span> (keeki = เค้ก)
+        </p>
+        <p className="small muted">ในเว็บนี้โรมาจิเขียนตามตัวคานะ (おう = ou, ー = สระซ้ำ) เพื่อให้เทียบทีละตัวได้</p>
+        <PairList pairs={pairsOf('long')} />
+
+        <h3 className={styles.h3}>ฝึกฟัง: ได้ยินคำไหน?</h3>
+        <ListenQuiz />
       </section>
 
       <section id="how-to" className="card stack">
@@ -217,6 +249,10 @@ export default function StartPage() {
             <strong>ทดสอบแถว</strong> — ตอบให้ถูกครบทุกตัว แล้วไปแถวถัดไป
           </li>
         </ol>
+        <p>
+          ตัวอักษรแบ่งเป็น 2 ระดับ: <strong>ระดับ 1</strong> ตัวพื้นฐานและตัวขุ่นของฮิรางานะ แล้วต่อด้วยคาตาคานะ ·{' '}
+          <strong>ระดับ 2</strong> ตัวเล็กและตัวควบ (ตัวเล็กฝึกเขียน ตัวควบฝึกอ่าน ฟัง และทำแบบทดสอบ)
+        </p>
         <p className="small muted">
           ปุ่ม “เรียนต่อ” จะพาไปขั้นถัดไปให้เอง ส่วนหน้า “ทบทวน” จะนัดให้กลับมาทบทวนตัวที่ใกล้จะลืม
           และรวมตัวที่ผิดบ่อยมาให้ฝึกซ้ำ — ฝึกวันละนิดให้ถึงเป้าทุกวันดีกว่าฝึกทีเดียวเยอะๆ
