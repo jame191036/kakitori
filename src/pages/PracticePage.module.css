@@ -104,15 +104,17 @@
   padding: 4px 0 16px;
 }
 
-/* หัวหน้า: ช่องตัวอย่าง (お手本) + คำอ่าน — ขีดเส้นหมึกใต้แบบหัวกระดาษ */
+/* หัวหน้า: ช่องตัวอย่าง (お手本) + คำอ่าน — การ์ดพื้นอ่อนสีสาย ขอบบนหนาสีสาย (แบบการ์ดหน้าสาย) */
 .charHeader {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px 20px;
-  padding: 0 0 14px;
-  border-top: 0;
-  border-bottom: 1px solid var(--text);
+  padding: 14px 18px;
+  background: var(--c-soft, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--c, var(--border)) 18%, var(--border));
+  border-top: 6px solid var(--c, var(--primary));
+  border-radius: var(--radius-lg);
 }
 
 /* ช่องตัวอย่าง: กรอบเส้นตาราง + เส้นกากบาทบางๆ แบบช่องแรกของสมุดคัด */
@@ -325,7 +327,7 @@
 @media (max-width: 560px) {
   .charHeader {
     gap: 14px;
-    padding-bottom: 14px;
+    padding: 12px 14px;
   }
 
   .bigChar {

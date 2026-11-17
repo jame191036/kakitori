@@ -85,7 +85,7 @@
 .tocActive {
   color: var(--text);
   font-weight: 600;
-  border-left-color: var(--ink);
+  border-left-color: var(--primary);
 }
 
 @media (hover: hover) and (pointer: fine) {

@@ -517,12 +517,12 @@
 }
 
 .strokeTally .tallyNow {
-  border-color: var(--text);
+  border-color: var(--c, var(--text));
 }
 
 .strokeTally .tallyDone {
-  background: var(--ink);
-  border-color: var(--ink);
+  background: var(--c, var(--primary));
+  border-color: var(--c, var(--primary));
 }
 
 .nextActions {

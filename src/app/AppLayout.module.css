@@ -280,7 +280,7 @@
   height: 20px;
   border-radius: 50%;
   border: 2px solid var(--border);
-  border-top-color: var(--ink);
+  border-top-color: var(--primary);
   animation: spin 0.7s linear infinite;
 }
 

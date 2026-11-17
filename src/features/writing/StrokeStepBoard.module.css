@@ -55,7 +55,7 @@
 }
 
 .progress .segDone {
-  background: var(--ink);
+  background: var(--c, var(--primary));
 }
 
 .foot {
@@ -165,7 +165,7 @@
 .now {
   background: var(--pad);
   border-color: var(--border);
-  box-shadow: inset 2px 0 0 var(--ink);
+  box-shadow: inset 3px 0 0 var(--c, var(--primary));
 }
 
 .thumb {

@@ -167,7 +167,7 @@
 
 .active {
   background: var(--surface-2);
-  box-shadow: inset 0 0 0 2px var(--ink);
+  box-shadow: inset 0 0 0 2px var(--c, var(--ink));
 }
 
 .char {

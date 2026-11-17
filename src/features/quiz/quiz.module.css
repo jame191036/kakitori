@@ -63,8 +63,9 @@
 
 .progress {
   flex: 1;
-  height: 3px;
-  background: var(--border);
+  height: 6px;
+  border-radius: 3px;
+  background: var(--track);
   overflow: hidden;
 }
 
@@ -73,7 +74,8 @@
   display: block;
   width: 100%;
   height: 100%;
-  background: var(--ink);
+  border-radius: inherit;
+  background: var(--c, var(--primary));
   transition: transform 250ms var(--ease-out);
 }
 

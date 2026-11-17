@@ -345,25 +345,12 @@ svg {
   padding-block: 28px 48px;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 32px;
-}
-
-/* หัวหน้า: ชื่อหน้าแล้วขีดเส้นหมึกใต้ เหมือนหัวกระดาษสมุด */
-.page > header:first-child {
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--text);
-}
-
-/* ส่วนแรกใต้หัวหน้าไม่ต้องมีเส้นบนซ้ำ (เส้นหมึกของหัวหน้าทำหน้าที่แทน) */
-.page > header:first-child + .card,
-.page > header:first-child + * > .card:first-child {
-  border-top: 0;
-  padding-top: 0;
+  gap: 20px;
 }
 
 .page-title {
-  font-size: clamp(1.5rem, 1.25rem + 1vw, 1.875rem);
-  font-weight: 600;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 800;
   letter-spacing: -0.005em;
 }
 
@@ -380,16 +367,12 @@ svg {
   gap: 8px;
 }
 
-/*
- * "การ์ด" = ส่วนหนึ่งของหน้าสมุด: ไม่มีกล่อง ไม่มีเงา
- * แยกจากส่วนอื่นด้วยเส้นบรรทัดด้านบนและพื้นที่ว่าง
- */
+/* "การ์ด" = กล่องขาวมุมมน ขอบบาง (เหมือนป้าย/การ์ดในหน้าแรกและหน้าสาย) */
 .card {
-  background: transparent;
-  border: 0;
-  border-top: 1px solid var(--border);
-  border-radius: 0;
-  padding: 20px 0 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: clamp(16px, 2.2vw, 26px);
 }
 
 /* ───────────── Buttons ───────────── */
@@ -523,19 +506,20 @@ svg {
     transform var(--press);
 }
 
+/* เลือกแล้ว: ขอบ/พื้นอ่อนสีสาย (นอกชุดตัวอักษรใช้สีแดงชาด) */
 .chip[aria-pressed='true'],
 .chip:has(input:checked) {
-  background: var(--surface);
-  border-color: var(--text);
+  background: var(--c-soft, var(--accent-soft));
+  border-color: var(--c, var(--primary));
   color: var(--text);
 }
 
 .chip input {
-  accent-color: var(--ink);
+  accent-color: var(--c, var(--primary));
   margin: 0;
 }
 
-/* ───────────── Tabs (เดิมเป็นปุ่มแคปซูล → แท็บขีดเส้นใต้แบบสมุด) ───────────── */
+/* ───────────── Tabs: แท็บขีดเส้นใต้ แท็บที่เลือกขีดสีสาย ───────────── */
 .segmented {
   display: inline-flex;
   gap: 4px;
@@ -580,7 +564,7 @@ svg {
 .segmented button[aria-selected='true'],
 .segmented a[aria-current='page'] {
   color: var(--text);
-  box-shadow: inset 0 -2px 0 var(--ink);
+  box-shadow: inset 0 -3px 0 var(--c, var(--primary));
 }
 
 /* ───────────── Feedback ───────────── */

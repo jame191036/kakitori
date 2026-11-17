@@ -23,7 +23,9 @@ export function ContinueCard({ packs }: ContinueCardProps) {
   if (!step) {
     return (
       <section className={cx('card', styles.card)}>
-        <p className={styles.eyebrow}>ผ่านครบทุกแถวแล้ว</p>
+        <p className={styles.eyebrow}>
+          <span className="kana">終点</span> · ผ่านครบทุกสถานีแล้ว
+        </p>
         <p>เยี่ยมมาก ฝึกทบทวนต่อเรื่อยๆ เพื่อไม่ให้ลืม</p>
         <div>
           <Link to={REVIEW_ROOT} className="btn btn-primary">
@@ -48,7 +50,9 @@ export function ContinueCard({ packs }: ContinueCardProps) {
     <section className={cx('card', styles.card)} aria-labelledby="continue-title">
       <div className={styles.head}>
         <div>
-          <p className={styles.eyebrow}>{isStart ? 'เริ่มเรียน' : 'เรียนต่อ'}</p>
+          <p className={styles.eyebrow}>
+            <span className="kana">{isStart ? '始発' : '次は'}</span> · {isStart ? 'เริ่มเรียน' : 'สถานีต่อไป'}
+          </p>
           <h2 id="continue-title" className={styles.title}>
             {step.pack.name}{' '}
             {step.group.kind === 'small' ? (
