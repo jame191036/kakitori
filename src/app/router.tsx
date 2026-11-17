@@ -2,11 +2,14 @@ import { createBrowserRouter } from 'react-router';
 import HomePage from '../pages/HomePage';
 import NotFoundPage from '../pages/NotFoundPage';
 import { AppLayout } from './AppLayout';
+import { LegacyScriptRedirect } from './LegacyScriptRedirect';
 import {
   AboutPage,
+  KanaHubPage,
   PracticeIndex,
   PracticePage,
   QuizPage,
+  ReviewHubPage,
   ReviewPage,
   ScriptHomePage,
   StartPage,
@@ -16,8 +19,8 @@ import { RouteError } from './RouteError';
 import { ScriptRoute } from './ScriptContext';
 
 /**
- * เส้นทางของเว็บ — ทุกหน้าที่อยู่ใต้ /:script ใช้ได้กับทุกชุดตัวอักษร
- * (เช่น /hiragana/quiz และในอนาคต /katakana/quiz)
+ * เส้นทางของเว็บ (โครงเมนูแบบหน้าศูนย์รวมทีละชั้น — ดู app/paths.ts)
+ * ทุกหน้าที่อยู่ใต้ /kana/:script ใช้ได้กับทุกชุดตัวอักษร
  */
 export const router = createBrowserRouter([
   {
@@ -31,8 +34,10 @@ export const router = createBrowserRouter([
           { index: true, element: <HomePage /> },
           { path: 'about', element: <AboutPage /> },
           { path: 'start', element: <StartPage /> },
+          { path: 'review', element: <ReviewHubPage /> },
+          { path: 'kana', element: <KanaHubPage /> },
           {
-            path: ':script',
+            path: 'kana/:script',
             element: <ScriptRoute />,
             children: [
               { index: true, element: <ScriptHomePage /> },
@@ -43,6 +48,7 @@ export const router = createBrowserRouter([
               { path: 'worksheet', element: <WorksheetPage /> },
             ],
           },
+          { path: ':script/*', element: <LegacyScriptRedirect /> },
           { path: '*', element: <NotFoundPage /> },
         ],
       },

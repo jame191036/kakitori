@@ -1,4 +1,5 @@
 import { PenLine } from 'lucide-react';
+import { scriptPath } from '../app/paths';
 import { useState, type ChangeEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useScriptPack } from '../app/ScriptContext';
@@ -139,7 +140,7 @@ export default function ReviewPage() {
 
   const startWeakReview = () => {
     const ids = weak.slice(0, MAX_WEAK_REVIEW).map((w) => w.entry.id);
-    navigate(`/${pack.id}/quiz?chars=${ids.join(',')}`);
+    navigate(scriptPath(pack.id, `quiz?chars=${ids.join(',')}`));
   };
 
   const reset = () => {
@@ -230,10 +231,10 @@ export default function ReviewPage() {
           <div className={styles.empty}>
             <p>{hasAny ? 'ยังไม่มีตัวที่ผิดบ่อย' : 'ยังไม่มีข้อมูล — ลองทำแบบทดสอบหรือฝึกเขียนก่อนนะ'}</p>
             <div className="row" style={{ justifyContent: 'center' }}>
-              <Link to={`/${pack.id}/quiz`} className="btn btn-primary">
+              <Link to={scriptPath(pack.id, `quiz`)} className="btn btn-primary">
                 ทำแบบทดสอบ
               </Link>
-              <Link to={`/${pack.id}/practice`} className="btn">
+              <Link to={scriptPath(pack.id, `practice`)} className="btn">
                 ฝึกเขียน
               </Link>
             </div>
@@ -255,7 +256,7 @@ export default function ReviewPage() {
                   </span>
                 </span>
                 <Link
-                  to={`/${pack.id}/practice/${entry.id}?mode=trace`}
+                  to={scriptPath(pack.id, `practice/${entry.id}?mode=trace`)}
                   className="btn btn-sm btn-icon"
                   aria-label={`ฝึกเขียน ${entry.char}`}
                   title="ฝึกเขียน"
@@ -270,7 +271,7 @@ export default function ReviewPage() {
 
       <section className="card stack">
         <h2 className={styles.h2}>ความคืบหน้ารายตัว</h2>
-        <KanaTable pack={pack} progress={progress} hrefFor={(c) => `/${pack.id}/practice/${c.id}`} compact />
+        <KanaTable pack={pack} progress={progress} hrefFor={(c) => scriptPath(pack.id, `practice/${c.id}`)} compact />
         <MasteryLegend />
       </section>
 

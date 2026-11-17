@@ -1,212 +1,37 @@
-/* ── หน้าปก ── */
-.hero {
+/* หัวเรื่อง + ตัวอย่างลำดับขีด か ขนาดเล็กทางขวา (แตะเพื่อเล่นซ้ำ) */
+.intro {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 48px;
-  padding-block: 12px 4px;
+  gap: 16px 24px;
 }
 
-.heroText {
+.introText {
   display: grid;
-  gap: 18px;
+  gap: 6px;
 }
 
-.eyebrow {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  color: var(--text-2);
-  font-size: 0.95rem;
-  letter-spacing: 0.02em;
-}
-
-.eyebrow :global(.kana) {
-  font-size: 1rem;
-  color: var(--text-3);
-}
-
-.title {
-  font-size: clamp(1.9rem, 1.4rem + 2vw, 2.6rem);
-  line-height: 1.25;
-  letter-spacing: -0.01em;
-}
-
-.lead {
-  max-width: 34em;
-  color: var(--text-2);
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px 24px;
-}
-
-.textLink {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  color: var(--text);
-}
-
-/* ตัวอย่างช่องคัด + คำบรรยายใต้ภาพแบบหนังสือเรียน */
-/* จอกว้าง: ชิดขวาให้ตรงแนวกับขอบเนื้อหาด้านล่าง และโตตามจอ 300→380px (มือถือ: กึ่งกลาง) */
-.heroArt {
+.sample {
   margin: 0;
-  width: min(clamp(300px, 21vw, 380px), 100%);
-  justify-self: end;
-  display: grid;
-  gap: 10px;
+  width: 112px;
 }
 
-.caption {
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--text-2);
-}
-
-.caption :global(.kana) {
-  color: var(--text);
-}
-
-.h2 {
-  font-size: 1.05rem;
-}
-
-.daily {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 28px;
-}
-
-/* ── สารบัญชุดตัวอักษร (มีเส้นจุดนำสายตาแบบสารบัญหนังสือ) ── */
-.toc {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.tocRow {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
-  text-decoration: none !important;
-  transition: background-color 150ms ease;
-  -webkit-touch-callout: none;
-}
-
-.tocRow:active {
-  background: var(--surface-2);
-}
-
-.tocGlyph {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 52px;
-  height: 52px;
-  border: 1px solid var(--grid);
-  background: var(--pad);
-  font-size: 1.9rem;
-}
-
-.tocName {
-  white-space: nowrap;
-}
-
-.leader {
-  flex: 1;
-  min-width: 24px;
-  border-bottom: 1px dotted var(--border-strong);
-  transform: translateY(4px);
-}
-
-.tocMeta {
-  color: var(--text-2);
-  font-size: 0.9rem;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
-.arrow {
-  color: var(--text-3);
-  transition:
-    transform var(--press),
-    color 150ms ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .tocRow:hover .arrow {
-    color: var(--text);
-    transform: translateX(3px);
+@media (max-width: 560px) {
+  .sample {
+    width: 76px;
   }
 }
 
-/* ── ฟีเจอร์: รายการเรียบๆ คั่นด้วยเส้นบรรทัด ไม่มีไอคอน ── */
-/* สูงสุด 3 คอลัมน์ (6 ข้อ = 2 แถวเต็ม ไม่เหลือเศษ) · คอลัมน์แคบสุด 300px · มือถือ 1 คอลัมน์ */
-.features {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, max(300px, (100% - 80px) / 3)), 1fr));
-  gap: 0 40px;
-  margin: 0;
+/* รายการหมวดต่อจากหัวเรื่องทันที: เส้นหมึกใต้หัวเรื่องทำหน้าที่เส้นบนแล้ว ไม่ต้องมีเส้นซ้ำ */
+.sections > ul {
+  border-top: 0;
 }
 
-.features > div {
-  padding: 12px 0 14px;
-  border-bottom: 1px solid var(--border);
-}
-
-.features dt {
-  font-weight: 600;
-}
-
-.features dd {
-  margin: 2px 0 0;
-  color: var(--text-2);
-  font-size: 0.95rem;
+.sections > ul > li:first-child > * {
+  padding-top: 0;
 }
 
 .privacy {
   text-align: center;
   padding-top: 4px;
-}
-
-@media (max-width: 720px) {
-  .hero {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 28px;
-    padding-top: 0;
-  }
-
-  .heroArt {
-    width: min(240px, 72%);
-    justify-self: center;
-  }
-}
-
-@media (max-width: 560px) {
-  /* จอแคบ: ซ่อนเส้นจุด ให้ข้อมูลลงบรรทัดใหม่ใต้ชื่อ */
-  .tocRow {
-    flex-wrap: wrap;
-    row-gap: 0;
-  }
-
-  .leader {
-    display: none;
-  }
-
-  .tocName {
-    flex: 1;
-  }
-
-  .tocMeta {
-    order: 4;
-    width: 100%;
-    padding-left: 68px;
-  }
 }

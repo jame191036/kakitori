@@ -1,73 +1,132 @@
 import {
-  ClipboardCheck,
-  Grid3x3,
+  ArrowLeft,
+  ChevronLeft,
+  House,
+  Languages,
   Monitor,
   Moon,
-  PenLine,
-  Printer,
   Sun,
   Target,
   X,
   type LucideIcon,
 } from 'lucide-react';
 import { Suspense } from 'react';
-import { Link, NavLink, Outlet, ScrollRestoration, useLocation, useMatch } from 'react-router';
-import { getScript, scriptList } from '../data/scripts';
+import { Link, matchPath, Outlet, ScrollRestoration, useLocation, useMatch } from 'react-router';
+import { getScript } from '../data/scripts';
 import { updateSettings, useSettings, type ThemePref } from '../features/settings/settings';
 import { SITE_NAME } from './config';
 import { GoalToast } from './GoalToast';
+import { KANA_ROOT, REVIEW_ROOT, scriptPath } from './paths';
 import { UpdatePrompt } from './UpdatePrompt';
 import { useApplyTheme } from './useTheme';
 import styles from './AppLayout.module.css';
 
-interface NavItem {
-  to: string;
+/** ชื่อเมนูย่อยในชุดตัวอักษร (ใช้ในเส้นทางบนหัวเว็บ) */
+const TOOL_LABEL: Record<string, string> = {
+  practice: 'คัดตัวอักษร',
+  quiz: 'แบบทดสอบ',
+  review: 'ทบทวน',
+  worksheet: 'พิมพ์แบบฝึก',
+};
+
+interface Crumb {
   label: string;
-  short: string;
-  icon: LucideIcon;
-  end?: boolean;
+  /** ไม่มี = หน้าปัจจุบัน */
+  to?: string;
 }
 
-function navItems(scriptId: string): NavItem[] {
-  return [
-    { to: `/${scriptId}`, label: 'ตารางตัวอักษร', short: 'ตาราง', icon: Grid3x3, end: true },
-    { to: `/${scriptId}/practice`, label: 'คัดตัวอักษร', short: 'คัด', icon: PenLine },
-    { to: `/${scriptId}/quiz`, label: 'แบบทดสอบ', short: 'ทดสอบ', icon: ClipboardCheck },
-    { to: `/${scriptId}/review`, label: 'ทบทวน', short: 'ทบทวน', icon: Target },
-    { to: `/${scriptId}/worksheet`, label: 'พิมพ์แบบฝึก', short: 'พิมพ์', icon: Printer },
-  ];
+/** เส้นทางของหน้านี้ เช่น หน้าแรก › ตัวอักษร › ฮิรางานะ › คัดตัวอักษร (หน้าแรกเองไม่มี) */
+function crumbsFor(pathname: string): Crumb[] {
+  const home: Crumb = { label: 'หน้าแรก', to: '/' };
+  const kana: Crumb = { label: 'ตัวอักษร', to: KANA_ROOT };
+  const notFound: Crumb = { label: 'ไม่พบหน้านี้' };
+  if (pathname === '/') return [];
+  if (pathname === KANA_ROOT) return [home, { label: kana.label }];
+  const m = matchPath(`${KANA_ROOT}/:script/*`, pathname);
+  if (m) {
+    const pack = getScript(m.params.script);
+    if (!pack) return [home, kana, notFound];
+    const tool = TOOL_LABEL[(m.params['*'] ?? '').split('/')[0] ?? ''];
+    return tool
+      ? [home, kana, { label: pack.name, to: scriptPath(pack.id) }, { label: tool }]
+      : [home, kana, { label: pack.name }];
+  }
+  if (pathname === '/start') return [home, kana, { label: 'เริ่มต้นที่นี่' }];
+  if (pathname === REVIEW_ROOT) return [home, { label: 'ทบทวน' }];
+  if (pathname === '/about') return [home, { label: 'เกี่ยวกับ' }];
+  // ลิงก์แบบเก่า (/hiragana/...) กำลังถูกพาไป /kana/... — ใช้เส้นทางของหน้าใหม่เลย ไม่ให้ "ไม่พบหน้านี้" แวบขึ้นมา
+  const legacy = matchPath('/:script/*', pathname);
+  if (legacy && getScript(legacy.params.script)) return crumbsFor(`${KANA_ROOT}${pathname}`);
+  return [home, notFound];
 }
 
-/**
- * สลับชุดตัวอักษร โดยคงหน้าเดิมไว้ เช่น /hiragana/practice/ka?mode=trace → /katakana/practice/ka?mode=trace
- * (ฮิรางานะและคาตาคานะใช้ id ตัวอักษรเดียวกัน)
- */
-function ScriptSwitcher({ current }: { current?: string }) {
-  const { pathname, search } = useLocation();
-  const target = (id: string) => {
-    if (!current) return `/${id}`;
-    const params = new URLSearchParams(search);
-    params.delete('chars'); // รายการทบทวนเป็นของชุดเดิม
-    const query = params.toString();
-    return `/${id}${pathname.slice(current.length + 1)}${query ? `?${query}` : ''}`;
-  };
+/** จอกว้าง: ปุ่มลูกศรกลับ (ขึ้นไปชั้นบน 1 ชั้น) + เส้นทางเต็ม เป็นบรรทัดเล็กเหนือชื่อหน้า (ใต้หัวเว็บ) */
+function CrumbTrail({ crumbs }: { crumbs: Crumb[] }) {
+  const parent = crumbs[crumbs.length - 2];
   return (
-    <nav className={`segmented ${styles.switcher}`} aria-label="เลือกชุดตัวอักษร">
-      {scriptList.map((p) => (
-        <Link
-          key={p.id}
-          to={target(p.id)}
-          aria-current={p.id === current ? 'page' : undefined}
-          title={p.name}
-          lang="ja"
-          className="kana"
-        >
-          {p.nameJa}
+    <nav className={`container ${styles.crumbBar} no-print`} aria-label="เส้นทาง">
+      {parent?.to && (
+        <Link to={parent.to} className={styles.backBtn} aria-label={`กลับไป${parent.label}`} title={`กลับไป${parent.label}`}>
+          <ArrowLeft size={16} strokeWidth={1.8} aria-hidden />
         </Link>
-      ))}
+      )}
+      <ol className={styles.trail}>
+        {crumbs.map((c, i) => (
+          <li key={i}>
+            {c.to ? (
+              <Link to={c.to}>{c.label}</Link>
+            ) : (
+              <span aria-current="page">{c.label}</span>
+            )}
+          </li>
+        ))}
+      </ol>
     </nav>
   );
 }
+
+/** จอแคบ: บนหัวเว็บ — ย้อนกลับชั้นบน + ชื่อหน้านี้ */
+function CrumbBack({ crumbs }: { crumbs: Crumb[] }) {
+  const current = crumbs[crumbs.length - 1];
+  const parent = crumbs[crumbs.length - 2];
+  return (
+    <div className={styles.headerMid}>
+      {current && (
+        <nav className={styles.trailShort} aria-label="ย้อนกลับ">
+          {parent?.to && (
+            <Link to={parent.to} className={styles.back} aria-label={`กลับไป${parent.label}`}>
+              <ChevronLeft size={18} strokeWidth={1.8} aria-hidden />
+              <span>{parent.label}</span>
+            </Link>
+          )}
+          <span className={styles.here} aria-current="page">
+            {current.label}
+          </span>
+        </nav>
+      )}
+    </div>
+  );
+}
+
+interface MainNavItem {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+  /** หน้านี้อยู่ในเมนูนี้หรือไม่ */
+  active: (pathname: string) => boolean;
+}
+
+/** เมนูหลัก (หมวด) — หมวดใหม่ (ท่องเที่ยว ฯลฯ) เพิ่มที่นี่เมื่อทำเสร็จ */
+const MAIN_NAV: MainNavItem[] = [
+  { to: '/', label: 'หน้าแรก', icon: House, active: (p) => p === '/' },
+  {
+    to: KANA_ROOT,
+    label: 'ตัวอักษร',
+    icon: Languages,
+    active: (p) => p === KANA_ROOT || p.startsWith(`${KANA_ROOT}/`) || p === '/start',
+  },
+  { to: REVIEW_ROOT, label: 'ทบทวน', icon: Target, active: (p) => p === REVIEW_ROOT },
+];
 
 const THEME_NEXT: Record<ThemePref, ThemePref> = { system: 'light', light: 'dark', dark: 'system' };
 const THEME_INFO: Record<ThemePref, { icon: LucideIcon; label: string }> = {
@@ -102,14 +161,11 @@ function PageLoading() {
 }
 
 export function AppLayout() {
-  // layout อยู่ชั้นนอกสุด จึงอ่าน :script จาก URL เอง (ถ้าไม่ใช่หน้าของชุดใด ใช้ชุดแรก)
-  const match = useMatch('/:script/*');
-  const current = getScript(match?.params.script);
+  const { pathname } = useLocation();
+  const crumbs = crumbsFor(pathname);
   const { introSeen } = useSettings();
   const onStartPage = useMatch('/start') !== null;
   const showIntro = !introSeen && !onStartPage;
-  const pack = current ?? scriptList[0]!;
-  const items = navItems(pack.id);
 
   return (
     <div className={styles.shell}>
@@ -118,19 +174,24 @@ export function AppLayout() {
       </a>
       <header className={`${styles.header} no-print`}>
         <div className={`container ${styles.headerInner}`}>
-          <Link to="/" className={styles.brand}>
+          <Link to="/" className={styles.brand} aria-label={`${SITE_NAME} — หน้าแรก`}>
             <img src="/logo.svg" alt="" width={32} height={32} />
             <span className={styles.brandText}>{SITE_NAME}</span>
           </Link>
-          <ScriptSwitcher current={current?.id} />
-          <nav className={styles.topNav} aria-label={`เมนู${pack.name}`}>
-            {items.map(({ to, label, short, end }) => (
-              <NavLink key={to} to={to} end={end} className={styles.topLink}>
-                <span className={styles.long}>{label}</span>
-                <span className={styles.short}>{short}</span>
-              </NavLink>
+          {/* จอกว้าง: เมนูหลักต่อจากโลโก้ (มือถืออยู่แถบล่าง) — หน้าแรกกดได้จากโลโก้ */}
+          <nav className={styles.topNav} aria-label="เมนูหลัก">
+            {MAIN_NAV.slice(1).map(({ to, label, active }) => (
+              <Link
+                key={to}
+                to={to}
+                className={styles.topLink}
+                aria-current={active(pathname) ? 'page' : undefined}
+              >
+                {label}
+              </Link>
             ))}
           </nav>
+          <CrumbBack crumbs={crumbs} />
           <ThemeToggle />
         </div>
       </header>
@@ -157,6 +218,7 @@ export function AppLayout() {
       )}
 
       <main id="main" className={styles.main}>
+        {crumbs.length > 0 && <CrumbTrail crumbs={crumbs} />}
         <Suspense fallback={<PageLoading />}>
           <Outlet />
         </Suspense>
@@ -172,11 +234,16 @@ export function AppLayout() {
       </footer>
 
       <nav className={`${styles.bottomNav} no-print`} aria-label="เมนูหลัก">
-        {items.map(({ to, short, icon: Icon, end }) => (
-          <NavLink key={to} to={to} end={end} className={styles.bottomLink}>
+        {MAIN_NAV.map(({ to, label, icon: Icon, active }) => (
+          <Link
+            key={to}
+            to={to}
+            className={styles.bottomLink}
+            aria-current={active(pathname) ? 'page' : undefined}
+          >
             <Icon size={22} strokeWidth={1.6} aria-hidden />
-            <span>{short}</span>
-          </NavLink>
+            <span>{label}</span>
+          </Link>
         ))}
       </nav>
 

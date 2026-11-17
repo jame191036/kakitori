@@ -1,3 +1,4 @@
+import { scriptPath } from '../../app/paths';
 import { isQuizzable } from '../../data/scripts';
 import type { CharEntry, ScriptPack } from '../../data/types';
 import { dayNumber } from '../../lib/day';
@@ -169,10 +170,13 @@ export const REVIEW_BATCH = 20;
 
 /** ลิงก์เริ่มแบบทดสอบทบทวนตัวที่ถึงรอบ (ตัวที่น่าห่วงที่สุดก่อน) */
 export const reviewHref = (scriptId: string, due: readonly DueChar[]) =>
-  `/${scriptId}/quiz?chars=${due
-    .slice(0, REVIEW_BATCH)
-    .map((d) => d.entry.id)
-    .join(',')}`;
+  scriptPath(
+    scriptId,
+    `quiz?chars=${due
+      .slice(0, REVIEW_BATCH)
+      .map((d) => d.entry.id)
+      .join(',')}`,
+  );
 
 /** เคยตอบคำถาม/เขียนแบบมีตัดสินบ้างหรือยัง (ถ้ายัง = ยังไม่มีนัดทบทวน) */
 export const hasAnswered = (progress: ScriptProgress | undefined) =>

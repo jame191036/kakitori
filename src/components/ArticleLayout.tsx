@@ -1,4 +1,5 @@
 import { useEffect, useState, type MouseEvent, type ReactNode } from 'react';
+import { useLocation } from 'react-router';
 import { cx } from '../lib/cx';
 import styles from './ArticleLayout.module.css';
 
@@ -19,6 +20,17 @@ interface ArticleLayoutProps {
  * จอแคบไม่มีสารบัญ เนื้อหาอยู่กึ่งกลางเหมือนเดิม
  */
 export function ArticleLayout({ toc, children, className }: ArticleLayoutProps) {
+  // เปิดจากลิงก์ที่มี #หัวข้อ (เช่น /start#small-long จากหน้าตัวอักษร) → เลื่อนไปหัวข้อนั้น
+  // (หน้าโหลดแบบ lazy จึงต้องเลื่อนเองหลังเนื้อหาแสดงแล้ว)
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (!hash) return;
+    const el = document.getElementById(decodeURIComponent(hash.slice(1)));
+    if (!el) return;
+    const frame = requestAnimationFrame(() => el.scrollIntoView({ block: 'start' }));
+    return () => cancelAnimationFrame(frame);
+  }, [hash]);
+
   return (
     <div className={cx('container', styles.layout)}>
       <ArticleToc items={toc} />

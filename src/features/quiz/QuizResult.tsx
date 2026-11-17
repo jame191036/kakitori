@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { scriptPath } from '../../app/paths';
 import { romajiLabel } from '../../data/scripts';
 import type { CharEntry, ScriptPack } from '../../data/types';
 import { questionTypeInfo } from './quizText';
@@ -70,7 +71,7 @@ export function QuizResult({ pack, records, onRetry, onReviewWrong, onSetup }: Q
                   </span>
                 </span>
                 <Link
-                  to={`/${pack.id}/practice/${r.question.answer.id}`}
+                  to={scriptPath(pack.id, `practice/${r.question.answer.id}`)}
                   className="btn btn-sm"
                   style={{ marginLeft: 'auto' }}
                 >

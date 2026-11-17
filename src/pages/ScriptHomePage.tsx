@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router';
+import { scriptPath } from '../app/paths';
 import { useScriptPack } from '../app/ScriptContext';
+import { getScript } from '../data/scripts';
 import { ContinueCard } from '../components/ContinueCard';
 import { KanaTable, MasteryLegend } from '../components/KanaTable';
 import { masteryLevel } from '../features/progress/progressLogic';
@@ -16,22 +18,22 @@ export default function ScriptHomePage() {
 
   const actions: { to: string; title: string; desc: string }[] = [
     {
-      to: `/${pack.id}/practice`,
+      to: scriptPath(pack.id, `practice`),
       title: 'คัดตัวอักษร',
       desc: 'ดูลำดับขีด เขียนทับ ตรวจทีละขีด และเขียนอิสระ',
     },
     {
-      to: `/${pack.id}/quiz`,
+      to: scriptPath(pack.id, `quiz`),
       title: 'แบบทดสอบ',
       desc: 'เลือกคำอ่าน เลือกตัวอักษร ฟังเสียง และเขียนตอบ',
     },
     {
-      to: `/${pack.id}/review`,
+      to: scriptPath(pack.id, `review`),
       title: 'ทบทวน',
       desc: 'ทบทวนตัวที่ถึงรอบและตัวที่ผิดบ่อย สำรองความคืบหน้าเป็นไฟล์',
     },
     {
-      to: `/${pack.id}/worksheet`,
+      to: scriptPath(pack.id, `worksheet`),
       title: 'พิมพ์แบบฝึก',
       desc: 'สร้างกระดาษคัดลายมือ A4 สำหรับเขียนด้วยมือ',
     },
@@ -47,6 +49,18 @@ export default function ScriptHomePage() {
           </span>
         </h1>
         <p className="muted">{pack.description}</p>
+        {/* สลับไปอีกชุด (ปุ่ม ひらがな/カタカナ บนหัวเว็บเดิม ย้ายมาอยู่ที่นี่) */}
+        {pack.counterpart && getScript(pack.counterpart) && (
+          <p className="small">
+            <Link to={scriptPath(pack.counterpart)}>
+              ไปที่{getScript(pack.counterpart)!.name}{' '}
+              <span className="kana" lang="ja">
+                {getScript(pack.counterpart)!.nameJa}
+              </span>{' '}
+              →
+            </Link>
+          </p>
+        )}
       </header>
 
       <ContinueCard packs={packs} />
@@ -72,7 +86,7 @@ export default function ScriptHomePage() {
             จำได้แล้ว {mastered}/{pack.chars.length} · กดที่ตัวอักษรเพื่อฝึกเขียน
           </span>
         </div>
-        <KanaTable pack={pack} progress={progress} hrefFor={(c) => `/${pack.id}/practice/${c.id}`} />
+        <KanaTable pack={pack} progress={progress} hrefFor={(c) => scriptPath(pack.id, `practice/${c.id}`)} />
         <MasteryLegend />
       </section>
     </div>

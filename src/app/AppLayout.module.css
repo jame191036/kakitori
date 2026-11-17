@@ -48,49 +48,144 @@
   white-space: nowrap;
 }
 
-/* เมนูหลัก: ตัวหนังสือล้วน หน้าที่อยู่มีเส้นหมึกใต้ ทับเส้นขอบล่างของแถบพอดี */
-.topNav {
+/*
+ * เส้นทาง (breadcrumb): หน้าแรก › ตัวอักษร › ฮิรางานะ › คัดตัวอักษร
+ * จอกว้าง: บรรทัดเล็กเหนือชื่อหน้า (ใต้หัวเว็บ) · จอแคบ: บนหัวเว็บเป็น "‹ ชั้นบน / หน้านี้"
+ * หน้าปัจจุบันตัวหนา · ชั้นบนเป็นลิงก์
+ */
+.headerMid {
   flex: 1;
-  align-self: stretch;
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  gap: 4px;
   min-width: 0;
+  display: flex;
+  align-items: center;
 }
 
-.switcher {
+/* ดึงชื่อหน้าขึ้นมาชิดเส้นทาง (หน้าเว้นบนเองอยู่แล้ว) */
+.crumbBar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 16px;
+  margin-bottom: -14px;
+}
+
+/* ปุ่มกลับ: ลูกศรอย่างเดียวในกรอบสี่เหลี่ยมเล็กๆ แบบปุ่มรอง ให้เข้ากับบรรทัดเส้นทาง */
+.backBtn {
   flex: none;
-  border-bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  color: var(--text-2);
+  text-decoration: none !important;
+  transition:
+    color 150ms ease,
+    border-color 150ms ease,
+    transform var(--press);
+  -webkit-touch-callout: none;
 }
 
-.switcher a {
-  min-height: 34px;
-  padding: 2px 10px;
-  font-size: 0.95rem;
+.backBtn:active {
+  transform: scale(0.97);
 }
 
-/* จอสัมผัส: ปุ่มสลับ ひらがな/カタカナ สูงขึ้นให้กดง่าย (ยังพอดีกับแถบด้านบนสูง 60px) */
-@media (pointer: coarse) {
-  .switcher a {
-    min-height: 40px;
+@media (hover: hover) and (pointer: fine) {
+  .backBtn:hover {
+    color: var(--text);
+    border-color: var(--text-3);
   }
 }
 
-.short {
+.trail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+
+.trail li {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.trail li + li::before {
+  content: '›';
+  margin: 0 10px;
+  color: var(--text-3);
+}
+
+.trail a,
+.back {
+  color: var(--text-2);
+  text-decoration: none !important;
+  transition: color 150ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .trail a:hover,
+  .back:hover {
+    color: var(--text);
+  }
+}
+
+.trail [aria-current] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.trailShort {
   display: none;
 }
 
-/* จอกลาง: ย่อชื่อเมนู */
-@media (max-width: 1180px) {
-  .long {
-    display: none;
-  }
-
-  .short {
-    display: inline;
-  }
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  min-height: 44px;
+  margin-left: -4px;
+  white-space: nowrap;
+  -webkit-touch-callout: none;
 }
+
+.here {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.back + .here::before {
+  content: '/';
+  margin-right: 6px;
+  color: var(--text-3);
+  font-weight: 400;
+}
+
+/* เมนูหลัก (จอกว้าง): ตัวหนังสือล้วนต่อจากโลโก้ หน้าที่อยู่มีเส้นหมึกใต้ ทับเส้นขอบล่างของแถบพอดี */
+.topNav {
+  flex: none;
+  align-self: stretch;
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+
 
 .topLink {
   display: inline-flex;
@@ -184,13 +279,21 @@
 
 /* ── มือถือ: เมนูย้ายไปอยู่ด้านล่าง ── */
 @media (max-width: 860px) {
-  .topNav {
+  .topNav,
+  .crumbBar {
     display: none;
   }
 
+  .trailShort {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    font-size: 0.95rem;
+  }
+
   .headerInner {
-    justify-content: space-between;
-    gap: 10px;
+    gap: 12px;
   }
 
   .footer {
@@ -204,7 +307,9 @@
     right: 0;
     bottom: 0;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    /* จำนวนคอลัมน์ = จำนวนเมนูหลัก (กำหนดใน AppLayout) */
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
     height: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
     padding-bottom: env(safe-area-inset-bottom);
     /* แนวนอน: ไอคอนซ้าย/ขวาสุดไม่ไปอยู่ใต้รอยบากจอ */

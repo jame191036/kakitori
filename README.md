@@ -75,7 +75,12 @@ src/
 └─ app/                       layout, router, ธีม, PWA
 ```
 
-URL: `/hiragana`, `/hiragana/practice/ka?mode=trace`, `/hiragana/quiz`, `/hiragana/review`, `/hiragana/worksheet`
+โครงเมนูเป็นหน้าศูนย์รวมทีละชั้น (หน้าแรก › หมวด › ชุด › เมนูย่อย) หัวเว็บแสดงเส้นทาง — URL สร้างผ่าน `src/app/paths.ts`
+
+URL: `/` (เลือกหมวด) → `/kana` (หมวดตัวอักษร) → `/kana/hiragana` (ตาราง + เมนูย่อย) →
+`/kana/hiragana/practice/ka?mode=trace`, `/kana/hiragana/quiz`, `/kana/hiragana/review`, `/kana/hiragana/worksheet` ·
+`/review` (ทบทวนรวม) · `/start` (บทเรียนพื้นฐาน) — URL เดิม (`/hiragana/...`) ส่งต่อมาที่ `/kana/hiragana/...` ให้อัตโนมัติ
+หมวดใหม่ (ท่องเที่ยว ฯลฯ) เพิ่มใน `src/app/sections.ts` และเมนูหลักใน `MAIN_NAV` ของ `src/app/AppLayout.tsx`
 (เปลี่ยน `hiragana` เป็น `katakana` ได้ทุกหน้า — ฮิรางานะและคาตาคานะใช้ id ตัวอักษรเดียวกัน เช่น `ka` = か / カ)
 
 ### ตัวตรวจลายมือทำงานอย่างไร

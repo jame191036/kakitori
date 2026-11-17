@@ -1,0 +1,26 @@
+.h2 {
+  font-size: 1.05rem;
+}
+
+/* ฟีเจอร์: รายการเรียบๆ คั่นด้วยเส้นบรรทัด สูงสุด 3 คอลัมน์ (6 ข้อ = 2 แถวเต็ม) · มือถือ 1 คอลัมน์ */
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, max(300px, (100% - 80px) / 3)), 1fr));
+  gap: 0 40px;
+  margin: 0;
+}
+
+.features > div {
+  padding: 12px 0 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.features dt {
+  font-weight: 600;
+}
+
+.features dd {
+  margin: 2px 0 0;
+  color: var(--text-2);
+  font-size: 0.95rem;
+}

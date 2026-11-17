@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router';
+import { REVIEW_ROOT } from '../app/paths';
 import { groupLabel } from '../data/scripts';
 import type { ScriptPack } from '../data/types';
 import { buildPath, charState, nextStep, rowNeeds, stepHref } from '../features/progress/learningPath';
@@ -25,7 +26,7 @@ export function ContinueCard({ packs }: ContinueCardProps) {
         <p className={styles.eyebrow}>ผ่านครบทุกแถวแล้ว</p>
         <p>เยี่ยมมาก ฝึกทบทวนต่อเรื่อยๆ เพื่อไม่ให้ลืม</p>
         <div>
-          <Link to={`/${packs[0]!.id}/review`} className="btn btn-primary">
+          <Link to={REVIEW_ROOT} className="btn btn-primary">
             ไปหน้าทบทวน
           </Link>
         </div>

@@ -11,3 +11,5 @@ export const ReviewPage = lazy(() => import('../pages/ReviewPage'));
 export const WorksheetPage = lazy(() => import('../pages/WorksheetPage'));
 export const AboutPage = lazy(() => import('../pages/AboutPage'));
 export const StartPage = lazy(() => import('../pages/StartPage'));
+export const KanaHubPage = lazy(() => import('../pages/KanaHubPage'));
+export const ReviewHubPage = lazy(() => import('../pages/ReviewHubPage'));

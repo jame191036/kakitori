@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { scriptPath } from '../app/paths';
 import { useEffect, useRef, type CSSProperties } from 'react';
 import {
   Link,
@@ -65,7 +66,7 @@ const isMode = (v: string | null): v is Mode => MODES.some((m) => m.id === v);
 /** /:script/practice → ไปตัวแรก */
 export function PracticeIndex() {
   const pack = useScriptPack();
-  return <Navigate to={`/${pack.id}/practice/${pack.chars[0]!.id}`} replace />;
+  return <Navigate to={scriptPath(pack.id, `practice/${pack.chars[0]!.id}`)} replace />;
 }
 
 export default function PracticePage() {
@@ -181,7 +182,7 @@ export default function PracticePage() {
   );
   const level = masteryLevel(progress?.[entry.id]);
   const hrefFor = (id: string, m: Mode = mode) =>
-    `/${pack.id}/practice/${id}${m === 'animate' ? '' : `?mode=${m}`}`;
+    scriptPath(pack.id, `practice/${id}${m === 'animate' ? '' : `?mode=${m}`}`);
   const setMode = (m: Mode) =>
     setParams(m === 'animate' ? {} : { mode: m }, { replace: true, preventScrollReset: true });
 
@@ -199,7 +200,7 @@ export default function PracticePage() {
     rowQuiz || next ? (
       <>
         {rowQuiz && (
-          <Link to={`/${pack.id}/quiz?groups=${rowQuiz.id}`} className="btn btn-primary btn-sm">
+          <Link to={scriptPath(pack.id, `quiz?groups=${rowQuiz.id}`)} className="btn btn-primary btn-sm">
             ทดสอบแถว <span className="kana">{rowQuiz.head}</span>
           </Link>
         )}
@@ -395,7 +396,7 @@ export default function PracticePage() {
             {rowQuiz && (
               <p className={styles.rowReady}>
                 เขียนครบทั้งแถว <span className="kana">{rowQuiz.head}</span> แล้ว —{' '}
-                <Link to={`/${pack.id}/quiz?groups=${rowQuiz.id}`}>ทดสอบแถวนี้ →</Link>
+                <Link to={scriptPath(pack.id, `quiz?groups=${rowQuiz.id}`)}>ทดสอบแถวนี้ →</Link>
               </p>
             )}
           </>

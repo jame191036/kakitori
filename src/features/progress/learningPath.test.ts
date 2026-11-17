@@ -54,14 +54,14 @@ describe('learning path', () => {
     step = nextStep(path, data({ ...before, ...small }))!;
     expect(step.group.head).toBe('きゃ');
     expect(step.status).toEqual({ kind: 'quiz', remaining: 3 });
-    expect(stepHref(step)).toBe('/hiragana/quiz?groups=kya');
+    expect(stepHref(step)).toBe('/kana/hiragana/quiz?groups=kya');
   });
 
   it('starts by writing あ', () => {
     const step = nextStep(path, { version: 1, scripts: {} })!;
     expect(step.index).toBe(1);
     expect(step.status).toMatchObject({ kind: 'write', remaining: 5 });
-    expect(stepHref(step)).toBe('/hiragana/practice/a');
+    expect(stepHref(step)).toBe('/kana/hiragana/practice/a');
   });
 
   it('asks for the row quiz once every character has been written', () => {
@@ -74,7 +74,7 @@ describe('learning path', () => {
     });
     const step = nextStep(path, data)!;
     expect(step.status).toEqual({ kind: 'quiz', remaining: 4 });
-    expect(stepHref(step)).toBe('/hiragana/quiz?groups=a');
+    expect(stepHref(step)).toBe('/kana/hiragana/quiz?groups=a');
   });
 
   it('moves to the next row when a row is written and answered correctly', () => {

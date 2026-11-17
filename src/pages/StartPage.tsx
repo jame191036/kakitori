@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router';
+import { scriptPath } from '../app/paths';
 import { ArticleLayout, type TocItem } from '../components/ArticleLayout';
 import { ContinueCard } from '../components/ContinueCard';
 import { pairsOf } from '../data/minimalPairs';
@@ -262,7 +263,7 @@ export default function StartPage() {
       <ContinueCard packs={scriptList} />
 
       <p className="small muted" style={{ textAlign: 'center' }}>
-        อยากดูตัวอักษรทั้งหมดก่อน? <Link to={`/${scriptList[0]!.id}`}>ดูตาราง{scriptList[0]!.name}</Link>
+        อยากดูตัวอักษรทั้งหมดก่อน? <Link to={scriptPath(scriptList[0]!.id)}>ดูตาราง{scriptList[0]!.name}</Link>
       </p>
     </ArticleLayout>
   );

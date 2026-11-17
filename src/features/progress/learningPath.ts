@@ -1,3 +1,4 @@
+import { scriptPath } from '../../app/paths';
 import { LEVELS, type Level } from '../../data/scripts';
 import type { CharEntry, CharGroup, GroupKind, ScriptPack } from '../../data/types';
 import type { ProgressData, ScriptProgress } from './progressLogic';
@@ -108,6 +109,6 @@ export function nextStep(path: readonly PathStep[], data: ProgressData): NextSte
 /** ลิงก์ของขั้นนั้น: ไปฝึกเขียนตัวที่ยังไม่ได้เขียน หรือไปทดสอบเฉพาะแถว */
 export function stepHref(step: NextStep): string {
   return step.status.kind === 'write'
-    ? `/${step.pack.id}/practice/${step.status.next.id}`
-    : `/${step.pack.id}/quiz?groups=${step.group.id}`;
+    ? scriptPath(step.pack.id, `practice/${step.status.next.id}`)
+    : scriptPath(step.pack.id, `quiz?groups=${step.group.id}`);
 }

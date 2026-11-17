@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { scriptPath } from '../app/paths';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useScriptPack } from '../app/ScriptContext';
 import { ContinueCard } from '../components/ContinueCard';
@@ -88,7 +89,7 @@ function QuizFlow({ quickStart }: { quickStart: QuickStart | null }) {
 
   const backToSetup = () => {
     // ล้าง ?chars= / ?groups= ออกจาก URL เมื่อกลับไปหน้าตั้งค่า
-    navigate(`/${pack.id}/quiz`, { replace: true });
+    navigate(scriptPath(pack.id, `quiz`), { replace: true });
     setPhase({ kind: 'setup' });
   };
 
