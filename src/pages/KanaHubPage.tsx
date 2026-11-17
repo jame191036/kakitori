@@ -1,108 +1,216 @@
+import { ArrowRight, BookOpen, ListChecks, PenLine, Printer, RotateCcw, TrainFront, type LucideIcon } from 'lucide-react';
+import { Suspense, useMemo } from 'react';
+import { Link } from 'react-router';
 import { scriptPath } from '../app/paths';
-import { ContinueCard } from '../components/ContinueCard';
-import { HubList } from '../components/HubList';
-import { levelsOf, scriptList } from '../data/scripts';
+import { RouteMap } from '../components/train/RouteMap';
+import { StampBook } from '../components/train/StampBook';
+import { LEVELS, scriptList } from '../data/scripts';
+import type { ScriptPack } from '../data/types';
+import { useStrokeData } from '../data/useStrokes';
+import { buildPath, nextStep, stepHref } from '../features/progress/learningPath';
 import { masteryLevel } from '../features/progress/progressLogic';
 import { progressStore } from '../features/progress/progressStore';
+import {
+  lineLetter,
+  nextStationOf,
+  packStations,
+  stationDone,
+  stationName,
+  stationStates,
+} from '../features/progress/stations';
+import { StrokeDraw } from '../features/writing/StrokeDraw';
+import { cx } from '../lib/cx';
 import { useStore } from '../lib/persistentStore';
+import { packTone, tone } from '../lib/tone';
 import styles from './KanaHubPage.module.css';
 
-const FEATURES: { title: string; desc: string }[] = [
-  { title: 'ดูลำดับขีด', desc: 'แอนิเมชันการเขียนทีละขีด พร้อมเลขกำกับลำดับและทิศทาง' },
-  { title: 'ตรวจลายมือทีละขีด', desc: 'เขียนด้วยนิ้ว ปากกา หรือเมาส์ ระบบบอกทันทีว่าผิดลำดับหรือผิดทิศ' },
-  {
-    title: 'แบบทดสอบ 5 แบบ',
-    desc: 'เลือกคำอ่าน เลือกตัวอักษร ฟังเสียง เขียนตอบ และจับคู่ฮิรางานะ–คาตาคานะ',
-  },
-  { title: 'ทบทวนตามรอบ', desc: 'ระบบนัดทบทวนตัวที่ใกล้จะลืม และนำตัวที่ผิดบ่อยมาถามซ้ำ' },
-  { title: 'พิมพ์แบบฝึกคัด', desc: 'สร้างกระดาษคัดลายมือ A4 พร้อมตัวจางให้เขียนทับ' },
-  { title: 'ใช้ออฟไลน์ได้', desc: 'ติดตั้งลงหน้าจอมือถือ แล้วฝึกได้แม้ไม่มีอินเทอร์เน็ต' },
+/** เครื่องมือในแต่ละชุด (ปุ่มในการ์ด) */
+const TOOLS: { path: string; label: string; icon: LucideIcon }[] = [
+  { path: 'practice', label: 'คัดตัวอักษร', icon: PenLine },
+  { path: 'quiz', label: 'แบบทดสอบ', icon: ListChecks },
+  { path: 'review', label: 'ทบทวน', icon: RotateCcw },
+  { path: 'worksheet', label: 'พิมพ์แบบฝึก', icon: Printer },
 ];
 
-/** หมวดตัวอักษร (ชั้นที่ 2): เลือกฮิรางานะ/คาตาคานะ + บทเรียนพื้นฐาน */
+const LESSONS = [
+  // 始 = เริ่ม (始める hajimeru)
+  { to: '/start', glyph: '始', title: 'เริ่มต้นที่นี่', desc: 'พื้นฐานที่ควรรู้ก่อนเริ่มเขียน — อ่านประมาณ 5 นาที' },
+  {
+    to: '/start#small-long',
+    glyph: 'っ',
+    title: 'ตัวเล็กและเสียงยาว',
+    desc: 'ตัวควบ っ และเสียงยาว พร้อมฝึกฟังแยกเสียง (ระดับ 2)',
+  },
+];
+
+/**
+ * หมวดตัวอักษร (ชั้นที่ 2): การ์ดสายฮิรางานะ/คาตาคานะ (เข้าเครื่องมือได้จากการ์ดเลย)
+ * + แผนที่สถานีของสายที่กำลังเรียน + ตราสถานี + บทเรียนพื้นฐาน
+ */
 export default function KanaHubPage() {
   const progress = useStore(progressStore);
+  const path = useMemo(() => buildPath(scriptList), []);
+  const step = nextStep(path, progress);
+
+  // สายที่กำลังนั่งอยู่ = สาย + ระดับของขั้นถัดไป (ผ่านครบแล้ว → ช่วงสุดท้ายของเส้นทาง)
+  const last = path[path.length - 1]!;
+  const linePack = step?.pack ?? last.pack;
+  const lineLevel = step?.level ?? last.level;
+  const lineStations = packStations(linePack).filter((st) => st.level === lineLevel);
+  const lineStates = stationStates(lineStations, progress, step);
+  const linePassed = lineStates.filter((s) => s === 'done').length;
+  const level = LEVELS.find((l) => l.id === lineLevel)!;
 
   return (
-    <div className="container page">
-      <header className="stack" style={{ gap: 6 }}>
-        <h1 className="page-title">ตัวอักษร</h1>
-        <p className="muted">
-          ฮิรางานะและคาตาคานะ — ตัวอักษรพื้นฐานที่ต้องอ่านและเขียนให้ได้ก่อนเรียนเรื่องอื่น
-          เริ่มจากฮิรางานะก่อน แล้วค่อยต่อคาตาคานะ
+    <div className={cx('container', styles.page)}>
+      <header className={styles.head}>
+        <h1 className={styles.h1}>ตัวอักษร</h1>
+        <p className={styles.lead}>
+          เลือกสายที่จะนั่ง แล้วกดเข้าไปฝึกได้เลย — แนะนำให้เริ่มจากสายฮิรางานะ แล้วค่อยต่อสายคาตาคานะ
         </p>
       </header>
 
-      <ContinueCard packs={scriptList} />
+      <div className={styles.cards}>
+        {scriptList.map((pack, i) => (
+          <ScriptCard key={pack.id} pack={pack} delay={250 + i * 500} />
+        ))}
+      </div>
 
-      <section className="card stack" aria-labelledby="scripts-title">
-        <h2 id="scripts-title" className={styles.h2}>
-          เลือกชุดตัวอักษร
-        </h2>
-        <HubList
-          items={scriptList.map((pack) => {
-            const p = progress.scripts[pack.id];
-            const mastered = pack.chars.filter((c) => masteryLevel(p?.[c.id]) === 3).length;
-            return {
-              key: pack.id,
-              to: scriptPath(pack.id),
-              glyph: pack.chars[0]!.char,
-              glyphLang: 'ja' as const,
-              title: (
+      <h2 className={styles.sectionTitle}>
+        <span className="kana">路線図</span> เส้นทางที่กำลังนั่งอยู่
+      </h2>
+      <section className={cx('tone', styles.routeCard)} style={tone(packTone(linePack))} aria-labelledby="route-title">
+        <div className={styles.routeHead}>
+          <span className={cx('kana', styles.badge)}>{linePack.chars[0]!.char}</span>
+          <div>
+            <h3 id="route-title" className={styles.routeTitle}>
+              สาย{linePack.name} <span className={cx('kana', styles.lineJa)}>{linePack.nameJa}線</span>
+            </h3>
+            <p className={styles.muted}>
+              ระดับ {level.id} {level.name} · {lineStations.length} สถานี · ผ่านแล้ว {linePassed}
+            </p>
+          </div>
+          {step && (
+            <Link to={stepHref(step)} className={cx('btn btn-primary', styles.routeCta)}>
+              {step.status.kind === 'write' ? (
                 <>
-                  {pack.name}{' '}
-                  <span className="kana muted" lang="ja">
-                    {pack.nameJa}
-                  </span>
+                  ฝึกเขียน <span className="kana">{step.status.next.char}</span> ต่อ
                 </>
-              ),
-              desc: `${levelsOf(pack).length} ระดับ · ตาราง คัดตัวอักษร แบบทดสอบ ทบทวน พิมพ์แบบฝึก`,
-              meta: `${pack.chars.length} ตัว · จำได้แล้ว ${mastered}`,
-            };
-          })}
-        />
+              ) : (
+                <>
+                  ทดสอบแถว <span className="kana">{step.group.head}</span>
+                </>
+              )}
+              <ArrowRight size={18} strokeWidth={2} aria-hidden />
+            </Link>
+          )}
+        </div>
+        <RouteMap stations={lineStations} states={lineStates} />
       </section>
 
-      <section className="card stack" aria-labelledby="lessons-title">
-        <h2 id="lessons-title" className={styles.h2}>
-          บทเรียน
-        </h2>
-        <HubList
-          items={[
-            {
-              key: 'start',
-              to: '/start',
-              // 始 = เริ่ม (始める hajimeru)
-              glyph: '始',
-              glyphLang: 'ja',
-              title: 'เริ่มต้นที่นี่',
-              desc: 'พื้นฐานที่ควรรู้ก่อนเริ่มเขียน — อ่านประมาณ 5 นาที',
-            },
-            {
-              key: 'small-long',
-              to: '/start#small-long',
-              glyph: 'っ',
-              glyphLang: 'ja',
-              title: 'ตัวเล็กและเสียงยาว',
-              desc: 'ตัวควบ っ และเสียงยาว พร้อมฝึกฟังแยกเสียง (ระดับ 2)',
-            },
-          ]}
-        />
-      </section>
+      {lineLevel === 1 && (
+        <section className={cx('tone', styles.nextLine)} style={tone('l2')} aria-label="ระดับถัดไป">
+          <span className={cx('kana', styles.badge)}>ゃ</span>
+          <div>
+            <p className={styles.nextLabel}>ระดับ 2 · หลังจบระดับ 1 ทั้งสองสาย</p>
+            <p className={styles.nextTitle}>ตัวเล็กและตัวควบ</p>
+            <p className={styles.muted}>
+              <span className="kana">ゃ ゅ ょ っ</span> และตัวควบ เช่น <span className="kana">きゃ</span> —
+              ทั้งฮิรางานะและคาตาคานะ
+            </p>
+          </div>
+        </section>
+      )}
 
-      <section className="card stack" aria-labelledby="features-title">
-        <h2 id="features-title" className={styles.h2}>
-          ในหมวดนี้ฝึกอะไรได้บ้าง
-        </h2>
-        <dl className={styles.features}>
-          {FEATURES.map(({ title, desc }) => (
-            <div key={title}>
-              <dt>{title}</dt>
-              <dd>{desc}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      <h2 className={styles.sectionTitle}>
+        <span className="kana">駅スタンプ</span> ตราสถานีของฉัน
+      </h2>
+      <p className={cx(styles.muted, styles.stampNote)}>
+        สาย{linePack.name} ระดับ {level.id} — ผ่านแถวไหน (ฝึกเขียนครบและตอบถูกครบ) ได้ตราของสถานีนั้น
+      </p>
+      <StampBook stations={lineStations} states={lineStates} />
+
+      <h2 className={styles.sectionTitle}>บทเรียน</h2>
+      <ul className={styles.lessons}>
+        {LESSONS.map((l) => (
+          <li key={l.to}>
+            <Link to={l.to} className={styles.lesson}>
+              <span className={cx('kana', styles.lessonGlyph)}>{l.glyph}</span>
+              <span className={styles.lessonText}>
+                <span className={styles.lessonTitle}>{l.title}</span>
+                <span className={styles.muted}>{l.desc}</span>
+              </span>
+              <BookOpen size={18} strokeWidth={1.8} aria-hidden className={styles.lessonIcon} />
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
+}
+
+/** การ์ดสายของชุดตัวอักษร: ตัวแรกเขียนตัวเองในวงป้ายสถานี + ความคืบหน้า + ปุ่มเครื่องมือ */
+function ScriptCard({ pack, delay }: { pack: ScriptPack; delay: number }) {
+  const progress = useStore(progressStore);
+  const p = progress.scripts[pack.id];
+  const stations = packStations(pack);
+  const passed = stations.filter((st) => stationDone(st, progress)).length;
+  const next = nextStationOf(stations, progress);
+  const mastered = pack.chars.filter((c) => masteryLevel(p?.[c.id]) === 3).length;
+  const glyph = pack.chars[0]!.char;
+
+  return (
+    <article className={cx('tone', styles.card)} style={tone(packTone(pack))} aria-labelledby={`line-${pack.id}`}>
+      <div className={styles.art}>
+        <Suspense fallback={<span className={cx('kana', styles.artText)}>{glyph}</span>}>
+          <CardGlyph pack={pack} char={glyph} delay={delay} />
+        </Suspense>
+        <span className={styles.code} aria-hidden>
+          {lineLetter(pack)}
+        </span>
+      </div>
+      <div className={styles.body}>
+        <p className={cx('kana', styles.lineJa)}>{pack.nameJa}線</p>
+        <h2 id={`line-${pack.id}`} className={styles.cardTitle}>
+          <Link to={scriptPath(pack.id)}>สาย{pack.name}</Link>
+        </h2>
+        <p className={styles.muted}>{pack.description}</p>
+        <div className={styles.progress}>
+          <span className={styles.bar} aria-hidden>
+            <span style={{ width: `${Math.max(1.5, (mastered / pack.chars.length) * 100)}%` }} />
+          </span>
+          <span className={styles.muted}>
+            จำได้แล้ว {mastered} จาก {pack.chars.length} ตัว · ผ่านแล้ว {passed} จาก {stations.length} สถานี
+          </span>
+        </div>
+        <p className={styles.nextStop}>
+          <TrainFront size={14} strokeWidth={2.2} aria-hidden />
+          {next ? (
+            <>
+              {passed > 0 ? 'สถานีต่อไป' : 'เริ่มที่สถานี'}{' '}
+              <span className="kana">{stationName(next.group)}</span> ({next.code})
+            </>
+          ) : (
+            'ผ่านครบทุกสถานีแล้ว'
+          )}
+        </p>
+        <ul className={styles.tools}>
+          {TOOLS.map(({ path, label, icon: Icon }) => (
+            <li key={path}>
+              <Link to={scriptPath(pack.id, path)}>
+                <Icon size={16} strokeWidth={1.9} aria-hidden />
+                {label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </article>
+  );
+}
+
+function CardGlyph({ pack, char, delay }: { pack: ScriptPack; char: string; delay: number }) {
+  const data = useStrokeData(pack, char);
+  if (!data) return <span className={cx('kana', styles.artText)}>{char}</span>;
+  return <StrokeDraw data={data} ghost delay={delay} label={`ลำดับขีดของ ${char} (แตะเพื่อดูอีกครั้ง)`} />;
 }

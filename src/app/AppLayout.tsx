@@ -175,7 +175,10 @@ export function AppLayout() {
       <header className={`${styles.header} no-print`}>
         <div className={`container ${styles.headerInner}`}>
           <Link to="/" className={styles.brand} aria-label={`${SITE_NAME} — หน้าแรก`}>
-            <img src="/logo.svg" alt="" width={32} height={32} />
+            {/* โลโก้ = ป้ายเลขสถานีวงกลมขอบสีแดงชาด มี か (kakitori) */}
+            <span className={`kana ${styles.logo}`} aria-hidden>
+              か
+            </span>
             <span className={styles.brandText}>{SITE_NAME}</span>
           </Link>
           {/* จอกว้าง: เมนูหลักต่อจากโลโก้ (มือถืออยู่แถบล่าง) — หน้าแรกกดได้จากโลโก้ */}

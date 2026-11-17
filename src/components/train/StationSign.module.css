@@ -1,0 +1,95 @@
+.sign {
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.top {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: clamp(16px, 2.4vw, 28px) clamp(16px, 2.6vw, 34px);
+}
+
+/* เลขสถานี: กรอบสี่เหลี่ยมมุมมนขอบหนาสีสาย (อักษรสายด้านบน เลขด้านล่าง) */
+.num {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  width: 58px;
+  height: 58px;
+  border: 5px solid var(--c);
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.num small {
+  font-size: 0.72rem;
+}
+
+.name {
+  display: grid;
+  justify-items: center;
+  min-width: 0;
+}
+
+.ink {
+  width: clamp(100px, 11vw, 170px);
+  height: clamp(100px, 11vw, 170px);
+}
+
+.nameText {
+  display: grid;
+  place-items: center;
+  min-height: clamp(100px, 11vw, 170px);
+  font-size: clamp(3.4rem, 7vw, 6rem);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.reading {
+  margin-top: -2px;
+  font-size: clamp(1.05rem, 1.6vw, 1.5rem);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  color: var(--text-2);
+}
+
+.line {
+  text-align: right;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+/* แถบสีสาย: สถานีก่อนหน้า ← · → สถานีถัดไป */
+.band {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px clamp(16px, 2.6vw, 34px);
+  background: var(--c);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.band :global(.kana) {
+  font-size: 1.05em;
+}
+
+@media (max-width: 760px) {
+  .top {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .line {
+    display: none;
+  }
+}

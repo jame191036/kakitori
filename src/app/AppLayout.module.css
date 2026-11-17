@@ -19,14 +19,27 @@
   top: 8px;
 }
 
-/* แถบบน: สีกระดาษทึบ + เส้นบรรทัดด้านล่าง (ไม่ใช้กระจกเบลอ) */
+/* แถบบน: พื้นการ์ดทึบ + เส้นด้านล่าง (ไม่ใช้กระจกเบลอ) */
 .header {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: var(--bg);
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
   padding-top: env(safe-area-inset-top);
+}
+
+/* โลโก้: ป้ายเลขสถานีวงกลม ขอบหนาสีแดงชาด */
+.logo {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 4px solid var(--line-hira);
+  font-size: 1.05rem;
+  line-height: 1;
 }
 
 .headerInner {
@@ -212,7 +225,7 @@
 
 .topLink[aria-current='page'] {
   color: var(--text);
-  box-shadow: inset 0 -2px 0 var(--ink);
+  box-shadow: inset 0 -4px 0 var(--primary);
 }
 
 .main {
@@ -314,7 +327,7 @@
     padding-bottom: env(safe-area-inset-bottom);
     /* แนวนอน: ไอคอนซ้าย/ขวาสุดไม่ไปอยู่ใต้รอยบากจอ */
     padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
-    background: var(--bg);
+    background: var(--surface);
     border-top: 1px solid var(--border);
   }
 
@@ -336,10 +349,10 @@
     -webkit-touch-callout: none;
   }
 
-  /* หน้าที่อยู่: สีหมึก + ขีดสั้นๆ บนเส้นขอบ (ไม่ใช้สีแดง) */
+  /* หน้าที่อยู่: ตัวหนังสือเข้ม + ขีดสีแดงชาดบนเส้นขอบ (เหมือนเมนูบนจอกว้าง) */
   .bottomLink[aria-current='page'] {
     color: var(--text);
-    box-shadow: inset 0 2px 0 var(--ink);
+    box-shadow: inset 0 3px 0 var(--primary);
   }
 
   /* แตะแล้วไอคอนย่อ — บอกว่าแตะติดแล้ว ระหว่างรอหน้าใหม่โหลด */

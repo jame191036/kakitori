@@ -1,0 +1,178 @@
+/* จอกว้าง: สถานีเรียงแนวนอนเต็มความกว้าง */
+.route {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  padding-top: 40px;
+}
+
+.route::before,
+.route::after {
+  content: '';
+  position: absolute;
+  top: calc(40px + 6px);
+  left: calc(100% / var(--n) / 2);
+  height: 6px;
+  border-radius: 3px;
+}
+
+/* รางทั้งสาย */
+.route::before {
+  right: calc(100% / var(--n) / 2);
+  background: var(--track);
+}
+
+/* ช่วงที่เดินทางมาแล้ว */
+.route::after {
+  width: calc(var(--reached) * 100% / var(--n));
+  background: var(--c);
+}
+
+.route li {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 4px solid var(--track-strong);
+}
+
+.done .dot {
+  background: var(--c);
+  border-color: var(--c);
+}
+
+.current .dot {
+  width: 26px;
+  height: 26px;
+  margin-top: -4px;
+  border: 5px solid var(--c);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--c) 18%, transparent);
+}
+
+.kana {
+  margin-top: 6px;
+  font-size: clamp(1.15rem, 1.7vw, 1.6rem);
+  line-height: 1.2;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.done .kana {
+  color: var(--text);
+}
+
+.current .kana {
+  color: var(--c-text);
+}
+
+.code {
+  font-size: 0.68rem;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.here {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  translate: -50% 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--c);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.here::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  translate: -50% 0;
+  border: 5px solid transparent;
+  border-top-color: var(--c);
+}
+
+@media (max-width: 1100px) {
+  .code {
+    font-size: 0.6rem;
+  }
+}
+
+/* มือถือ: สถานีเรียงแนวตั้ง (แถวละ 48px) */
+@media (max-width: 760px) {
+  .route {
+    grid-template-columns: 1fr;
+    padding-top: 0;
+  }
+
+  .route::before,
+  .route::after {
+    top: 24px;
+    left: 11px;
+    width: 6px;
+  }
+
+  .route::before {
+    right: auto;
+    bottom: 24px;
+    height: auto;
+  }
+
+  .route::after {
+    height: calc(var(--reached) * 48px);
+  }
+
+  .route li {
+    grid-template-columns: 28px 48px auto 1fr;
+    align-items: center;
+    justify-items: start;
+    column-gap: 10px;
+    height: 48px;
+  }
+
+  .dot {
+    justify-self: center;
+  }
+
+  .current .dot {
+    margin-top: 0;
+  }
+
+  .kana {
+    margin-top: 0;
+    justify-self: center;
+  }
+
+  .code {
+    font-size: 0.72rem;
+  }
+
+  .here {
+    position: static;
+    translate: none;
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .here::after {
+    display: none;
+  }
+}

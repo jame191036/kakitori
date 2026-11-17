@@ -1,37 +1,407 @@
-/* หัวเรื่อง + ตัวอย่างลำดับขีด か ขนาดเล็กทางขวา (แตะเพื่อเล่นซ้ำ) */
-.intro {
+.page {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
+  padding-block: clamp(20px, 3vw, 40px) 48px;
+}
+
+/* ── ป้ายสถานี + ชานชาลา ── */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(24px, 4vw, 64px);
+}
+
+.kicker {
+  margin-bottom: 12px;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.kicker :global(.kana) {
+  font-weight: 600;
+}
+
+.side {
+  display: grid;
+  justify-items: start;
+  min-width: 0;
+}
+
+.h1 {
+  font-size: clamp(1.75rem, 3.2vw, 2.8rem);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.lead {
+  margin-top: 12px;
+  max-width: 36em;
+  color: var(--text-2);
+  font-size: clamp(1rem, 1.2vw, 1.1rem);
+}
+
+/* ชานชาลา: ขอบบนสีเหลืองแบบแถบทางเดินบนชานชาลา */
+.platform {
+  justify-self: stretch;
+  margin-top: 22px;
+  padding: 12px 16px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 6px solid var(--koji);
+  border-radius: var(--radius);
+}
+
+.platformLabel {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chips li {
+  display: grid;
+  justify-items: center;
+  min-width: 46px;
+  padding: 4px 6px 2px;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  line-height: 1.2;
+}
+
+.chips li :global(.kana) {
+  font-size: 1.35rem;
+}
+
+.chips li small {
+  font-size: 0.7rem;
+  color: var(--text-2);
+}
+
+/* ผ่านแล้ว = เต็มสีสาย · เขียนแล้ว (ยังไม่ผ่านแบบทดสอบ) = ขอบสีสาย */
+.chips .done {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+
+.chips .done small {
+  color: color-mix(in srgb, var(--primary-ink) 85%, transparent);
+}
+
+.chips .written {
+  border-color: var(--primary);
+}
+
+.todo {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: var(--text-2);
+}
+
+.cta {
+  margin-top: 18px;
+  min-height: 52px;
+  padding-inline: 26px;
+  font-size: 1.05rem;
+}
+
+/* ── ตั๋ว ── */
+.tickets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ticket {
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  padding: 16px 26px;
+  border-radius: var(--radius);
+  background-color: var(--ticket);
+  background-image: repeating-linear-gradient(45deg, rgb(120 90 30 / 4%) 0 2px, transparent 2px 7px);
+  border: 1px solid var(--ticket-line);
+  /* รอยบากครึ่งวงกลมสองข้างแบบตั๋วรถไฟ */
+  mask:
+    radial-gradient(circle 9px at 0 50%, transparent 97%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 9px at 100% 50%, transparent 97%, #000) right / 51% 100% no-repeat;
+}
+
+.ticketBig {
+  font-size: clamp(1.3rem, 2vw, 1.7rem);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.ticketSmall {
+  font-size: 0.85rem;
+  color: var(--text-2);
+}
+
+/* ── แผนที่สาย (หมวด) ── */
+.sectionTitle {
+  margin: clamp(36px, 4vw, 52px) 0 16px;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.sectionTitle :global(.kana) {
+  margin-right: 6px;
+  color: var(--accent);
+}
+
+.lines {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.line {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1.05fr) minmax(0, 1.5fr) 120px;
   align-items: center;
   gap: 16px 24px;
+  width: 100%;
+  padding: 18px 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--c);
+  border-radius: 12px;
+  color: inherit;
+  text-decoration: none !important;
 }
 
-.introText {
-  display: grid;
-  gap: 6px;
+.lineLive {
+  transition:
+    transform var(--press),
+    box-shadow 200ms ease;
 }
 
-.sample {
-  margin: 0;
-  width: 112px;
+.lineLive:active {
+  transform: scale(0.99);
 }
 
-@media (max-width: 560px) {
-  .sample {
-    width: 76px;
+@media (hover: hover) and (pointer: fine) {
+  .lineLive:hover {
+    box-shadow: 0 16px 30px -24px rgb(0 0 0 / 55%);
   }
 }
 
-/* รายการหมวดต่อจากหัวเรื่องทันที: เส้นหมึกใต้หัวเรื่องทำหน้าที่เส้นบนแล้ว ไม่ต้องมีเส้นซ้ำ */
-.sections > ul {
-  border-top: 0;
+.lineSoon {
+  background: color-mix(in srgb, var(--surface) 55%, var(--bg));
 }
 
-.sections > ul > li:first-child > * {
-  padding-top: 0;
+/* ป้ายสาย: วงกลมขอบหนาสีสาย */
+.badge {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 5px solid var(--c);
+  background: var(--surface);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.lineInfo {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lineName {
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.lineDesc {
+  font-size: 0.9rem;
+  color: var(--text-2);
+}
+
+.trackWrap {
+  position: relative;
+  display: block;
+  padding: 10px 36px 26px;
+}
+
+.track {
+  position: relative;
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--track);
+}
+
+.trackFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 3px;
+  background: var(--c);
+}
+
+.trainMarker {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--c);
+  color: #ffffff;
+  box-shadow: 0 0 0 3px var(--surface);
+}
+
+.stop {
+  position: absolute;
+  top: 50%;
+  translate: -50% -50%;
+  display: grid;
+  justify-items: center;
+}
+
+.stopDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 3px solid var(--track-strong);
+}
+
+.stopOn {
+  border-color: var(--c);
+}
+
+.stopLabel {
+  position: absolute;
+  top: 18px;
+  font-size: 0.72rem;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.trackSoon {
+  display: block;
+  height: 6px;
+  background: repeating-linear-gradient(90deg, var(--track-dash) 0 12px, transparent 12px 20px);
+}
+
+/* ป้าย 工事中 สีเหลืองดำแบบป้ายก่อสร้าง (สีเดียวกันทั้งสองธีม) */
+.koji {
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  translate: -50% 0;
+  padding: 1px 10px;
+  border: 2px solid #1b1d22;
+  border-radius: 4px;
+  background: var(--koji);
+  color: #1b1d22;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lineGo {
+  display: inline-flex;
+  align-items: center;
+  justify-self: end;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--c);
+  color: #ffffff;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .privacy {
+  margin-top: 36px;
   text-align: center;
-  padding-top: 4px;
+}
+
+/* ── จอกลาง ── */
+@media (max-width: 1100px) {
+  .line {
+    grid-template-columns: 60px minmax(0, 1fr) 110px;
+  }
+
+  .trackWrap {
+    grid-column: 2 / -1;
+    grid-row: 2;
+  }
+}
+
+/* ── มือถือ ── */
+@media (max-width: 760px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .cta {
+    width: 100%;
+  }
+
+  .tickets {
+    gap: 8px;
+  }
+
+  .ticket {
+    padding: 12px 16px;
+  }
+
+  .ticketSmall {
+    font-size: 0.74rem;
+  }
+
+  .line {
+    grid-template-columns: 56px minmax(0, 1fr);
+    padding: 16px;
+  }
+
+  .trackWrap {
+    grid-column: 1 / -1;
+    padding-inline: 28px;
+  }
+
+  .lineGo {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .stopLabel {
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .tickets {
+    grid-template-columns: 1fr;
+  }
+
+  .ticket {
+    grid-template-columns: auto 1fr;
+    align-items: baseline;
+    column-gap: 12px;
+  }
 }

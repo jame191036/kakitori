@@ -1,9 +1,9 @@
 /*
- * ภาษาการออกแบบ: "สมุดฝึกเขียน" (練習帳)
- * - กระดาษสีนวล หมึกดำ เส้นบรรทัดบางๆ — แยกส่วนด้วยเส้นและพื้นที่ว่าง ไม่ใช่การ์ดลอยๆ
- * - มุมเกือบเหลี่ยม ไม่มีเงา (ยกเว้นของที่ลอยเหนือหน้า เช่นแจ้งเตือน)
- * - สีแดงชาด (朱) ใช้น้อยมาก: จุดเริ่มขีด ขีดที่กำลังเขียน ตราประทับ
- * - ปุ่มหลักเป็นสีหมึก ไม่ใช่สีแดง
+ * ภาษาการออกแบบ: "รถไฟ + ขนมญี่ปุ่น" (เลือกเมื่อ 2026-11-17)
+ * - การเรียน = การเดินทาง: ชุดตัวอักษร = สายรถไฟ (線) · แถวตัวอักษร = สถานี (駅)
+ * - ป้ายสถานีแบบญี่ปุ่น (駅名標) · แผนที่เส้นทาง (路線図) · ตั๋ว · ตราสถานี (駅スタンプ)
+ * - แต่ละสายมีสีประจำ (--line-xxx) ใช้กับเส้น แถบ ป้าย และปุ่มของสายนั้น
+ * - ปุ่มหลักสีแดงชาด (สีสายฮิรางานะ) · พื้นกระดาษครีม การ์ดขาวมุมมน
  */
 
 /* ───────────── Theme tokens ───────────── */
@@ -12,30 +12,57 @@
   --font-ui: 'Noto Sans Thai', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-kana: 'Klee One', 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif JP', serif;
 
-  /* กระดาษ */
-  --bg: #f6f3ec;
-  --surface: #fbf9f4;
-  --surface-2: #ece7dc;
+  /* พื้น / การ์ด */
+  --bg: #f4f0e6;
+  --surface: #ffffff;
+  --surface-2: #ece6da;
   --pad: #fdfbf6;
   /* เส้น */
-  --border: #ddd6c8;
-  --border-strong: #b5ac9c;
+  --border: #dfd8c9;
+  --border-strong: #c2b9a7;
   /* เส้นตารางของสมุดคัด (ช่องฝึกเขียน ตารางตัวอักษร) */
   --grid: #d6c4b4;
   --guide: #e2d4c7;
   /* หมึก */
-  --text: #1d1b18;
-  --text-2: #6a645a;
-  --text-3: #9a9285;
-  --ink: #1d1b18;
-  --ghost: #ddd5c6;
+  --text: #1b1d22;
+  --text-2: #5d6169;
+  --text-3: #8d9097;
+  --ink: #1b1d22;
+  --ghost: #e3dccf;
 
-  /* แดงชาด — ใช้ให้น้อยที่สุด */
+  /* แดงชาด: ขีดที่กำลังเขียน จุดเริ่มขีด ตราประทับ */
   --accent: #d9462b;
   --accent-hover: #c23c23;
   --accent-ink: #ffffff;
   --accent-soft: #f5e2da;
-  --focus: #1d1b18;
+  --focus: #1b1d22;
+
+  /* ปุ่มหลัก */
+  --primary: #d9462b;
+  --primary-hover: #c23c23;
+  --primary-ink: #ffffff;
+
+  /* สีประจำสาย (หมวด / ชุดตัวอักษร) — เหมือนกันทั้งสองธีม */
+  --line-hira: #d9462b;
+  --line-kata: #2f8f5b;
+  --line-l2: #8a7658;
+  --line-kana: var(--line-hira);
+  --line-travel: #2b78b8;
+  --line-daily: #d6981f;
+  --line-anime: #8456b0;
+  --line-n5: #5a6472;
+
+  /* ของประกอบธีมรถไฟ */
+  --koji: #f3c437;
+  --ticket: #fdf7e6;
+  --ticket-line: #e6dbbd;
+  --track: #e5dfd2;
+  --track-strong: #cbc3b2;
+  --track-dash: #d8d0c0;
+  --stamp-1: #c0392b;
+  --stamp-2: #2b6aa8;
+  --empty-line: #d6cebd;
+  --empty-text: #c7beab;
 
   --good: #2f7650;
   --good-soft: #e1ebe2;
@@ -49,11 +76,13 @@
   --m2: #9fc3a9;
   --m3: #2f7650;
 
-  --radius: 4px;
-  --radius-sm: 3px;
-  /* ไม่มีเงาบนหน้า — เงาเฉพาะของที่ลอยอยู่ (แจ้งเตือน แถบเริ่มสอบ) */
+  --radius: 8px;
+  --radius-sm: 6px;
+  --radius-lg: 14px;
   --shadow-sm: none;
   --shadow-lg: 0 1px 2px rgb(40 30 20 / 8%), 0 8px 24px rgb(40 30 20 / 10%);
+  /* เงานุ่มใต้ป้าย/การ์ดเด่น */
+  --shadow-card: 0 24px 44px -32px rgb(0 0 0 / 45%);
   --header-h: 60px;
   --bottom-nav-h: 64px;
 
@@ -63,23 +92,39 @@
   --press: 160ms var(--ease-out);
 }
 
-/* โหมดมืด: "สมุดตอนกลางคืน" — กระดาษเทาอุ่น หมึกสีครีม */
+/*
+ * โหมดมืด: "สถานีตอนกลางคืน" — พื้นน้ำตาลเข้มอุ่น (ไม่ใช่ดำสนิท) หมึกสีครีม
+ * สีประจำสายคงเดิม ตัวหนังสือที่เป็นสีสายให้ผสมขาวที่ component (color-mix) ให้อ่านชัด
+ */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --bg: #1a1916;
-    --surface: #201f1c;
-    --surface-2: #2b2925;
+    --bg: #191816;
+    --surface: #24231f;
+    --surface-2: #2e2c27;
     --pad: #1e1d1a;
-    --border: #36332e;
-    --border-strong: #59534a;
+    --border: #38352f;
+    --border-strong: #5c564b;
     --grid: #4b453d;
     --guide: #3a362f;
     --text: #ece6da;
     --text-2: #a39b8e;
     --text-3: #7a7368;
     --ink: #efe9de;
-    --ghost: #3b3832;
+    --ghost: #3d3a33;
+    --primary: #d9462b;
+    --primary-hover: #e25a3f;
+    --primary-ink: #ffffff;
+    --koji: #e6b73c;
+    --ticket: #2a2721;
+    --ticket-line: #423c31;
+    --track: #3a362f;
+    --track-strong: #5c564b;
+    --track-dash: #4a453c;
+    --stamp-1: #f07a62;
+    --stamp-2: #74abe8;
+    --empty-line: #4a453c;
+    --empty-text: #615a4f;
     --accent: #e3735a;
     --accent-hover: #ec8a73;
     --accent-ink: #1a1210;
@@ -101,19 +146,32 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #1a1916;
-  --surface: #201f1c;
-  --surface-2: #2b2925;
+  --bg: #191816;
+  --surface: #24231f;
+  --surface-2: #2e2c27;
   --pad: #1e1d1a;
-  --border: #36332e;
-  --border-strong: #59534a;
+  --border: #38352f;
+  --border-strong: #5c564b;
   --grid: #4b453d;
   --guide: #3a362f;
   --text: #ece6da;
   --text-2: #a39b8e;
   --text-3: #7a7368;
   --ink: #efe9de;
-  --ghost: #3b3832;
+  --ghost: #3d3a33;
+  --primary: #d9462b;
+  --primary-hover: #e25a3f;
+  --primary-ink: #ffffff;
+  --koji: #e6b73c;
+  --ticket: #2a2721;
+  --ticket-line: #423c31;
+  --track: #3a362f;
+  --track-strong: #5c564b;
+  --track-dash: #4a453c;
+  --stamp-1: #f07a62;
+  --stamp-2: #74abe8;
+  --empty-line: #4a453c;
+  --empty-text: #615a4f;
   --accent: #e3735a;
   --accent-hover: #ec8a73;
   --accent-ink: #1a1210;
@@ -245,6 +303,28 @@ svg {
   white-space: nowrap;
 }
 
+/* ───────────── สีประจำสาย (ดู lib/tone.ts) ───────────── */
+.tone {
+  --c-text: var(--c);
+  --c-soft: color-mix(in srgb, var(--c) 7%, var(--surface));
+  --c-tint: color-mix(in srgb, var(--c) 15%, var(--surface));
+}
+
+/* ธีมมืด: ตัวหนังสือสีสายผสมขาวให้สว่างขึ้น อ่านบนพื้นเข้มได้ชัด */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .tone {
+    --c-text: color-mix(in srgb, var(--c) 66%, #ffffff);
+    --c-soft: color-mix(in srgb, var(--c) 11%, var(--surface));
+    --c-tint: color-mix(in srgb, var(--c) 22%, var(--surface));
+  }
+}
+
+:root[data-theme='dark'] .tone {
+  --c-text: color-mix(in srgb, var(--c) 66%, #ffffff);
+  --c-soft: color-mix(in srgb, var(--c) 11%, var(--surface));
+  --c-tint: color-mix(in srgb, var(--c) 22%, var(--surface));
+}
+
 /* ───────────── Layout helpers ───────────── */
 /*
  * ความกว้างเนื้อหา: สูงสุด 1760px (จอ 23–24 นิ้วไม่เหลือที่ว่างข้างๆ มากเกินไป)
@@ -346,8 +426,8 @@ svg {
   }
 
   .btn-primary:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--ink) 86%, var(--bg));
-    border-color: color-mix(in srgb, var(--ink) 86%, var(--bg));
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
   }
 
   .btn-ghost:hover:not(:disabled) {
@@ -368,11 +448,12 @@ svg {
   cursor: not-allowed;
 }
 
-/* ปุ่มหลัก = หมึกดำ (แดงชาดเก็บไว้ให้สิ่งที่สำคัญจริงๆ บนกระดาน) */
+/* ปุ่มหลัก = แดงชาด (สีสายฮิรางานะ) */
 .btn-primary {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--bg);
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-ink);
+  font-weight: 700;
 }
 
 .btn-ghost {

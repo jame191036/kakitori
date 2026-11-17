@@ -1,66 +1,237 @@
+import { ArrowRight, TrainFront } from 'lucide-react';
+import { useMemo } from 'react';
+import { Link } from 'react-router';
+import { REVIEW_ROOT } from '../app/paths';
 import { SECTIONS } from '../app/sections';
-import { HubList } from '../components/HubList';
-import { findChar, scriptList } from '../data/scripts';
-import { useStrokeData } from '../data/useStrokes';
-import { masteryLevel } from '../features/progress/progressLogic';
-import { progressStore } from '../features/progress/progressStore';
-import { StrokeAnimator } from '../features/writing/StrokeAnimator';
+import { StationSign } from '../components/train/StationSign';
+import { groupLabel, scriptList } from '../data/scripts';
+import { streakInfo } from '../features/progress/activity';
+import {
+  buildPath,
+  charState,
+  nextStep,
+  rowNeeds,
+  stepHref,
+  type NextStep,
+  type PathStep,
+} from '../features/progress/learningPath';
+import type { ProgressData } from '../features/progress/progressLogic';
+import { activityStore, progressStore } from '../features/progress/progressStore';
+import { packStations } from '../features/progress/stations';
+import { useSettings } from '../features/settings/settings';
+import { cx } from '../lib/cx';
 import { useStore } from '../lib/persistentStore';
+import { tone } from '../lib/tone';
+import { useNow } from '../lib/useNow';
 import styles from './HomePage.module.css';
 
 /**
- * หน้าแรก = ศูนย์รวมชั้นบนสุด: เลือกหมวด (ตัวอักษร / ท่องเที่ยว / …) — หมวดที่ยังไม่มีแสดงเป็น "เร็วๆ นี้"
- * ("เรียนต่อ" อยู่ในหน้าตัวอักษร · "วันนี้" (เป้า + รอบทบทวน) อยู่ในหน้าทบทวน
- *  · บทเรียนพื้นฐานเข้าได้จากแถบแนะนำมือใหม่ หน้าตัวอักษร และลิงก์ท้ายเว็บ)
+ * หน้าแรก = ชานชาลา: ป้ายสถานีต่อไปของผู้เรียน (ขั้นถัดไปของเส้นทางเรียนต่อ) + ปุ่มไปต่อ
+ * + ตั๋วสรุป (วันต่อเนื่อง · เป้าวันนี้ · ตราสถานี) + แผนที่สาย (หมวด) — หมวดที่ยังไม่เปิดเป็น 工事中
  */
 export default function HomePage() {
-  const first = scriptList[0]!;
-  // ตัวอย่างลำดับขีดเล็กๆ ข้างหัวเรื่อง: か (ka) ให้ตรงกับโลโก้ kakitori
-  const sample = findChar(first, 'ka') ?? first.chars[0]!;
-  const sampleData = useStrokeData(first, sample.char)!;
   const progress = useStore(progressStore);
-  const kanaTotal = scriptList.reduce((n, p) => n + p.chars.length, 0);
-  const kanaMastered = scriptList.reduce(
-    (n, p) => n + p.chars.filter((c) => masteryLevel(progress.scripts[p.id]?.[c.id]) === 3).length,
-    0,
-  );
+  const activity = useStore(activityStore);
+  const { dailyGoal } = useSettings();
+  const now = useNow();
+  const path = useMemo(() => buildPath(scriptList), []);
+  const step = nextStep(path, progress);
+  const streak = streakInfo(activity, now, dailyGoal);
+
+  // สถานีบนป้าย: ขั้นถัดไป · ถ้าผ่านครบแล้วใช้สถานีสุดท้ายของเส้นทาง (ปลายทาง)
+  const lastPack = path[path.length - 1]!.pack;
+  const stations = packStations(step?.pack ?? lastPack);
+  const at = step ? stations.findIndex((st) => st.group.id === step.group.id) : stations.length - 1;
+  const station = stations[at]!;
+  const isStart = !!step && step.index === 1 && step.status.kind === 'write' && step.status.remaining === step.chars.length;
+
+  const stamps = step ? step.doneCount : path.length;
+  const remaining = Math.max(0, dailyGoal - streak.todayCount);
 
   return (
-    <div className="container page">
-      <header className={styles.intro}>
-        <div className={styles.introText}>
-          <h1 className="page-title">เลือกสิ่งที่อยากเรียน</h1>
-          <p className="muted">เว็บฝึกภาษาญี่ปุ่นฟรี ไม่ต้องสมัครสมาชิก — เริ่มที่หมวดตัวอักษรก่อน</p>
+    <div className={cx('container', styles.page)}>
+      <section className={styles.hero} aria-label="สถานีต่อไป">
+        <div>
+          <p className={styles.kicker}>
+            {step ? (
+              <>
+                <span className="kana">{isStart ? '始発' : '次は'}</span> ·{' '}
+                {isStart ? 'สถานีแรกของคุณ' : 'สถานีต่อไปของคุณ'}
+              </>
+            ) : (
+              <>
+                <span className="kana">終点</span> · ผ่านครบทุกสถานีแล้ว
+              </>
+            )}
+          </p>
+          <StationSign station={station} prev={stations[at - 1] ?? null} next={stations[at + 1] ?? null} />
         </div>
-        <figure className={styles.sample}>
-          <StrokeAnimator
-            data={sampleData}
-            speed={1}
-            showNumbers
-            controls={false}
-            label={`ตัวอย่างลำดับขีดของ ${sample.char} (แตะเพื่อเล่นซ้ำ)`}
-          />
-        </figure>
-      </header>
 
-      {/* หมวด: ตัวอักษรเปิดแล้ว ที่เหลือ "เร็วๆ นี้" */}
-      <section className={`card ${styles.sections}`} aria-label="หมวด">
-        <HubList
-          items={SECTIONS.map((s) => ({
-            key: s.id,
-            to: s.to,
-            glyph: s.glyph,
-            glyphLang: s.glyph === 'N5' ? undefined : 'ja',
-            title: s.name,
-            desc: s.desc,
-            meta: s.id === 'kana' ? `${kanaTotal} ตัว · จำได้แล้ว ${kanaMastered}` : undefined,
-          }))}
-        />
+        <div className={styles.side}>
+          <h1 className={styles.h1}>เรียนภาษาญี่ปุ่น เหมือนนั่งรถไฟไปทีละสถานี</h1>
+          <p className={styles.lead}>
+            แต่ละแถวตัวอักษรคือหนึ่งสถานี ฝึกเขียนให้ครบ ทำแบบทดสอบให้ผ่าน แล้วรับตราสถานีไปสะสม — ฟรี
+            ไม่ต้องสมัครสมาชิก
+          </p>
+          {step ? <Platform step={step} progress={progress} /> : null}
+          {step ? (
+            <Link to={stepHref(step)} className={cx('btn btn-primary', styles.cta)}>
+              {step.status.kind === 'write' ? (
+                <>
+                  ฝึกเขียน <span className="kana">{step.status.next.char}</span> ต่อ
+                </>
+              ) : (
+                <>
+                  ทดสอบแถว <span className="kana">{step.group.head}</span>
+                </>
+              )}
+              <ArrowRight size={18} strokeWidth={2} aria-hidden />
+            </Link>
+          ) : (
+            <Link to={REVIEW_ROOT} className={cx('btn btn-primary', styles.cta)}>
+              ไปหน้าทบทวน
+              <ArrowRight size={18} strokeWidth={2} aria-hidden />
+            </Link>
+          )}
+        </div>
       </section>
 
-      <p className={`small muted ${styles.privacy}`}>
+      <ul className={styles.tickets} aria-label="สรุปการเดินทาง">
+        <li className={styles.ticket}>
+          <span className={styles.ticketBig}>{streak.current} วัน</span>
+          <span className={styles.ticketSmall}>เดินทางติดต่อกัน (ทำครบเป้า)</span>
+        </li>
+        <li className={styles.ticket}>
+          <span className={styles.ticketBig}>
+            {Math.min(streak.todayCount, dailyGoal)}/{dailyGoal}
+          </span>
+          <span className={styles.ticketSmall}>
+            {streak.todayMet ? 'ถึงเป้าวันนี้แล้ว' : `ครั้งวันนี้ (อีก ${remaining} ครั้งครบเป้า)`}
+          </span>
+        </li>
+        <li className={styles.ticket}>
+          <span className={styles.ticketBig}>{stamps} ตรา</span>
+          <span className={styles.ticketSmall}>ตราสถานีที่สะสมแล้ว (จาก {path.length})</span>
+        </li>
+      </ul>
+
+      <h2 className={styles.sectionTitle}>
+        <span className="kana">路線図</span> เลือกเส้นทาง
+      </h2>
+      <ul className={styles.lines}>
+        {SECTIONS.map((sec) => {
+          const body = (
+            <>
+              <span className={cx(styles.badge, sec.glyph !== 'N5' && 'kana')}>{sec.glyph}</span>
+              <span className={styles.lineInfo}>
+                <span className={styles.lineName}>{sec.name}</span>
+                <span className={styles.lineDesc}>{sec.desc}</span>
+              </span>
+              <span className={styles.trackWrap}>
+                {sec.to ? (
+                  <KanaTrack path={path} reached={step ? step.index - 1 : path.length} />
+                ) : (
+                  <>
+                    <span className={styles.trackSoon} />
+                    <span className={styles.koji}>
+                      <span className="kana">工事中</span> กำลังสร้าง
+                    </span>
+                  </>
+                )}
+              </span>
+            </>
+          );
+          return (
+            <li key={sec.id} className="tone" style={tone(sec.tone)}>
+              {sec.to ? (
+                <Link to={sec.to} className={cx(styles.line, styles.lineLive)}>
+                  {body}
+                  <span className={styles.lineGo}>
+                    ขึ้นรถ <ArrowRight size={16} strokeWidth={2} aria-hidden />
+                  </span>
+                </Link>
+              ) : (
+                <div className={cx(styles.line, styles.lineSoon)} aria-disabled="true">
+                  {body}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+
+      <p className={cx('small muted', styles.privacy)}>
         เว็บนี้ไม่มีระบบสมาชิกและไม่ส่งข้อมูลของคุณไปที่ไหน ความคืบหน้าถูกจำไว้ในเบราว์เซอร์ของเครื่องนี้เท่านั้น
       </p>
     </div>
+  );
+}
+
+/** ชานชาลา: ตัวอักษรในแถวนี้ + บอกว่าต้องทำอะไรต่อ */
+function Platform({ step, progress }: { step: NextStep; progress: ProgressData }) {
+  const needs = rowNeeds(step.group.kind);
+  const p = progress.scripts[step.pack.id];
+  const { status } = step;
+  const STATE_TITLE = {
+    done: 'ผ่านแล้ว',
+    written: 'เขียนแล้ว ยังไม่เคยตอบถูก',
+    todo: needs.write ? 'ยังไม่ได้เขียน' : 'ยังไม่เคยตอบถูก',
+  } as const;
+
+  return (
+    <div className={styles.platform}>
+      <p className={styles.platformLabel}>
+        ชานชาลา {step.pack.name} {groupLabel(step.group)}
+      </p>
+      <ol className={styles.chips} aria-label="สถานะตัวอักษรในแถวนี้">
+        {step.chars.map((c) => {
+          const state = charState(p?.[c.id], needs);
+          return (
+            <li key={c.id} className={styles[state]} title={STATE_TITLE[state]}>
+              <span className="kana">{c.char}</span>
+              <small>{c.romaji}</small>
+            </li>
+          );
+        })}
+      </ol>
+      <p className={styles.todo}>
+        {status.kind === 'write'
+          ? needs.correct
+            ? `ฝึกเขียนให้ครบทุกตัวในแถว (เหลือ ${status.remaining} ตัว) แล้วทำแบบทดสอบให้ผ่าน`
+            : `ฝึกเขียนตัวเล็กให้ครบทุกตัว (เหลือ ${status.remaining} ตัว)`
+          : needs.write
+            ? `เขียนครบแล้ว! ทำแบบทดสอบแถวนี้ให้ตอบถูกครบทุกตัว (เหลือ ${status.remaining} ตัว)`
+            : `ตัวควบฝึกอ่านและฟัง: ทำแบบทดสอบแถวนี้ให้ตอบถูกครบทุกตัว (เหลือ ${status.remaining} ตัว)`}
+      </p>
+    </div>
+  );
+}
+
+/** รางย่อของสายตัวอักษร: 4 ช่วง (ฮิรางานะ ร.1 → คาตาคานะ ร.1 → ฮิรางานะ ร.2 → คาตาคานะ ร.2) */
+function KanaTrack({ path, reached }: { path: readonly PathStep[]; reached: number }) {
+  const total = path.length;
+  const stops = path
+    .map((s, i) => ({ s, i }))
+    .filter(({ s, i }) => i === 0 || path[i - 1]!.pack.id !== s.pack.id || path[i - 1]!.level !== s.level)
+    .map(({ s, i }) => ({ label: `${s.pack.name} ร.${s.level}`, at: (i / total) * 100, on: reached >= i }));
+  const pct = (reached / total) * 100;
+
+  return (
+    <span className={styles.track} aria-label={`ผ่านแล้ว ${reached} จาก ${total} สถานี`} role="img">
+      <span className={styles.trackFill} style={{ width: `${pct}%` }} />
+      {stops.map((st) => (
+        <span key={st.label} className={styles.stop} style={{ left: `${st.at}%` }}>
+          <span className={cx(styles.stopDot, st.on && styles.stopOn)} />
+          <span className={styles.stopLabel}>{st.label}</span>
+        </span>
+      ))}
+      <span className={styles.stop} style={{ left: '100%' }}>
+        <span className={cx(styles.stopDot, reached >= total && styles.stopOn)} />
+        <span className={styles.stopLabel}>ปลายทาง</span>
+      </span>
+      <span className={styles.trainMarker} style={{ left: `${pct}%` }}>
+        <TrainFront size={14} strokeWidth={2.2} aria-hidden />
+      </span>
+    </span>
   );
 }

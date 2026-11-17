@@ -1,0 +1,58 @@
+.stamps {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stamps li {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  line-height: 1.1;
+}
+
+.empty {
+  border: 2px dashed var(--empty-line);
+  color: var(--empty-text);
+}
+
+/* ตราที่ได้แล้ว: วงแหวนคู่สีหมึก เอียงเล็กน้อยแบบประทับด้วยมือ */
+.got {
+  --ink-c: var(--stamp-1);
+  border: 3px solid var(--ink-c);
+  box-shadow:
+    inset 0 0 0 4px var(--bg),
+    inset 0 0 0 6px var(--ink-c);
+  background: color-mix(in srgb, var(--ink-c) 7%, transparent);
+  color: var(--ink-c);
+}
+
+.alt {
+  --ink-c: var(--stamp-2);
+}
+
+.kana {
+  font-size: 1.7rem;
+}
+
+.code {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+@media (max-width: 760px) {
+  .stamps {
+    grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+    gap: 10px;
+  }
+
+  .kana {
+    font-size: 1.4rem;
+  }
+}
