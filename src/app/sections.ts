@@ -36,7 +36,7 @@ export const SECTIONS: readonly Section[] = [
   {
     id: 'jlpt-n5',
     name: 'สอบ JLPT N5',
-    desc: 'คำศัพท์ (เปิดแล้ว) · คันจิ ไวยากรณ์ และข้อสอบจำลองตามมา',
+    desc: 'คำศัพท์ · คันจิ (เปิดแล้ว) · ไวยากรณ์และข้อสอบจำลองตามมา',
     glyph: 'N5',
     tone: 'n5',
     to: N5_ROOT,

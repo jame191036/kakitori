@@ -1,7 +1,16 @@
-import { ArrowLeft, ArrowRight, BookOpen, ListChecks, PenLine } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
 import { vocabPath } from '../app/paths';
+import {
+  LessonHeader,
+  LessonIntro,
+  LessonNav,
+  LessonSteps,
+  LessonTestResult,
+  PracticeDone,
+  type LessonStep,
+} from '../components/line/LessonParts';
+import styles from '../components/line/LessonPage.module.css';
 import { getLesson, lessonCode, lessonWords, type VocabDeck, type VocabLesson } from '../data/vocab';
 import { N5_DECK } from '../data/vocab/n5';
 import { recordAnswer, recordPractice, progressStore } from '../features/progress/progressStore';
@@ -19,15 +28,6 @@ import { cx } from '../lib/cx';
 import { useStore } from '../lib/persistentStore';
 import { tone } from '../lib/tone';
 import NotFoundPage from './NotFoundPage';
-import styles from './VocabLessonPage.module.css';
-
-type Step = 'learn' | 'practice' | 'test';
-
-const STEPS: { id: Step; label: string; icon: typeof BookOpen }[] = [
-  { id: 'learn', label: 'เรียน', icon: BookOpen },
-  { id: 'practice', label: 'ฝึก', icon: PenLine },
-  { id: 'test', label: 'ทดสอบ', icon: ListChecks },
-];
 
 /** บทเรียนคำศัพท์ (หนึ่งสถานี): เรียน → ฝึก → ทดสอบ (ถูกครบทุกคำ = ได้ตราสถานี) */
 export default function VocabLessonPage() {
@@ -48,7 +48,7 @@ interface Session {
 function Lesson({ deck, lesson }: { deck: VocabDeck; lesson: VocabLesson }) {
   const [params, setParams] = useSearchParams();
   const raw = params.get('step');
-  const step: Step = raw === 'practice' || raw === 'test' ? raw : 'learn';
+  const step: LessonStep = raw === 'practice' || raw === 'test' ? raw : 'learn';
   const data = useStore(progressStore);
   const passed = lessonPassed(deck, lesson, deckProgress(deck, data));
   const words = lessonWords(deck, lesson);
@@ -63,7 +63,7 @@ function Lesson({ deck, lesson }: { deck: VocabDeck; lesson: VocabLesson }) {
     null,
   );
 
-  const go = (s: Step) => {
+  const go = (s: LessonStep) => {
     setSession(null);
     setResult(null);
     setParams(s === 'learn' ? {} : { step: s });
@@ -85,40 +85,20 @@ function Lesson({ deck, lesson }: { deck: VocabDeck; lesson: VocabLesson }) {
 
   return (
     <div className={cx('container tone', styles.page)} style={tone('n5')}>
-      <header className={styles.head}>
-        <span className={styles.code} aria-hidden>
-          <small>{deck.letter}</small>
-          {code.slice(deck.letter.length)}
-        </span>
-        <div className={styles.headText}>
-          <p className={cx('kana', styles.nameJa)} lang="ja">
-            {lesson.name}
-          </p>
-          <h1 className={styles.h1}>{lesson.title}</h1>
-          <p className={styles.muted}>
+      <LessonHeader
+        letter={deck.letter}
+        code={code}
+        name={lesson.name}
+        title={lesson.title}
+        meta={
+          <>
             บทที่ {at + 1} · {words.length} คำ ·{' '}
             {passed ? <strong className={styles.passed}>ผ่านแล้ว ได้ตราสถานี {code}</strong> : 'ยังไม่ผ่าน'}
-          </p>
-        </div>
-      </header>
+          </>
+        }
+      />
 
-      <nav className={styles.steps} aria-label="ขั้นตอนในบท">
-        {STEPS.map(({ id, label, icon: Icon }, i) => (
-          <button
-            key={id}
-            type="button"
-            className={styles.step}
-            aria-pressed={step === id}
-            onClick={() => go(id)}
-          >
-            <span className={styles.stepNum} aria-hidden>
-              {i + 1}
-            </span>
-            <Icon size={18} strokeWidth={1.8} aria-hidden />
-            {label}
-          </button>
-        ))}
-      </nav>
+      <LessonSteps step={step} onStep={go} />
 
       {step === 'learn' && <LearnCards words={words} onDone={() => go('practice')} />}
 
@@ -143,15 +123,15 @@ function Lesson({ deck, lesson }: { deck: VocabDeck; lesson: VocabLesson }) {
       )}
 
       {step === 'practice' && !session && !result && (
-        <Intro
+        <LessonIntro
           title="ฝึกคำในบทนี้"
-          text={`คำละ 1 ข้อ มีทั้งเลือกคำ ฟังเสียง เรียงตัวอักษร และเขียนด้วยมือ — ข้อที่ผิดจะได้ลองอีกครั้งท้ายชุด (ไม่นับเป็นผลสอบ)`}
+          text="คำละ 1 ข้อ มีทั้งเลือกคำ ฟังเสียง เรียงตัวอักษร และเขียนด้วยมือ — ข้อที่ผิดจะได้ลองอีกครั้งท้ายชุด (ไม่นับเป็นผลสอบ)"
           action="เริ่มฝึก"
           onStart={() => start('practice')}
         />
       )}
       {step === 'test' && !session && !result && (
-        <Intro
+        <LessonIntro
           title={`ทดสอบสถานี ${code}`}
           text={`คำละ 1 ข้อ (${words.length} ข้อ) ตอบถูกครบทุกคำได้ตราสถานี — คำที่ผิดสอบซ้ำได้ ผลสอบจะนัดรอบทบทวนให้`}
           action="เริ่มทดสอบ"
@@ -160,136 +140,51 @@ function Lesson({ deck, lesson }: { deck: VocabDeck; lesson: VocabLesson }) {
       )}
 
       {result?.kind === 'practice' && (
-        <section className={cx('card', styles.result)}>
-          <p className={styles.resultBig}>ฝึกครบแล้ว!</p>
-          <p className={styles.muted}>
-            รอบแรกตอบถูก {result.results.filter((r) => r.correct).length} จาก {result.results.length} คำ
-          </p>
-          <div className={styles.actions}>
-            <button type="button" className="btn btn-primary" onClick={() => go('test')}>
-              ไปทดสอบ <ArrowRight size={18} strokeWidth={2} aria-hidden />
-            </button>
-            <button type="button" className="btn" onClick={() => start('practice')}>
-              ฝึกอีกรอบ
-            </button>
-          </div>
-        </section>
+        <PracticeDone
+          correct={result.results.filter((r) => r.correct).length}
+          total={result.results.length}
+          unit="คำ"
+          onTest={() => go('test')}
+          onAgain={() => start('practice')}
+        />
       )}
 
       {result?.kind === 'test' && (
-        <TestResult
+        <LessonTestResult
           code={code}
           name={lesson.name}
-          results={result.results}
+          unit="คำ"
+          items={result.results.map(({ word, correct }) => ({
+            id: word.id,
+            correct,
+            label: (
+              <>
+                <span className="kana" lang="ja">
+                  {word.kana}
+                </span>
+                {word.kanji && (
+                  <span className={cx('kana', styles.muted)} lang="ja">
+                    {word.kanji}
+                  </span>
+                )}
+                <span>{word.thai}</span>
+              </>
+            ),
+          }))}
           nowPassed={passed}
           newlyPassed={passed && !result.passedBefore}
           nextHref={next ? vocabPath(next.id) : undefined}
           onRetryWrong={(ids) => start('test', ids)}
           onLearn={() => go('learn')}
+          learnLabel="ทวนการ์ดคำ"
         />
       )}
 
-      <nav className={styles.lessonNav} aria-label="บทอื่น">
-        {prev ? (
-          <Link to={vocabPath(prev.id)} className="btn btn-ghost">
-            <ArrowLeft size={18} strokeWidth={1.8} aria-hidden /> {prev.title}
-          </Link>
-        ) : (
-          <span />
-        )}
-        <Link to={vocabPath()} className="btn btn-ghost">
-          แผนที่สาย
-        </Link>
-        {next ? (
-          <Link to={vocabPath(next.id)} className="btn btn-ghost">
-            {next.title} <ArrowRight size={18} strokeWidth={1.8} aria-hidden />
-          </Link>
-        ) : (
-          <span />
-        )}
-      </nav>
+      <LessonNav
+        prev={prev && { href: vocabPath(prev.id), title: prev.title }}
+        next={next && { href: vocabPath(next.id), title: next.title }}
+        lineHref={vocabPath()}
+      />
     </div>
-  );
-}
-
-function Intro({ title, text, action, onStart }: { title: string; text: string; action: string; onStart: () => void }) {
-  return (
-    <section className={cx('card', styles.intro)}>
-      <h2 className={styles.h2}>{title}</h2>
-      <p className={styles.muted}>{text}</p>
-      <button type="button" className="btn btn-primary" onClick={onStart}>
-        {action} <ArrowRight size={18} strokeWidth={2} aria-hidden />
-      </button>
-    </section>
-  );
-}
-
-interface TestResultProps {
-  code: string;
-  name: string;
-  results: readonly WordResult[];
-  nowPassed: boolean;
-  newlyPassed: boolean;
-  nextHref?: string;
-  onRetryWrong: (ids: string[]) => void;
-  onLearn: () => void;
-}
-
-function TestResult({ code, name, results, nowPassed, newlyPassed, nextHref, onRetryWrong, onLearn }: TestResultProps) {
-  const wrong = results.filter((r) => !r.correct);
-  const score = results.length - wrong.length;
-  return (
-    <section className={cx('card', styles.result)} aria-live="polite">
-      {nowPassed ? (
-        <div className={cx(styles.stamp, newlyPassed && styles.stampNew)} aria-hidden>
-          <span className="kana" lang="ja">
-            {name}
-          </span>
-          <small>{code}</small>
-        </div>
-      ) : null}
-      <p className={styles.resultBig}>
-        {score} / {results.length}
-      </p>
-      <p className={styles.muted}>
-        {newlyPassed
-          ? `ได้ตราสถานี ${code} แล้ว! คำในบทนี้จะถูกนัดทบทวนตามรอบ`
-          : nowPassed
-            ? 'บทนี้ผ่านแล้ว — ทบทวนได้เรื่อยๆ'
-            : 'ตอบถูกครบทุกคำ (สอบซ้ำเฉพาะคำที่ผิดได้) จึงจะได้ตราสถานี'}
-      </p>
-      {wrong.length > 0 && (
-        <ul className={styles.wrongList} aria-label="คำที่ตอบผิด">
-          {wrong.map(({ word }) => (
-            <li key={word.id}>
-              <span className="kana" lang="ja">
-                {word.kana}
-              </span>
-              {word.kanji && (
-                <span className={cx('kana', styles.muted)} lang="ja">
-                  {word.kanji}
-                </span>
-              )}
-              <span>{word.thai}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-      <div className={styles.actions}>
-        {wrong.length > 0 && (
-          <button type="button" className="btn btn-primary" onClick={() => onRetryWrong(wrong.map((r) => r.word.id))}>
-            สอบซ้ำเฉพาะคำที่ผิด ({wrong.length})
-          </button>
-        )}
-        {nowPassed && nextHref && (
-          <Link to={nextHref} className={cx('btn', wrong.length === 0 && 'btn-primary')}>
-            บทถัดไป <ArrowRight size={18} strokeWidth={2} aria-hidden />
-          </Link>
-        )}
-        <button type="button" className="btn" onClick={onLearn}>
-          ทวนการ์ดคำ
-        </button>
-      </div>
-    </section>
   );
 }

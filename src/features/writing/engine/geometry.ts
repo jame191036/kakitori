@@ -96,6 +96,25 @@ export function translate(pts: readonly Point[], dx: number, dy: number): Point[
   return pts.map((p) => ({ x: p.x + dx, y: p.y + dy }));
 }
 
+/**
+ * เกลี่ยเส้นให้เรียบด้วยค่าเฉลี่ยจุดใกล้เคียง (คงจุดต้นและจุดปลายไว้)
+ * — ตัดอาการมือสั่นถี่ๆ ที่ทำให้ขีดสั้น (เช่นจุดในคันจิ) ดูยาวและเบี้ยวกว่าจริง
+ */
+export function smooth(pts: readonly Point[], radius = 2): Point[] {
+  if (pts.length < radius * 2 + 1) return [...pts];
+  return pts.map((p, i) => {
+    if (i === 0 || i === pts.length - 1) return p;
+    const r = Math.min(radius, i, pts.length - 1 - i);
+    let x = 0;
+    let y = 0;
+    for (let k = i - r; k <= i + r; k++) {
+      x += pts[k]!.x;
+      y += pts[k]!.y;
+    }
+    return { x: x / (2 * r + 1), y: y / (2 * r + 1) };
+  });
+}
+
 /** แปลง polyline เป็น SVG path `d` */
 export function toPathData(pts: readonly Point[]): string {
   if (pts.length === 0) return '';

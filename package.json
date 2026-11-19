@@ -15,6 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "data:strokes": "node scripts/fetch-kanjivg.mjs",
+    "data:kanji-font": "node scripts/fetch-kanji-font.mjs",
     "content:review": "node scripts/export-content-review.mjs",
     "icons": "pwa-assets-generator"
   },

@@ -30,6 +30,8 @@ const server = await createServer({
 const { scriptList, groupLabel, romajiLabel } = await server.ssrLoadModule('/src/data/scripts/index.ts');
 const { MINIMAL_PAIRS } = await server.ssrLoadModule('/src/data/minimalPairs.ts');
 const { vocabDecks, lessonCode, WORD_KIND_LABEL } = await server.ssrLoadModule('/src/data/vocab/index.ts');
+const { N5_DECK } = await server.ssrLoadModule('/src/data/vocab/n5/index.ts');
+const { KANJI_N5 } = await server.ssrLoadModule('/src/data/kanji/n5/index.ts');
 await server.close();
 
 // จุดที่ควรให้ผู้ตรวจดูก่อน — ตรวจว่า id ในรายการมีอยู่จริง (กันพิมพ์ผิดแล้วหายเงียบ)
@@ -124,6 +126,42 @@ for (const deck of vocabDecks) {
   }
 }
 
+// คันจิ: 1 แถวต่อ 1 ตัว — "คำอ่านไทย" ใช้แสดงคำอ่าน (อง/คุง), "คำตัวอย่าง" = คำศัพท์ที่ใช้คำอ่านนั้น
+const kanjiSet = (segment) => `${KANJI_N5.name} · ${segment.title}`;
+const KIND_TH = { on: 'อง', kun: 'คุง' };
+for (const segment of KANJI_N5.segments) {
+  for (const lesson of segment.lessons) {
+    for (const id of lesson.words) {
+      const e = KANJI_N5.words[id];
+      const readings = e.readings.map((r) => `${KIND_TH[r.kind]} ${r.kana}`).join(' · ');
+      const word = (wid) => {
+        const w = N5_DECK.words[wid];
+        return w ? `${w.kanji ?? w.kana}（${w.kana}）` : wid;
+      };
+      const examples = [
+        ...e.readings.flatMap((r) => r.words.map(word)),
+        ...(e.extra ?? []).map((x) => `${x.written}（${x.kana}）`),
+        ...(e.special ?? []).map((wid) => `${word(wid)} [อ่านพิเศษ]`),
+      ].join(' ');
+      rows.push([
+        kanjiSet(segment),
+        `${lessonCode(KANJI_N5, lesson)} ${lesson.title}`,
+        e.char,
+        '',
+        readings,
+        [`${e.strokes} ขีด`, e.note].filter(Boolean).join(' · '),
+        examples,
+        '',
+        e.thai,
+        '',
+        '',
+        '',
+        '',
+      ]);
+    }
+  }
+}
+
 const missing = [
   ...Object.keys(KANA_PRIORITY).map((k) => `kana:${k}`),
   ...Object.keys(VOCAB_PRIORITY).map((k) => `vocab:${k}`),
@@ -212,6 +250,15 @@ const md = [
       .filter((s) => s.lessons.length)
       .flatMap((s) => [`### ${s.title} (${s.name})`, '', mdTable(rows.filter((r) => r[0] === segmentSet(deck, s))), '']),
   ]),
+  `## ${KANJI_N5.name} — ${Object.keys(KANJI_N5.words).length} ตัว (${KANJI_N5.lessons.length} บท)`,
+  '',
+  'รายการคันจิ จำนวนขีด และคำอ่านจาก KANJIDIC2 · ลำดับขีดจาก KanjiVG · **ความหมายไทยและหมายเหตุเขียนโดยผู้พัฒนา ยังไม่มีใครตรวจ**',
+  '- คอลัมน์ "คำอ่านไทย" ในส่วนนี้ใช้แสดงคำอ่านของคันจิ (อง = เสียงจีน · คุง = เสียงญี่ปุ่น) เขียนเป็นฮิรางานะ',
+  '- แสดงเฉพาะคำอ่านที่ใช้ในคำศัพท์ N5 ของเว็บ — ช่วยดูว่าความหมายถูก คำอ่านจับคู่กับคำตัวอย่างถูก และคำที่ทำเครื่องหมาย [อ่านพิเศษ] อ่านพิเศษทั้งคำจริง',
+  '',
+  ...KANJI_N5.segments
+    .filter((s) => s.lessons.length)
+    .flatMap((s) => [`### ${s.title} (${s.name})`, '', mdTable(rows.filter((r) => r[0] === kanjiSet(s))), '']),
 ].join('\n');
 
 await mkdir(OUT_DIR, { recursive: true });

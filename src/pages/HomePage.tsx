@@ -19,6 +19,7 @@ import type { ProgressData } from '../features/progress/progressLogic';
 import { activityStore, progressStore } from '../features/progress/progressStore';
 import { packStations } from '../features/progress/stations';
 import { lessonCode, lessonWords, segmentOf, type VocabLesson } from '../data/vocab';
+import { KANJI_N5 } from '../data/kanji/n5';
 import { N5_DECK } from '../data/vocab/n5';
 import { deckProgress, lastStudied, lessonStates, nextLesson, wordPassed } from '../features/vocab/vocabLogic';
 import { useSettings } from '../features/settings/settings';
@@ -50,7 +51,10 @@ export default function HomePage() {
 
   const vocab = deckProgress(N5_DECK, progress);
   const n5Passed = lessonStates(N5_DECK, vocab).filter((s) => s === 'done').length;
-  const stamps = (step ? step.doneCount : path.length) + n5Passed;
+  const kanjiPassed = lessonStates(KANJI_N5, deckProgress(KANJI_N5, progress)).filter((s) => s === 'done').length;
+  // ตรา = สถานีที่ผ่านแล้วของทุกสาย (ตัวอักษร + คำศัพท์ + คันจิ)
+  const stamps = (step ? step.doneCount : path.length) + n5Passed + kanjiPassed;
+  const allStations = path.length + N5_DECK.lessons.length + KANJI_N5.lessons.length;
   const remaining = Math.max(0, dailyGoal - streak.todayCount);
 
   // ป้ายชี้สายที่เรียนล่าสุด (ฝึก/ตอบครั้งล่าสุด) · สายไหนจบแล้วชี้อีกสาย · จบทั้งคู่ = ปลายทางสายตัวอักษร
@@ -133,7 +137,7 @@ export default function HomePage() {
         <li className={styles.ticket}>
           <span className={styles.ticketBig}>{stamps} ตรา</span>
           <span className={styles.ticketSmall}>
-            ตราสถานีที่สะสมแล้ว (จาก {path.length + N5_DECK.lessons.length})
+            ตราสถานีที่สะสมแล้ว (จาก {allStations})
           </span>
         </li>
       </ul>

@@ -17,3 +17,5 @@ export const N5HubPage = lazy(() => import('../pages/N5HubPage'));
 export const VocabLinePage = lazy(() => import('../pages/VocabLinePage'));
 export const VocabLessonPage = lazy(() => import('../pages/VocabLessonPage'));
 export const VocabReviewPage = lazy(() => import('../pages/VocabReviewPage'));
+export const KanjiLinePage = lazy(() => import('../pages/KanjiLinePage'));
+export const KanjiLessonPage = lazy(() => import('../pages/KanjiLessonPage'));

@@ -1,4 +1,4 @@
-import { clamp, dist, polylineLength, resample, type Point } from './geometry';
+import { clamp, dist, polylineLength, resample, smooth, type Point } from './geometry';
 
 /**
  * เทียบ "ขีดที่ผู้ใช้เขียน" กับ "ขีดต้นแบบ" (พิกัด 0–109 แบบ KanjiVG)
@@ -79,10 +79,12 @@ function directionSimilarity(user: readonly Point[], ref: readonly Point[], refL
 }
 
 export function compareStroke(
-  user: readonly Point[],
+  userRaw: readonly Point[],
   ref: readonly Point[],
   leniency = 1,
 ): StrokeComparison {
+  // เกลี่ยอาการมือสั่นก่อนเทียบ (สำคัญกับขีดสั้นของคันจิ — ไม่กระทบรูปร่างของขีดยาว)
+  const user = smooth(userRaw);
   const u = resample(user, SAMPLES);
   const r = resample(ref, SAMPLES);
   const refLength = polylineLength(ref);

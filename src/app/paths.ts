@@ -11,6 +11,7 @@
  *   /n5/vocab                 สายคำศัพท์ N5 — แผนที่บท + ตรา
  *   /n5/vocab/:lesson         บทเรียน: เรียน → ฝึก → ทดสอบ
  *   /n5/vocab/review          ทบทวนคำศัพท์ (คำที่ถึงรอบ · คำที่ผิดบ่อย) — ?start=due เริ่มทบทวนทันที
+ *   /n5/kanji                 สายคันจิ N5 · /n5/kanji/:lesson บทเรียน: เรียน → ฝึกเขียน → ทดสอบ
  * URL เดิม (/hiragana/…) ส่งต่อมาที่ /kana/hiragana/… ให้อัตโนมัติ
  */
 
@@ -21,6 +22,11 @@ export const N5_ROOT = '/n5';
 /** สายคำศัพท์ N5 / บทเรียน เช่น vocabPath('family') → /n5/vocab/family */
 export function vocabPath(lessonId?: string): string {
   return `${N5_ROOT}/vocab${lessonId ? `/${lessonId}` : ''}`;
+}
+
+/** สายคันจิ N5 / บทเรียน เช่น kanjiPath('k-days') → /n5/kanji/k-days */
+export function kanjiPath(lessonId?: string): string {
+  return `${N5_ROOT}/kanji${lessonId ? `/${lessonId}` : ''}`;
 }
 
 /** หน้าทบทวนคำศัพท์ N5 — start = เริ่มทบทวนชุดนั้นทันที (ใช้จากการ์ด "วันนี้") */

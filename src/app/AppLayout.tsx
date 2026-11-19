@@ -17,9 +17,10 @@ import { getScript } from '../data/scripts';
 import { updateSettings, useSettings, type ThemePref } from '../features/settings/settings';
 import { SITE_NAME } from './config';
 import { GoalToast } from './GoalToast';
-import { getLesson } from '../data/vocab';
+import { KANJI_N5 } from '../data/kanji/n5';
+import { getLesson } from '../data/line';
 import { N5_DECK } from '../data/vocab/n5';
-import { KANA_ROOT, N5_ROOT, REVIEW_ROOT, scriptPath, vocabPath } from './paths';
+import { KANA_ROOT, kanjiPath, N5_ROOT, REVIEW_ROOT, scriptPath, vocabPath } from './paths';
 import { UpdatePrompt } from './UpdatePrompt';
 import { useApplyTheme } from './useTheme';
 import styles from './AppLayout.module.css';
@@ -64,6 +65,15 @@ function crumbsFor(pathname: string): Crumb[] {
     return lesson
       ? [home, n5, { label: 'คำศัพท์', to: vocabPath() }, { label: lesson.title }]
       : [home, n5, { label: 'คำศัพท์', to: vocabPath() }, notFound];
+  }
+  const kj = matchPath(`${N5_ROOT}/kanji/*`, pathname);
+  if (kj) {
+    const n5: Crumb = { label: 'JLPT N5', to: N5_ROOT };
+    if (!kj.params['*']) return [home, n5, { label: 'คันจิ' }];
+    const lesson = getLesson(KANJI_N5, kj.params['*']);
+    return lesson
+      ? [home, n5, { label: 'คันจิ', to: kanjiPath() }, { label: lesson.title }]
+      : [home, n5, { label: 'คันจิ', to: kanjiPath() }, notFound];
   }
   if (pathname === '/start') return [home, kana, { label: 'เริ่มต้นที่นี่' }];
   if (pathname === REVIEW_ROOT) return [home, { label: 'ทบทวน' }];

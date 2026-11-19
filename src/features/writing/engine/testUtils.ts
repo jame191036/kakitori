@@ -1,4 +1,5 @@
 import hiraganaJson from '../../../data/strokes/hiragana.json';
+import kanjiN5Json from '../../../data/strokes/kanji-n5.json';
 import katakanaJson from '../../../data/strokes/katakana.json';
 import type { StrokeSet } from '../../../data/types';
 import type { Point } from './geometry';
@@ -6,11 +7,13 @@ import type { Point } from './geometry';
 /** ข้อมูลลำดับขีด (ใช้ในเทสเท่านั้น) */
 export const hiraganaStrokes = hiraganaJson as unknown as StrokeSet;
 export const katakanaStrokes = katakanaJson as unknown as StrokeSet;
+export const kanjiN5Strokes = kanjiN5Json as unknown as StrokeSet;
 
-/** [ตัวอักษร, ข้อมูลขีด] ของทุกชุด */
+/** [ตัวอักษร, ข้อมูลขีด] ของทุกชุด (รวมคันจิ N5 — ตัวตรวจลายมือต้องใช้ได้กับคันจิด้วย) */
 export const allStrokeEntries = [
   ...Object.entries(hiraganaStrokes.chars),
   ...Object.entries(katakanaStrokes.chars),
+  ...Object.entries(kanjiN5Strokes.chars),
 ];
 
 /** ตัวสุ่มแบบกำหนด seed ได้ เพื่อให้เทสได้ผลเหมือนเดิมทุกครั้ง */

@@ -5,6 +5,8 @@
  * - ชุดคำ (deck) → ช่วง (segment, 区間) → บท (lesson = 1 สถานี) → คำ
  */
 
+import type { LineDeck, LineLesson, LineSegment } from '../line/types';
+
 /** ชนิดคำ (แสดงเป็นป้ายเล็กๆ บนการ์ดคำ) */
 export type WordKind =
   | 'expr'
@@ -41,39 +43,7 @@ export interface VocabWord {
   note?: string;
 }
 
-export interface VocabLesson {
-  /** รหัสถาวรของบท */
-  id: string;
-  /** ชื่อบทภาษาญี่ปุ่น (คานะ) แสดงเป็นชื่อสถานี เช่น 'かぞく' */
-  name: string;
-  /** ชื่อบทภาษาไทย เช่น 'ครอบครัว' */
-  title: string;
-  /** id ของคำในบท ตามลำดับที่สอน */
-  words: readonly string[];
-}
-
-/** ช่วงของสาย (区間) — กลุ่มบทตามหัวข้อ เช่น "อาหาร" */
-export interface VocabSegment {
-  /** รหัสถาวรของช่วง */
-  id: string;
-  /** ชื่อช่วงภาษาญี่ปุ่น (คานะ) เช่น 'しょくじ' */
-  name: string;
-  /** ชื่อช่วงภาษาไทย */
-  title: string;
-  /** บทในช่วงนี้ — ว่าง = ยังไม่เปิด (แสดงป้าย 工事中) */
-  lessons: readonly VocabLesson[];
-}
-
-export interface VocabDeck {
-  /** รหัสชุดคำ */
-  id: string;
-  /** key ความคืบหน้า (ProgressData.scripts[key]) แยกจากชุดตัวอักษร */
-  progressKey: string;
-  name: string;
-  /** อักษรนำหน้าเลขสถานี เช่น 'N' → N01 */
-  letter: string;
-  segments: readonly VocabSegment[];
-  /** ทุกบทของทุกช่วงที่เปิดแล้ว เรียงต่อกัน (เลขสถานีนับต่อเนื่องข้ามช่วง) */
-  lessons: readonly VocabLesson[];
-  words: Readonly<Record<string, VocabWord>>;
-}
+/** บท / ช่วง / ชุด ใช้โครงสายบทเรียนร่วมกับคันจิ (ดู data/line/types.ts) */
+export type VocabLesson = LineLesson;
+export type VocabSegment = LineSegment;
+export type VocabDeck = LineDeck<VocabWord>;

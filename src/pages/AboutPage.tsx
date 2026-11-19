@@ -84,11 +84,22 @@ export default function AboutPage() {
             · ข้อมูลคำศัพท์ของเว็บนี้ (รวมความหมายภาษาไทย) ใช้สัญญาอนุญาตเดียวกัน
           </li>
           <li>
+            คันจิ N5 (รายการ จำนวนขีด คำอ่าน):{' '}
+            <a href="https://www.edrdg.org/wiki/index.php/KANJIDIC_Project" target="_blank" rel="noreferrer">
+              KANJIDIC2
+            </a>{' '}
+            ของ Electronic Dictionary Research and Development Group — สัญญาอนุญาต{' '}
+            <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">
+              CC BY-SA 4.0
+            </a>{' '}
+            · ลำดับขีดคันจิจาก KanjiVG เช่นเดียวกับคานะ · ความหมายภาษาไทยเขียนโดยผู้พัฒนา
+          </li>
+          <li>
             ฟอนต์:{' '}
             <a href="https://fonts.google.com/specimen/Klee+One" target="_blank" rel="noreferrer">
               Klee One
             </a>{' '}
-            (Fontworks) และ{' '}
+            (Fontworks — ตัดเฉพาะคานะและคันจิที่เว็บใช้) และ{' '}
             <a href="https://fonts.google.com/noto/specimen/Noto+Sans+Thai" target="_blank" rel="noreferrer">
               Noto Sans Thai
             </a>{' '}

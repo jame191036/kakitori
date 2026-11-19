@@ -6,6 +6,8 @@ import { LegacyScriptRedirect } from './LegacyScriptRedirect';
 import {
   AboutPage,
   KanaHubPage,
+  KanjiLessonPage,
+  KanjiLinePage,
   N5HubPage,
   PracticeIndex,
   PracticePage,
@@ -56,6 +58,8 @@ export const router = createBrowserRouter([
           { path: 'n5/vocab', element: <VocabLinePage /> },
           { path: 'n5/vocab/review', element: <VocabReviewPage /> },
           { path: 'n5/vocab/:lessonId', element: <VocabLessonPage /> },
+          { path: 'n5/kanji', element: <KanjiLinePage /> },
+          { path: 'n5/kanji/:lessonId', element: <KanjiLessonPage /> },
           { path: ':script/*', element: <LegacyScriptRedirect /> },
           { path: '*', element: <NotFoundPage /> },
         ],
