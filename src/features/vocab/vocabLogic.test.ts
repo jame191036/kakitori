@@ -78,6 +78,10 @@ describe('vocab questions', () => {
     expect(meaningKeys('ร้อน (เมื่อสัมผัสหรือดื่ม)')).toEqual(['ร้อน']);
     expect(meaningsOverlap(deck.words['ani']!, deck.words['oniisan']!)).toBe(true);
     expect(meaningsOverlap(deck.words['ani']!, deck.words['ane']!)).toBe(false);
+    // ความหมายหนึ่งเป็นส่วนต้นของอีกความหมาย = ใกล้กันเกินไปสำหรับตัวหลอก
+    expect(meaningsOverlap(deck.words['pen']!, deck.words['boorupen']!)).toBe(true);
+    expect(meaningsOverlap(deck.words['ocha']!, deck.words['koucha']!)).toBe(true);
+    expect(meaningsOverlap(deck.words['ue']!, deck.words['shita']!)).toBe(false);
   });
 
   it('does not ask to hand-write words with loanword small kana (no stroke data)', () => {

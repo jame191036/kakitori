@@ -126,10 +126,13 @@ export function meaningKeys(thai: string): string[] {
     .filter(Boolean);
 }
 
-/** ความหมายซ้อนกันไหม (ใช้กันคำพ้องความหมายมาเป็นตัวหลอก เช่น あに กับ おにいさん) */
+/**
+ * ความหมายซ้อนกันไหม (กันคำความหมายใกล้กันมาเป็นตัวหลอก เช่น あに กับ おにいさん)
+ * ซ้อน = ความหมายย่อยตรงกัน หรือตัวหนึ่งเป็นส่วนต้นของอีกตัว ("ปากกา" กับ "ปากกาลูกลื่น", "ร้าน" กับ "ร้านอาหาร")
+ */
 export function meaningsOverlap(a: VocabWord, b: VocabWord): boolean {
-  const keys = new Set(meaningKeys(a.thai));
-  return meaningKeys(b.thai).some((k) => keys.has(k));
+  const keysA = meaningKeys(a.thai);
+  return meaningKeys(b.thai).some((kb) => keysA.some((ka) => ka.startsWith(kb) || kb.startsWith(ka)));
 }
 
 /** ตัวหลอก 3 คำ: ใช้คำในบทเดียวกันก่อน (หมวดเดียวกัน ยากกว่า) ไม่ให้ความหมายซ้อนกับคำตอบ */

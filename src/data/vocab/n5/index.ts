@@ -1,7 +1,10 @@
 import { buildDeck, segment } from '../build';
 import { FOOD } from './food';
+import { HOME } from './home';
 import { NUMBERS } from './numbers';
 import { PEOPLE } from './people';
+import { TIME } from './time';
+import { TOWN } from './town';
 
 /**
  * คำศัพท์ JLPT N5 — แบ่งเป็นช่วงตามหัวข้อ (ช่วงละหลายบท บทละ ~8 คำ = 1 สถานี)
@@ -23,9 +26,9 @@ export const N5_DECK = buildDeck({ id: 'n5', progressKey: 'vocab-n5', name: 'ค
   PEOPLE,
   NUMBERS,
   FOOD,
-  segment('time', 'じかん', 'เวลาและวัน'),
-  segment('home', 'いえ', 'บ้านและของใช้'),
-  segment('town', 'まち', 'เมืองและการเดินทาง'),
+  TIME,
+  HOME,
+  TOWN,
   segment('school', 'がっこう', 'เรียน งาน และงานอดิเรก'),
   segment('body', 'からだ', 'ร่างกาย เสื้อผ้า และสุขภาพ'),
   segment('nature', 'しぜん', 'ธรรมชาติ อากาศ และสี'),
