@@ -1,8 +1,11 @@
 import { buildDeck, segment } from '../build';
+import { BODY } from './body';
 import { FOOD } from './food';
 import { HOME } from './home';
+import { NATURE } from './nature';
 import { NUMBERS } from './numbers';
 import { PEOPLE } from './people';
+import { SCHOOL } from './school';
 import { TIME } from './time';
 import { TOWN } from './town';
 
@@ -29,9 +32,9 @@ export const N5_DECK = buildDeck({ id: 'n5', progressKey: 'vocab-n5', name: 'ค
   TIME,
   HOME,
   TOWN,
-  segment('school', 'がっこう', 'เรียน งาน และงานอดิเรก'),
-  segment('body', 'からだ', 'ร่างกาย เสื้อผ้า และสุขภาพ'),
-  segment('nature', 'しぜん', 'ธรรมชาติ อากาศ และสี'),
+  SCHOOL,
+  BODY,
+  NATURE,
   segment('actions', 'うごき', 'คำกริยาในชีวิตประจำวัน'),
   segment('describe', 'ようす', 'คำบอกลักษณะ'),
   segment('words', 'ことば', 'คำชี้ คำถาม และคำเชื่อม'),
