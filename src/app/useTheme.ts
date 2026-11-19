@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useSettings, type ThemePref } from '../features/settings/settings';
 
-/** ตรงกับ --bg ใน global.css (สีบนสุดของหน้า = สีแถบสถานะมือถือ) */
-const THEME_COLOR = { light: '#f6f3ec', dark: '#1a1916' } as const;
+/** ตรงกับ --surface ใน global.css = สีหัวเว็บ (แถบบนสุดของหน้า) → แถบสถานะมือถือกลืนกับหัวเว็บ */
+const THEME_COLOR = { light: '#ffffff', dark: '#24231f' } as const;
 
 /** ใส่ data-theme ที่ <html> และปรับสีแถบสถานะของมือถือให้ตรงกับธีม */
 export function useApplyTheme(): ThemePref {
