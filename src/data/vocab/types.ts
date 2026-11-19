@@ -16,7 +16,11 @@ export type WordKind =
   | 'adj-i'
   | 'adj-na'
   | 'adv'
-  | 'conj';
+  | 'conj'
+  /** คำขยายนาม (連体詞) ต้องมีคำนามตามหลัง เช่น この, おおきな */
+  | 'prenoun'
+  /** คำช่วย เช่น より, など */
+  | 'prt';
 
 export interface VocabWord {
   /** รหัสถาวร (โรมาจิ + ตัวแยกถ้าซ้ำ) เช่น 'mizu', 'hashi-bridge' */

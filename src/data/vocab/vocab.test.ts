@@ -65,6 +65,11 @@ describe('N5 deck', () => {
     for (const id of words) expect(N5_DECK.words[id], id).toBeDefined();
   });
 
+  it('has every segment open and the whole N5 list (673 cards for 684 source rows, see docs/n5-vocab-plan.md)', () => {
+    expect(N5_DECK.segments.every((s) => s.lessons.length > 0)).toBe(true);
+    expect(Object.keys(N5_DECK.words).length).toBeGreaterThanOrEqual(673);
+  });
+
   it('spells romaji from kana, with phrase overrides only where は is read wa or words are spaced', () => {
     const r = (id: string) => N5_DECK.words[id]!.romaji;
     expect(r('konnichiwa')).toBe('konnichiwa');

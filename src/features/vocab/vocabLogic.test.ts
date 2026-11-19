@@ -51,8 +51,10 @@ describe('vocab lessons as stations', () => {
     expect(sums[1]!.states[0]).toBe('current');
     const n = seg1!.lessons.length;
     expect(sums[1]!.range).toBe(`N${String(n + 1).padStart(2, '0')}–N${String(n + seg2!.lessons.length).padStart(2, '0')}`);
-    // ช่วงที่ยังไม่เปิด
-    expect(sums.at(-1)).toMatchObject({ states: [], range: '', current: false });
+    // ช่วงที่ยังไม่เปิด (ถ้ามี) ไม่มีสถานะและเลขสถานี
+    for (const s of sums.filter((x) => !x.segment.lessons.length)) {
+      expect(s).toMatchObject({ states: [], range: '', current: false });
+    }
   });
 });
 

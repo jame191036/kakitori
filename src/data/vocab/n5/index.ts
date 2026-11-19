@@ -1,16 +1,20 @@
-import { buildDeck, segment } from '../build';
+import { buildDeck } from '../build';
+import { ACTIONS } from './actions';
 import { BODY } from './body';
+import { DESCRIBE } from './describe';
 import { FOOD } from './food';
 import { HOME } from './home';
 import { NATURE } from './nature';
 import { NUMBERS } from './numbers';
+import { OLD } from './old';
 import { PEOPLE } from './people';
 import { SCHOOL } from './school';
 import { TIME } from './time';
 import { TOWN } from './town';
+import { WORDS } from './words';
 
 /**
- * คำศัพท์ JLPT N5 — แบ่งเป็นช่วงตามหัวข้อ (ช่วงละหลายบท บทละ ~8 คำ = 1 สถานี)
+ * คำศัพท์ JLPT N5 — แบ่งเป็น 13 ช่วงตามหัวข้อ (ช่วงละหลายบท บทละ ~8 คำ = 1 สถานี)
  *
  * ที่มา
  * - รายการคำ: JLPT N5 ของ Jonathan Waller (tanos.co.uk, CC BY) ผ่านชุดข้อมูล
@@ -22,8 +26,8 @@ import { TOWN } from './town';
  * - ข้อมูลคำศัพท์ชุดนี้ (รวมความหมายไทย) เผยแพร่ภายใต้ CC BY-SA 4.0 ตามแหล่งที่มา
  *
  * คำซ้ำในรายการต้นทางรวมเป็นการ์ดเดียว (เช่น し/よん, いく/ゆく) และคำเก่าที่ใช้น้อยแล้วอยู่ช่วงสุดท้าย
- * แผนว่าคำไหนอยู่ช่วงไหน: docs/n5-vocab-plan.md — ช่วงที่ยังไม่เปิดมีแค่ชื่อ (lessons ว่าง = 工事中)
- * เปิดช่วงใหม่ต่อท้ายเสมอ เพื่อให้เลขสถานีของบทเดิมไม่เปลี่ยน
+ * ช่วงไหนมีคำอะไร และคำที่รวมการ์ด: docs/n5-vocab-plan.md
+ * เพิ่มบท/ช่วงใหม่ต่อท้ายเสมอ เพื่อให้เลขสถานีของบทเดิมไม่เปลี่ยน · id ของคำและบทห้ามเปลี่ยน
  */
 export const N5_DECK = buildDeck({ id: 'n5', progressKey: 'vocab-n5', name: 'คำศัพท์ N5', letter: 'N' }, [
   PEOPLE,
@@ -35,8 +39,8 @@ export const N5_DECK = buildDeck({ id: 'n5', progressKey: 'vocab-n5', name: 'ค
   SCHOOL,
   BODY,
   NATURE,
-  segment('actions', 'うごき', 'คำกริยาในชีวิตประจำวัน'),
-  segment('describe', 'ようす', 'คำบอกลักษณะ'),
-  segment('words', 'ことば', 'คำชี้ คำถาม และคำเชื่อม'),
-  segment('old', 'むかし', 'คำที่ใช้น้อยลงแล้ว'),
+  ACTIONS,
+  DESCRIBE,
+  WORDS,
+  OLD,
 ]);
