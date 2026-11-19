@@ -10,6 +10,7 @@
  *   /n5                       หมวด JLPT N5 — สายคำศัพท์ (คันจิ/ไวยากรณ์ภายหลัง)
  *   /n5/vocab                 สายคำศัพท์ N5 — แผนที่บท + ตรา
  *   /n5/vocab/:lesson         บทเรียน: เรียน → ฝึก → ทดสอบ
+ *   /n5/vocab/review          ทบทวนคำศัพท์ (คำที่ถึงรอบ · คำที่ผิดบ่อย) — ?start=due เริ่มทบทวนทันที
  * URL เดิม (/hiragana/…) ส่งต่อมาที่ /kana/hiragana/… ให้อัตโนมัติ
  */
 
@@ -20,6 +21,11 @@ export const N5_ROOT = '/n5';
 /** สายคำศัพท์ N5 / บทเรียน เช่น vocabPath('family') → /n5/vocab/family */
 export function vocabPath(lessonId?: string): string {
   return `${N5_ROOT}/vocab${lessonId ? `/${lessonId}` : ''}`;
+}
+
+/** หน้าทบทวนคำศัพท์ N5 — start = เริ่มทบทวนชุดนั้นทันที (ใช้จากการ์ด "วันนี้") */
+export function vocabReviewPath(start?: 'due' | 'weak'): string {
+  return `${vocabPath()}/review${start ? `?start=${start}` : ''}`;
 }
 
 /** หน้าในชุดตัวอักษร เช่น scriptPath('hiragana', 'practice/ka') → /kana/hiragana/practice/ka */

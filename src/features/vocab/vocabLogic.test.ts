@@ -2,18 +2,25 @@ import { describe, expect, it } from 'vitest';
 import { kanaOf } from '../../data/vocab';
 import { N5_DECK } from '../../data/vocab/n5';
 import { rng } from '../writing/engine/testUtils';
-import { applyAnswer, type ProgressData } from '../progress/progressLogic';
+import { applyAnswer, applyPractice, type ProgressData } from '../progress/progressLogic';
 import {
   canArrange,
   canWrite,
+  dueWords,
+  lastStudied,
+  lessonOfWord,
   lessonPassed,
   lessonStates,
   meaningKeys,
   meaningsOverlap,
   nextLesson,
+  nextWordReview,
   practiceQuestions,
+  reviewQuestions,
   segmentSummaries,
   testQuestions,
+  weakWords,
+  wordsAnswered,
 } from './vocabLogic';
 
 const deck = N5_DECK;
@@ -54,6 +61,43 @@ describe('vocab lessons as stations', () => {
     // ช่วงที่ยังไม่เปิด (ถ้ามี) ไม่มีสถานะและเลขสถานี
     for (const s of sums.filter((x) => !x.segment.lessons.length)) {
       expect(s).toMatchObject({ states: [], range: '', current: false });
+    }
+  });
+});
+
+describe('vocab review (same Leitner schedule as kana)', () => {
+  const DAY = 86_400_000;
+  const t0 = new Date(2026, 10, 1, 12).getTime();
+  const [a, b, c] = first!.words;
+
+  it('schedules answered words and lists them when due, weakest first', () => {
+    // a: ถูก (กล่อง 1 → ถึงรอบพรุ่งนี้) · b: ผิด (กล่อง 0 → ถึงรอบทันที) · c: ยังไม่เคยตอบ
+    const p = {
+      [a!]: applyAnswer(undefined, true, t0),
+      [b!]: applyAnswer(undefined, false, t0),
+    };
+    expect(dueWords(deck, p, t0).map((d) => d.word.id)).toEqual([b]);
+    expect(nextWordReview(deck, p, t0)).toEqual({ inDays: 1, count: 1 });
+    expect(dueWords(deck, p, t0 + DAY).map((d) => d.word.id)).toEqual([b, a]);
+    expect(dueWords(deck, p, t0 + DAY).some((d) => d.word.id === c)).toBe(false);
+    expect(weakWords(deck, p).map((w) => w.word.id)).toEqual([b]);
+    expect(wordsAnswered(p)).toBe(true);
+    expect(wordsAnswered(undefined)).toBe(false);
+  });
+
+  it('remembers when a word was last studied (practice counts too)', () => {
+    expect(lastStudied(undefined)).toBe(0);
+    expect(lastStudied({ [a!]: applyPractice(undefined, t0) })).toBe(t0);
+  });
+
+  it('builds review questions across lessons with distractors from each word’s own lesson', () => {
+    const words = deck.lessons.slice(0, 5).map((l) => deck.words[l.words[0]!]!);
+    const qs = reviewQuestions(deck, words, { audio: false, rng: rng(5) });
+    expect(qs.map((q) => q.word.id).sort()).toEqual(words.map((w) => w.id).sort());
+    for (const q of qs) {
+      expect(['meaningToWord', 'wordToMeaning']).toContain(q.type);
+      expect(q.choices).toHaveLength(4);
+      expect(lessonOfWord(deck, q.word.id)?.words).toContain(q.word.id);
     }
   });
 });

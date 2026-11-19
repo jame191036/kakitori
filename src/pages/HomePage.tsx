@@ -1,9 +1,9 @@
 import { ArrowRight, TrainFront } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router';
-import { REVIEW_ROOT } from '../app/paths';
+import { REVIEW_ROOT, vocabPath } from '../app/paths';
 import { SECTIONS } from '../app/sections';
-import { StationSign } from '../components/train/StationSign';
+import { LessonSign, StationSign, type LessonSignStop } from '../components/train/StationSign';
 import { groupLabel, scriptList } from '../data/scripts';
 import { streakInfo } from '../features/progress/activity';
 import {
@@ -18,8 +18,9 @@ import {
 import type { ProgressData } from '../features/progress/progressLogic';
 import { activityStore, progressStore } from '../features/progress/progressStore';
 import { packStations } from '../features/progress/stations';
+import { lessonCode, lessonWords, segmentOf, type VocabLesson } from '../data/vocab';
 import { N5_DECK } from '../data/vocab/n5';
-import { deckProgress, lessonStates } from '../features/vocab/vocabLogic';
+import { deckProgress, lastStudied, lessonStates, nextLesson, wordPassed } from '../features/vocab/vocabLogic';
 import { useSettings } from '../features/settings/settings';
 import { cx } from '../lib/cx';
 import { useStore } from '../lib/persistentStore';
@@ -47,12 +48,22 @@ export default function HomePage() {
   const station = stations[at]!;
   const isStart = !!step && step.index === 1 && step.status.kind === 'write' && step.status.remaining === step.chars.length;
 
-  const n5Passed = lessonStates(N5_DECK, deckProgress(N5_DECK, progress)).filter((s) => s === 'done').length;
+  const vocab = deckProgress(N5_DECK, progress);
+  const n5Passed = lessonStates(N5_DECK, vocab).filter((s) => s === 'done').length;
   const stamps = (step ? step.doneCount : path.length) + n5Passed;
   const remaining = Math.max(0, dailyGoal - streak.todayCount);
 
+  // ป้ายชี้สายที่เรียนล่าสุด (ฝึก/ตอบครั้งล่าสุด) · สายไหนจบแล้วชี้อีกสาย · จบทั้งคู่ = ปลายทางสายตัวอักษร
+  const vocabNext = nextLesson(N5_DECK, vocab);
+  const vocabLast = lastStudied(vocab);
+  const kanaLast = Math.max(0, ...scriptList.map((p) => lastStudied(progress.scripts[p.id])));
+  const showVocab = !!vocabNext && (!step || vocabLast > kanaLast);
+
   return (
     <div className={cx('container', styles.page)}>
+      {showVocab && vocabNext ? (
+        <VocabHero lesson={vocabNext} started={vocabLast > 0} kanaStep={step} progress={progress} />
+      ) : (
       <section className={styles.hero} aria-label="สถานีต่อไป">
         <div>
           <p className={styles.kicker}>
@@ -96,8 +107,15 @@ export default function HomePage() {
               <ArrowRight size={18} strokeWidth={2} aria-hidden />
             </Link>
           )}
+          {/* เคยเรียนคำศัพท์แล้ว: ทางลัดไปสายคำศัพท์ */}
+          {vocabNext && vocabLast > 0 && (
+            <Link to={vocabPath(vocabNext.id)} className={styles.switch}>
+              หรือไปต่อสายคำศัพท์ N5: {lessonCode(N5_DECK, vocabNext)} {vocabNext.title} →
+            </Link>
+          )}
         </div>
       </section>
+      )}
 
       <ul className={styles.tickets} aria-label="สรุปการเดินทาง">
         <li className={styles.ticket}>
@@ -211,6 +229,94 @@ function Platform({ step, progress }: { step: NextStep; progress: ProgressData }
             : `ตัวควบฝึกอ่านและฟัง: ทำแบบทดสอบแถวนี้ให้ตอบถูกครบทุกตัว (เหลือ ${status.remaining} ตัว)`}
       </p>
     </div>
+  );
+}
+
+const lessonStop = (lesson: VocabLesson | undefined): LessonSignStop | null =>
+  lesson ? { code: lessonCode(N5_DECK, lesson), name: lesson.name, title: lesson.title } : null;
+
+/** ป้ายสถานี + ชานชาลาเมื่อสายที่เรียนล่าสุดคือคำศัพท์ N5 */
+function VocabHero({
+  lesson,
+  started,
+  kanaStep,
+  progress,
+}: {
+  lesson: VocabLesson;
+  started: boolean;
+  kanaStep: NextStep | null;
+  progress: ProgressData;
+}) {
+  const deck = N5_DECK;
+  const at = deck.lessons.indexOf(lesson);
+  const p = deckProgress(deck, progress);
+  const words = lessonWords(deck, lesson);
+  const left = words.filter((w) => !wordPassed(w, p)).length;
+  const segment = segmentOf(deck, lesson);
+  const STATE_TITLE = { done: 'ตอบถูกแล้ว', written: 'ฝึกแล้ว ยังไม่ผ่านแบบทดสอบ', todo: 'ยังไม่ได้ฝึก' } as const;
+
+  return (
+    <section className={styles.hero} aria-label="สถานีต่อไป">
+      <div>
+        <p className={styles.kicker}>
+          {started ? (
+            <>
+              <span className="kana">次は</span> · สถานีต่อไปของคุณ
+            </>
+          ) : (
+            <>
+              <span className="kana">始発</span> · สถานีแรกของสายคำศัพท์
+            </>
+          )}
+        </p>
+        <LessonSign
+          lesson={lessonStop(lesson)!}
+          prev={lessonStop(deck.lessons[at - 1])}
+          next={lessonStop(deck.lessons[at + 1])}
+          lineTone="n5"
+          lineJa="単語線"
+          lineName="สายคำศัพท์ N5"
+        />
+      </div>
+
+      <div className={styles.side}>
+        <h1 className={styles.h1}>เรียนภาษาญี่ปุ่น เหมือนนั่งรถไฟไปทีละสถานี</h1>
+        <p className={styles.lead}>
+          แต่ละบทคำศัพท์คือหนึ่งสถานี เรียน ฝึก แล้วทดสอบให้ถูกครบทุกคำ แล้วรับตราสถานีไปสะสม — ฟรี ไม่ต้องสมัครสมาชิก
+        </p>
+        <div className={styles.platform}>
+          <p className={styles.platformLabel}>
+            ชานชาลา สายคำศัพท์ N5{segment ? ` · ${segment.title}` : ''}
+          </p>
+          <ol className={cx(styles.chips, styles.wordChips)} aria-label="สถานะคำในบทนี้">
+            {words.map((w) => {
+              const stat = p?.[w.id];
+              const state = wordPassed(w, p) ? 'done' : (stat?.practiced ?? 0) > 0 ? 'written' : 'todo';
+              return (
+                <li key={w.id} className={styles[state]} title={STATE_TITLE[state]}>
+                  <span className="kana" lang="ja">
+                    {w.kana}
+                  </span>
+                  <small>{w.thai}</small>
+                </li>
+              );
+            })}
+          </ol>
+          <p className={styles.todo}>
+            เรียนการ์ดคำ ฝึก แล้วทำแบบทดสอบให้ตอบถูกครบทุกคำ (เหลือ {left} คำ)
+          </p>
+        </div>
+        <Link to={vocabPath(lesson.id)} className={cx('btn btn-primary', styles.cta)}>
+          เรียนบท {lesson.title}
+          <ArrowRight size={18} strokeWidth={2} aria-hidden />
+        </Link>
+        {kanaStep && (
+          <Link to={stepHref(kanaStep)} className={styles.switch}>
+            หรือไปต่อสายตัวอักษร: {kanaStep.pack.name} {groupLabel(kanaStep.group)} →
+          </Link>
+        )}
+      </div>
+    </section>
   );
 }
 

@@ -92,6 +92,12 @@
   font-weight: 700;
 }
 
+.nextActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .nextCode {
   font-weight: 800;
   color: var(--c-text);
@@ -464,6 +470,11 @@ details[open] > summary .chev {
   }
 
   .nextBar :global(.btn) {
+    width: 100%;
+  }
+
+  .nextActions {
+    display: grid;
     width: 100%;
   }
 

@@ -1,5 +1,14 @@
 import { Link } from 'react-router';
+import { vocabReviewPath } from '../app/paths';
 import type { ScriptPack } from '../data/types';
+import type { VocabDeck } from '../data/vocab';
+import {
+  deckProgress,
+  dueWords,
+  nextWordReview,
+  VOCAB_REVIEW_BATCH,
+  wordsAnswered,
+} from '../features/vocab/vocabLogic';
 import { GOAL_OPTIONS, streakInfo } from '../features/progress/activity';
 import {
   dueChars,
@@ -18,25 +27,35 @@ import styles from './TodayCard.module.css';
 
 interface TodayCardProps {
   packs: readonly ScriptPack[];
+  /** ชุดคำศัพท์ที่นับรอบทบทวนด้วย (ตอนนี้มีแค่ N5 — ปุ่มพาไปหน้าทบทวนคำศัพท์ N5) */
+  decks?: readonly VocabDeck[];
 }
 
-/** การ์ด "วันนี้": วันที่ฝึกต่อเนื่อง เป้ารายวัน และตัวที่ถึงรอบทบทวน (ซ่อนไว้จนกว่าจะเริ่มฝึก) */
-export function TodayCard({ packs }: TodayCardProps) {
+/** การ์ด "วันนี้": วันที่ฝึกต่อเนื่อง เป้ารายวัน และตัวอักษร/คำที่ถึงรอบทบทวน (ซ่อนไว้จนกว่าจะเริ่มฝึก) */
+export function TodayCard({ packs, decks = [] }: TodayCardProps) {
   const now = useNow();
   const { dailyGoal } = useSettings();
   const activity = useStore(activityStore);
   const progress = useStore(progressStore);
   const streak = streakInfo(activity, now, dailyGoal);
-  const answered = packs.some((p) => hasAnswered(progress.scripts[p.id]));
+  const kanaAnswered = packs.some((p) => hasAnswered(progress.scripts[p.id]));
+  const wordAnswered = decks.some((d) => wordsAnswered(deckProgress(d, progress)));
+  const answered = kanaAnswered || wordAnswered;
 
   if (!streak.hasAny && !answered) return null;
 
   const due = packs
     .map((pack) => ({ pack, chars: dueChars(pack, progress.scripts[pack.id], now) }))
     .filter((d) => d.chars.length > 0);
-  const upcoming = packs
-    .map((pack) => nextReview(pack, progress.scripts[pack.id], now))
-    .reduce<{ inDays: number; count: number } | null>((best, r) => {
+  const dueDecks = decks
+    .map((deck) => ({ deck, words: dueWords(deck, deckProgress(deck, progress), now) }))
+    .filter((d) => d.words.length > 0);
+  // หน่วยของรอบถัดไป: ตัวอักษร = "ตัว" · คำศัพท์ = "คำ" · ปนกัน = "รายการ"
+  const unit = kanaAnswered && wordAnswered ? 'รายการ' : wordAnswered ? 'คำ' : 'ตัว';
+  const upcoming = [
+    ...packs.map((pack) => nextReview(pack, progress.scripts[pack.id], now)),
+    ...decks.map((deck) => nextWordReview(deck, deckProgress(deck, progress), now)),
+  ].reduce<{ inDays: number; count: number } | null>((best, r) => {
       if (!r) return best;
       if (!best || r.inDays < best.inDays) return r;
       return r.inDays === best.inDays ? { inDays: r.inDays, count: best.count + r.count } : best;
@@ -116,7 +135,7 @@ export function TodayCard({ packs }: TodayCardProps) {
 
       <div className={styles.review}>
         <p className={styles.reviewTitle}>ถึงรอบทบทวน</p>
-        {due.length > 0 ? (
+        {due.length + dueDecks.length > 0 ? (
           <div className="row">
             {due.map(({ pack, chars }) => (
               <Link key={pack.id} to={reviewHref(pack.id, chars)} className="btn btn-primary btn-sm">
@@ -124,11 +143,17 @@ export function TodayCard({ packs }: TodayCardProps) {
                 {chars.length > REVIEW_BATCH && ` (จาก ${chars.length})`}
               </Link>
             ))}
+            {dueDecks.map(({ deck, words }) => (
+              <Link key={deck.id} to={vocabReviewPath('due')} className="btn btn-primary btn-sm">
+                ทบทวน{deck.name} {Math.min(words.length, VOCAB_REVIEW_BATCH)} คำ
+                {words.length > VOCAB_REVIEW_BATCH && ` (จาก ${words.length})`}
+              </Link>
+            ))}
           </div>
         ) : (
           <p className="small muted">
             {answered
-              ? `ไม่มีตัวที่ต้องทบทวนวันนี้${upcoming ? ` · รอบถัดไป ${daysFromNowLabel(upcoming.inDays)} (${upcoming.count} ตัว)` : ''}`
+              ? `ไม่มี${unit}ที่ต้องทบทวนวันนี้${upcoming ? ` · รอบถัดไป ${daysFromNowLabel(upcoming.inDays)} (${upcoming.count} ${unit})` : ''}`
               : 'ทำแบบทดสอบหรือฝึกแบบตรวจทีละขีด แล้วระบบจะนัดวันทบทวนให้'}
           </p>
         )}

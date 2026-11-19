@@ -60,6 +60,7 @@ function crumbsFor(pathname: string): Crumb[] {
     const n5: Crumb = { label: 'JLPT N5', to: N5_ROOT };
     const lesson = getLesson(N5_DECK, v.params['*']);
     if (!v.params['*']) return [home, n5, { label: 'คำศัพท์' }];
+    if (v.params['*'] === 'review') return [home, n5, { label: 'คำศัพท์', to: vocabPath() }, { label: 'ทบทวน' }];
     return lesson
       ? [home, n5, { label: 'คำศัพท์', to: vocabPath() }, { label: lesson.title }]
       : [home, n5, { label: 'คำศัพท์', to: vocabPath() }, notFound];

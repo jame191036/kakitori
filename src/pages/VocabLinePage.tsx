@@ -1,6 +1,6 @@
-import { ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowRight, ChevronDown, RotateCcw } from 'lucide-react';
 import { Link } from 'react-router';
-import { vocabPath } from '../app/paths';
+import { vocabPath, vocabReviewPath } from '../app/paths';
 import { RouteMap } from '../components/train/RouteMap';
 import { StampBook } from '../components/train/StampBook';
 import { lessonCode, lessonWords, type VocabDeck, type VocabLesson } from '../data/vocab';
@@ -9,15 +9,18 @@ import { progressStore } from '../features/progress/progressStore';
 import type { StationState } from '../features/progress/stations';
 import {
   deckProgress,
+  dueWords,
   lessonStates,
   lessonStops,
   nextLesson,
   segmentSummaries,
+  wordsAnswered,
   wordsPassed,
 } from '../features/vocab/vocabLogic';
 import { cx } from '../lib/cx';
 import { useStore } from '../lib/persistentStore';
 import { tone } from '../lib/tone';
+import { useNow } from '../lib/useNow';
 import styles from './VocabLinePage.module.css';
 
 const STATE_TEXT = { done: 'ผ่านแล้ว', current: 'บทถัดไป', todo: 'ยังไม่ถึง' } as const;
@@ -28,6 +31,7 @@ const STATE_TEXT = { done: 'ผ่านแล้ว', current: 'บทถัด
  */
 export default function VocabLinePage() {
   const deck = N5_DECK;
+  const now = useNow();
   const progress = deckProgress(deck, useStore(progressStore));
   const states = lessonStates(deck, progress);
   const next = nextLesson(deck, progress);
@@ -38,6 +42,8 @@ export default function VocabLinePage() {
   const passedLessons = states.filter((s) => s === 'done').length;
   const totalWords = Object.keys(deck.words).length;
   const openCount = open.length;
+  const answered = wordsAnswered(progress);
+  const due = dueWords(deck, progress, now).length;
 
   return (
     <div className={cx('container tone', styles.page)} style={tone('n5')}>
@@ -77,14 +83,26 @@ export default function VocabLinePage() {
               <span className={styles.nextCode}>{lessonCode(deck, next)}</span>
               <span className={styles.nextTitle}>{next.title}</span>
             </p>
-            <Link to={vocabPath(next.id)} className="btn btn-primary">
-              เรียนบทถัดไป <ArrowRight size={18} strokeWidth={2} aria-hidden />
-            </Link>
+            <div className={styles.nextActions}>
+              {answered && (
+                <Link to={vocabReviewPath()} className="btn">
+                  <RotateCcw size={16} strokeWidth={2} aria-hidden /> ทบทวน{due > 0 && ` (${due} คำถึงรอบ)`}
+                </Link>
+              )}
+              <Link to={vocabPath(next.id)} className="btn btn-primary">
+                เรียนบทถัดไป <ArrowRight size={18} strokeWidth={2} aria-hidden />
+              </Link>
+            </div>
           </>
         ) : (
-          <p className={styles.allDone}>
-            <span className="kana">終点</span> ผ่านครบทุกบทที่เปิดแล้ว
-          </p>
+          <>
+            <p className={styles.allDone}>
+              <span className="kana">終点</span> ผ่านครบทุกบทแล้ว
+            </p>
+            <Link to={vocabReviewPath()} className="btn btn-primary">
+              <RotateCcw size={16} strokeWidth={2} aria-hidden /> ทบทวนคำศัพท์{due > 0 && ` (${due} คำถึงรอบ)`}
+            </Link>
+          </>
         )}
       </section>
 

@@ -9,7 +9,8 @@ import {
   type VocabWord,
 } from '../../data/vocab';
 import { LOANWORD_SMALL_KANA } from '../../data/vocab/romaji';
-import type { ProgressData, ScriptProgress } from '../progress/progressLogic';
+import { dayNumber } from '../../lib/day';
+import { dueDay, type CharStat, type ProgressData, type ScriptProgress } from '../progress/progressLogic';
 import type { RouteStop, StationState } from '../progress/stations';
 
 /**
@@ -202,6 +203,101 @@ export function practiceQuestions(
       return make(type, word, deck, lesson, rng);
     }
     return make('meaningToWord', word, deck, lesson, rng);
+  });
+}
+
+// ───────────── ทบทวน (ใช้กล่องทบทวนแบบเดียวกับตัวอักษร: progressLogic.dueDay) ─────────────
+
+export interface WordStat {
+  word: VocabWord;
+  stat: CharStat;
+}
+
+export interface DueWord extends WordStat {
+  /** เลยรอบมากี่วัน (0 = ถึงรอบวันนี้พอดี) */
+  overdue: number;
+}
+
+/** คำที่ถึงรอบทบทวน เรียงจากกล่องต่ำ (น่าห่วง) และเลยรอบนานที่สุดก่อน */
+export function dueWords(deck: VocabDeck, progress: ScriptProgress | undefined, now: number): DueWord[] {
+  if (!progress) return [];
+  const today = dayNumber(now);
+  const out: DueWord[] = [];
+  for (const word of Object.values(deck.words)) {
+    const stat = progress[word.id];
+    const due = dueDay(stat);
+    if (stat && due !== null && due <= today) out.push({ word, stat, overdue: today - due });
+  }
+  return out.sort((a, b) => a.stat.box - b.stat.box || b.overdue - a.overdue);
+}
+
+/** คำที่ผิดบ่อย: เคยตอบผิดและยังไม่กลับมาแม่น (กล่อง ≤ 2) เรียงจากน่าห่วงที่สุด — เกณฑ์เดียวกับตัวอักษร */
+export function weakWords(deck: VocabDeck, progress: ScriptProgress | undefined): WordStat[] {
+  if (!progress) return [];
+  const out: WordStat[] = [];
+  for (const word of Object.values(deck.words)) {
+    const stat = progress[word.id];
+    if (stat && stat.wrong > 0 && stat.box <= 2) out.push({ word, stat });
+  }
+  return out.sort(
+    (a, b) => a.stat.box - b.stat.box || b.stat.wrong - a.stat.wrong || (b.stat.lastWrong ?? 0) - (a.stat.lastWrong ?? 0),
+  );
+}
+
+/** รอบทบทวนครั้งถัดไป (หลังวันนี้): อีกกี่วัน และมีกี่คำ */
+export function nextWordReview(
+  deck: VocabDeck,
+  progress: ScriptProgress | undefined,
+  now: number,
+): { inDays: number; count: number } | null {
+  if (!progress) return null;
+  const today = dayNumber(now);
+  let best: number | null = null;
+  let count = 0;
+  for (const word of Object.values(deck.words)) {
+    const due = dueDay(progress[word.id]);
+    if (due === null || due <= today) continue;
+    if (best === null || due < best) {
+      best = due;
+      count = 1;
+    } else if (due === best) count++;
+  }
+  return best === null ? null : { inDays: best - today, count };
+}
+
+/** เคยทำแบบทดสอบคำศัพท์บ้างหรือยัง (ยัง = ยังไม่มีนัดทบทวน) */
+export const wordsAnswered = (progress: ScriptProgress | undefined) =>
+  !!progress && Object.values(progress).some((s) => s.answeredAt !== null);
+
+/** ฝึก/ตอบคำศัพท์ครั้งล่าสุดเมื่อไร (0 = ยังไม่เคย) — หน้าแรกใช้เลือกว่าจะชี้สายไหน */
+export const lastStudied = (progress: ScriptProgress | undefined) =>
+  progress ? Math.max(0, ...Object.values(progress).map((s) => s.lastSeen)) : 0;
+
+const lessonIndex = new WeakMap<VocabDeck, Map<string, VocabLesson>>();
+
+/** บทที่คำนี้อยู่ (ใช้เลือกตัวหลอกจากบทเดียวกันตอนทบทวนคำจากหลายบท) */
+export function lessonOfWord(deck: VocabDeck, wordId: string): VocabLesson | undefined {
+  let map = lessonIndex.get(deck);
+  if (!map) {
+    map = new Map(deck.lessons.flatMap((l) => l.words.map((id) => [id, l] as const)));
+    lessonIndex.set(deck, map);
+  }
+  return map.get(wordId);
+}
+
+/** ทบทวนรอบละไม่เกินกี่คำ (เท่ากับตัวอักษร) */
+export const VOCAB_REVIEW_BATCH = 20;
+
+/** แบบทดสอบทบทวน: คำจากหลายบท คำละ 1 ข้อแบบเลือกคำตอบ (ผลบันทึกและเลื่อนกล่องทบทวนเหมือนแบบทดสอบในบท) */
+export function reviewQuestions(
+  deck: VocabDeck,
+  words: readonly VocabWord[],
+  { audio, rng = Math.random }: { audio: boolean; rng?: Rng },
+): VocabQuestion[] {
+  const cycle: VocabQType[] = ['meaningToWord', 'wordToMeaning', ...(audio ? (['audioToMeaning'] as const) : [])];
+  return shuffle(words, rng).flatMap((word, i) => {
+    const lesson = lessonOfWord(deck, word.id);
+    return lesson ? [make(cycle[i % cycle.length]!, word, deck, lesson, rng)] : [];
   });
 }
 

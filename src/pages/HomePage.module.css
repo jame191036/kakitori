@@ -114,6 +114,25 @@
   font-size: 1.05rem;
 }
 
+/* ทางลัดไปอีกสาย (ตัวอักษร ⇄ คำศัพท์) ใต้ปุ่มหลัก */
+.switch {
+  margin-top: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .switch:hover {
+    color: var(--text);
+  }
+}
+
+/* ชิปคำศัพท์: คำยาวกว่าตัวอักษรเดี่ยว จึงใช้ตัวเล็กลง */
+.wordChips li :global(.kana) {
+  font-size: 1.05rem;
+}
+
 /* ── ตั๋ว ── */
 .tickets {
   display: grid;

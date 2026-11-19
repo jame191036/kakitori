@@ -61,6 +61,21 @@
   color: var(--text-2);
 }
 
+/* ชื่อบทคำศัพท์ (คานะหลายตัว) — เล็กกว่าชื่อสถานีตัวเดียว · ยาวกว่า 3 ตัวย่อลงอีก */
+.nameWord {
+  font-size: clamp(2.6rem, 5.4vw, 4.4rem);
+}
+
+.nameLong {
+  font-size: clamp(1.9rem, 4vw, 3.4rem);
+}
+
+.readingThai {
+  letter-spacing: 0;
+  text-indent: 0;
+  text-align: center;
+}
+
 .line {
   text-align: right;
   font-size: 0.82rem;
@@ -91,5 +106,16 @@
 
   .line {
     display: none;
+  }
+}
+
+/* ป้ายบทคำศัพท์บนจอแคบ: ชื่อบทภาษาไทยในแถบยาวเกิน → เหลือแค่ชื่อญี่ปุ่น */
+@media (max-width: 560px) {
+  .bandThai .bandReading {
+    display: none;
+  }
+
+  .bandThai span {
+    white-space: nowrap;
   }
 }

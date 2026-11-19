@@ -4,7 +4,7 @@ import { Link, useParams, useSearchParams } from 'react-router';
 import { vocabPath } from '../app/paths';
 import { getLesson, lessonCode, lessonWords, type VocabDeck, type VocabLesson } from '../data/vocab';
 import { N5_DECK } from '../data/vocab/n5';
-import { recordActivity, recordAnswer, progressStore } from '../features/progress/progressStore';
+import { recordAnswer, recordPractice, progressStore } from '../features/progress/progressStore';
 import { useSpeech } from '../features/speech/useSpeech';
 import { LearnCards } from '../features/vocab/LearnCards';
 import {
@@ -128,7 +128,10 @@ function Lesson({ deck, lesson }: { deck: VocabDeck; lesson: VocabLesson }) {
           questions={session.questions}
           mode={session.kind}
           onAnswer={(word, correct) =>
-            session.kind === 'test' ? recordAnswer(deck.progressKey, word.id, correct) : recordActivity()
+            // ทดสอบ = บันทึกผล (นัดรอบทบทวน) · ฝึก = บันทึกแค่ว่าฝึกแล้ว (ไม่กระทบผลสอบ/รอบทบทวน)
+            session.kind === 'test'
+              ? recordAnswer(deck.progressKey, word.id, correct)
+              : recordPractice(deck.progressKey, word.id)
           }
           onFinish={(results) => {
             setResult({ kind: session.kind, results, passedBefore: session.passedAtStart });

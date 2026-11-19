@@ -16,3 +16,4 @@ export const ReviewHubPage = lazy(() => import('../pages/ReviewHubPage'));
 export const N5HubPage = lazy(() => import('../pages/N5HubPage'));
 export const VocabLinePage = lazy(() => import('../pages/VocabLinePage'));
 export const VocabLessonPage = lazy(() => import('../pages/VocabLessonPage'));
+export const VocabReviewPage = lazy(() => import('../pages/VocabReviewPage'));

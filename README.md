@@ -81,6 +81,7 @@ URL: `/` (เลือกหมวด) → `/kana` (หมวดตัวอั�
 `/kana/hiragana/practice/ka?mode=trace`, `/kana/hiragana/quiz`, `/kana/hiragana/review`, `/kana/hiragana/worksheet` ·
 `/review` (ทบทวนรวม) · `/start` (บทเรียนพื้นฐาน) — URL เดิม (`/hiragana/...`) ส่งต่อมาที่ `/kana/hiragana/...` ให้อัตโนมัติ
 · `/n5` (หมวด JLPT N5) → `/n5/vocab` (สายคำศัพท์) → `/n5/vocab/family?step=practice` (บทเรียน: เรียน / ฝึก / ทดสอบ)
+· `/n5/vocab/review` (ทบทวนคำศัพท์: คำที่ถึงรอบ · คำที่ผิดบ่อย — `?start=due` เริ่มทบทวนทันที)
 หมวดใหม่ (ท่องเที่ยว ฯลฯ) เพิ่มใน `src/app/sections.ts` และเมนูหลักใน `MAIN_NAV` ของ `src/app/AppLayout.tsx`
 
 คำศัพท์อยู่ที่ `src/data/vocab/` — ชุดคำ → ช่วง (区間) → บท (สถานี) → คำ เช่น N5 แยกไฟล์ละช่วงใน `n5/*.ts`

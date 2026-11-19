@@ -1,0 +1,230 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  padding-block: 28px 48px;
+}
+
+.muted {
+  color: var(--text-2);
+}
+
+/* หัวหน้า: แบบเดียวกับหน้าแผนที่สาย (ป้ายวงกลมสีสาย) */
+.head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+  background: var(--c-soft);
+  border: 1px solid color-mix(in srgb, var(--c) 18%, var(--border));
+  border-top: 8px solid var(--c);
+  border-radius: var(--radius-lg);
+}
+
+.badge {
+  display: grid;
+  place-items: center;
+  width: clamp(80px, 9vw, 108px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 7px solid var(--c);
+  background: var(--surface);
+  font-size: clamp(2.2rem, 3.6vw, 3rem);
+}
+
+.headText {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.headText .muted {
+  font-size: 0.92rem;
+}
+
+.lineJa {
+  color: var(--c-text);
+  font-size: 1.05rem;
+}
+
+.h1 {
+  font-size: clamp(1.6rem, 2.8vw, 2.3rem);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.sectionTitle {
+  margin: clamp(8px, 1.5vw, 16px) 0 10px;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+/* ── ชุดทบทวน 2 ใบ ── */
+.sets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 12px;
+}
+
+.set {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 8px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--track-strong);
+  border-radius: var(--radius-lg);
+}
+
+.setHot {
+  border-left-color: var(--c);
+  background: var(--c-soft);
+}
+
+.setTitle {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.setNum {
+  font-size: 1rem;
+}
+
+.setNum strong {
+  margin-right: 4px;
+  font-size: 2.2rem;
+  line-height: 1;
+  color: var(--c-text);
+}
+
+.set :global(.btn) {
+  margin-top: 6px;
+}
+
+/* ── ความคืบหน้าทั้งสาย: 4 ระดับ ── */
+.levels {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.levels li {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 12px 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.levels strong {
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+
+.level0 {
+  color: var(--text-2);
+}
+
+.level2 strong {
+  color: var(--c-text);
+}
+
+.level3 {
+  border-color: color-mix(in srgb, var(--good) 45%, var(--border)) !important;
+  background: var(--good-soft) !important;
+}
+
+.level3 strong {
+  color: var(--good);
+}
+
+/* ── รายการคำ ── */
+.wordList {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wordList li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.wordList :global(.kana) {
+  font-size: 1.15rem;
+}
+
+.wordThai {
+  font-weight: 600;
+}
+
+.wrongCount {
+  margin-left: auto;
+  color: var(--bad, var(--accent));
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* ── ผลทบทวน / ยังไม่มีคำ ── */
+.result,
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  max-width: 760px;
+  width: 100%;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.result .wordList {
+  width: 100%;
+  text-align: left;
+}
+
+.resultBig {
+  font-size: 2.6rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+@media (max-width: 560px) {
+  .head {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    padding: 20px 16px;
+  }
+
+  .levels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .set :global(.btn) {
+    width: 100%;
+  }
+}
