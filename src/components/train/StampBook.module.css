@@ -40,6 +40,12 @@
   font-size: 1.7rem;
 }
 
+/* ชื่อสถานียาว (บทคำศัพท์ เช่น たべもの) ย่อให้อยู่ในวงตรา */
+.kana.long {
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
 .code {
   font-size: 0.66rem;
   font-weight: 700;
@@ -54,5 +60,9 @@
 
   .kana {
     font-size: 1.4rem;
+  }
+
+  .kana.long {
+    font-size: 0.78rem;
   }
 }

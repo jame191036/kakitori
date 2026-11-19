@@ -67,6 +67,11 @@ export function setDailyGoal(goal: number): void {
   if (reachedGoal) activityStore.set(data);
 }
 
+/** นับเป็นกิจกรรม 1 ครั้งโดยไม่เปลี่ยนความคืบหน้ารายตัว (เช่นแบบฝึกในบทคำศัพท์) */
+export function recordActivity(): void {
+  countActivity(Date.now());
+}
+
 /** บันทึกผลตอบคำถามในแบบทดสอบ */
 export function recordAnswer(scriptId: string, charId: string, correct: boolean): void {
   const now = Date.now();

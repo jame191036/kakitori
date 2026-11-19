@@ -6,6 +6,7 @@ import { LegacyScriptRedirect } from './LegacyScriptRedirect';
 import {
   AboutPage,
   KanaHubPage,
+  N5HubPage,
   PracticeIndex,
   PracticePage,
   QuizPage,
@@ -13,6 +14,8 @@ import {
   ReviewPage,
   ScriptHomePage,
   StartPage,
+  VocabLessonPage,
+  VocabLinePage,
   WorksheetPage,
 } from './lazyPages';
 import { RouteError } from './RouteError';
@@ -48,6 +51,9 @@ export const router = createBrowserRouter([
               { path: 'worksheet', element: <WorksheetPage /> },
             ],
           },
+          { path: 'n5', element: <N5HubPage /> },
+          { path: 'n5/vocab', element: <VocabLinePage /> },
+          { path: 'n5/vocab/:lessonId', element: <VocabLessonPage /> },
           { path: ':script/*', element: <LegacyScriptRedirect /> },
           { path: '*', element: <NotFoundPage /> },
         ],

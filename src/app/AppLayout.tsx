@@ -1,6 +1,7 @@
 import {
   ArrowLeft,
   ChevronLeft,
+  GraduationCap,
   House,
   Languages,
   Monitor,
@@ -16,7 +17,9 @@ import { getScript } from '../data/scripts';
 import { updateSettings, useSettings, type ThemePref } from '../features/settings/settings';
 import { SITE_NAME } from './config';
 import { GoalToast } from './GoalToast';
-import { KANA_ROOT, REVIEW_ROOT, scriptPath } from './paths';
+import { getLesson } from '../data/vocab';
+import { N5_DECK } from '../data/vocab/n5';
+import { KANA_ROOT, N5_ROOT, REVIEW_ROOT, scriptPath, vocabPath } from './paths';
 import { UpdatePrompt } from './UpdatePrompt';
 import { useApplyTheme } from './useTheme';
 import styles from './AppLayout.module.css';
@@ -50,6 +53,16 @@ function crumbsFor(pathname: string): Crumb[] {
     return tool
       ? [home, kana, { label: pack.name, to: scriptPath(pack.id) }, { label: tool }]
       : [home, kana, { label: pack.name }];
+  }
+  if (pathname === N5_ROOT) return [home, { label: 'JLPT N5' }];
+  const v = matchPath(`${N5_ROOT}/vocab/*`, pathname);
+  if (v) {
+    const n5: Crumb = { label: 'JLPT N5', to: N5_ROOT };
+    const lesson = getLesson(N5_DECK, v.params['*']);
+    if (!v.params['*']) return [home, n5, { label: 'คำศัพท์' }];
+    return lesson
+      ? [home, n5, { label: 'คำศัพท์', to: vocabPath() }, { label: lesson.title }]
+      : [home, n5, { label: 'คำศัพท์', to: vocabPath() }, notFound];
   }
   if (pathname === '/start') return [home, kana, { label: 'เริ่มต้นที่นี่' }];
   if (pathname === REVIEW_ROOT) return [home, { label: 'ทบทวน' }];
@@ -124,6 +137,12 @@ const MAIN_NAV: MainNavItem[] = [
     label: 'ตัวอักษร',
     icon: Languages,
     active: (p) => p === KANA_ROOT || p.startsWith(`${KANA_ROOT}/`) || p === '/start',
+  },
+  {
+    to: N5_ROOT,
+    label: 'JLPT N5',
+    icon: GraduationCap,
+    active: (p) => p === N5_ROOT || p.startsWith(`${N5_ROOT}/`),
   },
   { to: REVIEW_ROOT, label: 'ทบทวน', icon: Target, active: (p) => p === REVIEW_ROOT },
 ];

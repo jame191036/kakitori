@@ -1,0 +1,350 @@
+/* ── คำ: คานะตัวใหญ่ + คันจิเล็ก + โรมาจิ ── */
+.face {
+  display: inline-grid;
+  justify-items: center;
+  gap: 2px;
+  line-height: 1.15;
+}
+
+.faceKana {
+  font-weight: 600;
+  word-break: keep-all;
+}
+
+.faceKanji {
+  color: var(--text-2);
+  font-weight: 400;
+}
+
+.faceRomaji {
+  margin-top: 2px;
+  color: var(--text-2);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.xl .faceKana {
+  font-size: clamp(2.6rem, 7vw, 4.2rem);
+}
+
+.xl .faceKanji {
+  font-size: 1.4rem;
+}
+
+.xl .faceRomaji {
+  font-size: 1.15rem;
+}
+
+.lg .faceKana {
+  font-size: 2.2rem;
+}
+
+.lg .faceKanji {
+  font-size: 1.1rem;
+}
+
+.md .faceKana {
+  font-size: clamp(1.25rem, 2.4vw, 1.7rem);
+}
+
+.md .faceKanji {
+  font-size: 0.95rem;
+}
+
+.md .faceRomaji {
+  font-size: 0.85rem;
+}
+
+/* ── ขั้นเรียน: การ์ดทีละคำ ── */
+.learn {
+  display: grid;
+  gap: 16px;
+  max-width: 760px;
+  width: 100%;
+  margin-inline: auto;
+}
+
+.wordCard {
+  display: grid;
+  gap: 14px;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.counter {
+  font-weight: 700;
+  color: var(--c-text, var(--text-2));
+  font-variant-numeric: tabular-nums;
+}
+
+.toggleOn {
+  border-color: var(--c, var(--primary));
+  background: var(--c-soft, var(--accent-soft));
+}
+
+.cardBody {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding-block: 12px 6px;
+  text-align: center;
+  animation: card-in 220ms var(--ease-out);
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardBody {
+    animation: none;
+  }
+}
+
+.meaning {
+  font-size: clamp(1.4rem, 3.4vw, 1.9rem);
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.kindTag {
+  display: inline-block;
+  padding: 1px 10px;
+  border-radius: 999px;
+  background: var(--c-soft, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--c, var(--border)) 30%, var(--border));
+  color: var(--c-text, var(--text-2));
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.note {
+  max-width: 34em;
+  color: var(--text-2);
+  font-size: 0.92rem;
+}
+
+.cardNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+
+.dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dots li {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--track-strong);
+}
+
+.dots .dotSeen {
+  background: var(--c, var(--primary));
+  border-color: var(--c, var(--primary));
+}
+
+.dots .dotOn {
+  border-color: var(--c, var(--primary));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c, var(--primary)) 20%, transparent);
+}
+
+.wordList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wordChip {
+  display: grid;
+  gap: 0;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    transform var(--press);
+}
+
+.wordChip :global(.kana) {
+  font-size: 1.15rem;
+}
+
+.wordChip:active {
+  transform: scale(0.98);
+}
+
+.wordChipOn {
+  border-color: var(--c, var(--primary));
+  background: var(--c-soft, var(--accent-soft));
+}
+
+.wordChipThai {
+  font-size: 0.82rem;
+  color: var(--text-2);
+}
+
+/* ── คำถาม ── */
+.promptMeaning {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+
+.promptThai {
+  font-size: clamp(1.6rem, 4vw, 2.3rem);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.promptRomaji {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+}
+
+.promptWord {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+.choicesMeaning .choiceThai {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.choiceThai {
+  padding-inline: 6px;
+}
+
+.feedbackText :global(.kana) {
+  font-size: 1.25rem;
+}
+
+/* ── เรียงตัวอักษร ── */
+.arrange,
+.write {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.slots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slot {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: var(--radius);
+  border: 2px dashed var(--track-strong);
+  background: var(--pad);
+  font-size: 1.7rem;
+  color: var(--text);
+}
+
+button.slot {
+  cursor: pointer;
+}
+
+.slotFilled {
+  border-style: solid;
+  border-color: var(--c, var(--primary));
+  background: var(--surface);
+}
+
+.slotNow {
+  border-style: solid;
+  border-color: var(--c, var(--primary));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c, var(--primary)) 18%, transparent);
+}
+
+.tiles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.tile {
+  min-width: 54px;
+  height: 54px;
+  padding: 0 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  font-size: 1.6rem;
+  cursor: pointer;
+  transition:
+    transform var(--press),
+    opacity 150ms ease;
+}
+
+.tile:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.tile:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tile:hover:not(:disabled) {
+    border-color: var(--c, var(--primary));
+  }
+}
+
+/* ── เขียนคำ ── */
+.writeBoard {
+  width: min(100%, 360px);
+}
+
+@media (max-width: 560px) {
+  .slot,
+  .tile {
+    width: 46px;
+    min-width: 46px;
+    height: 46px;
+    font-size: 1.4rem;
+  }
+}

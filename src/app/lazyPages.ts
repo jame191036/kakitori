@@ -13,3 +13,6 @@ export const AboutPage = lazy(() => import('../pages/AboutPage'));
 export const StartPage = lazy(() => import('../pages/StartPage'));
 export const KanaHubPage = lazy(() => import('../pages/KanaHubPage'));
 export const ReviewHubPage = lazy(() => import('../pages/ReviewHubPage'));
+export const N5HubPage = lazy(() => import('../pages/N5HubPage'));
+export const VocabLinePage = lazy(() => import('../pages/VocabLinePage'));
+export const VocabLessonPage = lazy(() => import('../pages/VocabLessonPage'));

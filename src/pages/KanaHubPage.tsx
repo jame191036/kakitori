@@ -18,6 +18,7 @@ import {
   stationDone,
   stationName,
   stationStates,
+  stationStop,
 } from '../features/progress/stations';
 import { StrokeDraw } from '../features/writing/StrokeDraw';
 import { cx } from '../lib/cx';
@@ -98,7 +99,7 @@ export default function KanaHubPage() {
             </Link>
           )}
         </div>
-        <RouteMap stations={lineStations} states={lineStates} />
+        <RouteMap stops={lineStations.map((st) => stationStop(st))} states={lineStates} />
       </section>
 
       {lineLevel === 1 && (
@@ -121,7 +122,7 @@ export default function KanaHubPage() {
       <p className={cx(styles.muted, styles.stampNote)}>
         สาย{linePack.name} ระดับ {level.id} — ผ่านแถวไหน (ฝึกเขียนครบและตอบถูกครบ) ได้ตราของสถานีนั้น
       </p>
-      <StampBook stations={lineStations} states={lineStates} />
+      <StampBook stops={lineStations.map((st) => stationStop(st))} states={lineStates} />
 
       <h2 className={styles.sectionTitle}>บทเรียน</h2>
       <ul className={styles.lessons}>

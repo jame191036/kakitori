@@ -18,6 +18,8 @@ import {
 import type { ProgressData } from '../features/progress/progressLogic';
 import { activityStore, progressStore } from '../features/progress/progressStore';
 import { packStations } from '../features/progress/stations';
+import { N5_DECK } from '../data/vocab/n5';
+import { deckProgress, lessonStates } from '../features/vocab/vocabLogic';
 import { useSettings } from '../features/settings/settings';
 import { cx } from '../lib/cx';
 import { useStore } from '../lib/persistentStore';
@@ -45,7 +47,8 @@ export default function HomePage() {
   const station = stations[at]!;
   const isStart = !!step && step.index === 1 && step.status.kind === 'write' && step.status.remaining === step.chars.length;
 
-  const stamps = step ? step.doneCount : path.length;
+  const n5Passed = lessonStates(N5_DECK, deckProgress(N5_DECK, progress)).filter((s) => s === 'done').length;
+  const stamps = (step ? step.doneCount : path.length) + n5Passed;
   const remaining = Math.max(0, dailyGoal - streak.todayCount);
 
   return (
@@ -111,7 +114,9 @@ export default function HomePage() {
         </li>
         <li className={styles.ticket}>
           <span className={styles.ticketBig}>{stamps} ตรา</span>
-          <span className={styles.ticketSmall}>ตราสถานีที่สะสมแล้ว (จาก {path.length})</span>
+          <span className={styles.ticketSmall}>
+            ตราสถานีที่สะสมแล้ว (จาก {path.length + N5_DECK.lessons.length})
+          </span>
         </li>
       </ul>
 
@@ -128,8 +133,10 @@ export default function HomePage() {
                 <span className={styles.lineDesc}>{sec.desc}</span>
               </span>
               <span className={styles.trackWrap}>
-                {sec.to ? (
+                {sec.id === 'kana' ? (
                   <KanaTrack path={path} reached={step ? step.index - 1 : path.length} />
+                ) : sec.id === 'jlpt-n5' ? (
+                  <LessonTrack passed={n5Passed} total={N5_DECK.lessons.length} />
                 ) : (
                   <>
                     <span className={styles.trackSoon} />
@@ -204,6 +211,27 @@ function Platform({ step, progress }: { step: NextStep; progress: ProgressData }
             : `ตัวควบฝึกอ่านและฟัง: ทำแบบทดสอบแถวนี้ให้ตอบถูกครบทุกตัว (เหลือ ${status.remaining} ตัว)`}
       </p>
     </div>
+  );
+}
+
+/** รางย่อของสายที่นับเป็นบท (คำศัพท์ N5): ต้นสาย → ปลายทาง */
+function LessonTrack({ passed, total }: { passed: number; total: number }) {
+  const pct = (passed / total) * 100;
+  return (
+    <span className={styles.track} aria-label={`ผ่านแล้ว ${passed} จาก ${total} บท`} role="img">
+      <span className={styles.trackFill} style={{ width: `${pct}%` }} />
+      <span className={styles.stop} style={{ left: '0%' }}>
+        <span className={cx(styles.stopDot, styles.stopOn)} />
+        <span className={styles.stopLabel}>บทที่ 1</span>
+      </span>
+      <span className={styles.stop} style={{ left: '100%' }}>
+        <span className={cx(styles.stopDot, passed >= total && styles.stopOn)} />
+        <span className={styles.stopLabel}>บทที่ {total}</span>
+      </span>
+      <span className={styles.trainMarker} style={{ left: `${pct}%` }}>
+        <TrainFront size={14} strokeWidth={2.2} aria-hidden />
+      </span>
+    </span>
   );
 }
 

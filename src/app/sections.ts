@@ -1,4 +1,4 @@
-import { KANA_ROOT } from './paths';
+import { KANA_ROOT, N5_ROOT } from './paths';
 
 /**
  * หมวดหลักของเว็บ = "สายรถไฟ" บนหน้าแรก — หมวดที่ยังไม่มี to แสดงเป็น 工事中 (กำลังสร้าง กดไม่ได้)
@@ -33,5 +33,12 @@ export const SECTIONS: readonly Section[] = [
   },
   { id: 'daily', name: 'ใช้ในชีวิตประจำวัน', desc: 'คำศัพท์และประโยคสุภาพที่ใช้บ่อย', glyph: '日', tone: 'daily' },
   { id: 'anime', name: 'ดูการ์ตูน / ซีรีส์', desc: 'ภาษาพูดแบบกันเอง และฝึกฟัง', glyph: '漫', tone: 'anime' },
-  { id: 'jlpt-n5', name: 'สอบ JLPT N5', desc: 'คันจิ คำศัพท์ ไวยากรณ์ และข้อสอบจำลอง', glyph: 'N5', tone: 'n5' },
+  {
+    id: 'jlpt-n5',
+    name: 'สอบ JLPT N5',
+    desc: 'คำศัพท์ (เปิดแล้ว) · คันจิ ไวยากรณ์ และข้อสอบจำลองตามมา',
+    glyph: 'N5',
+    tone: 'n5',
+    to: N5_ROOT,
+  },
 ];

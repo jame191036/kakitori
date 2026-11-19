@@ -1,4 +1,4 @@
-import { LEVELS, type Level } from '../../data/scripts';
+import { groupLabel, LEVELS, type Level } from '../../data/scripts';
 import type { CharEntry, CharGroup, ScriptPack } from '../../data/types';
 import { rowNeeds, rowStatus, type NextStep } from './learningPath';
 import type { ProgressData } from './progressLogic';
@@ -73,4 +73,27 @@ export function stationName(group: CharGroup): string {
 /** บรรทัดรองใต้ชื่อสถานี: โรมาจิของแถว (ตัวเล็กไม่มีโรมาจิของแถว) */
 export function stationReading(group: CharGroup): string {
   return group.kind === 'small' ? 'ตัวเล็ก' : group.romaji;
+}
+
+/**
+ * จุดจอดบนแผนที่สาย/สมุดตรา — ใช้ได้ทั้งแถวตัวอักษรและบทคำศัพท์
+ * name = ชื่อสถานีภาษาญี่ปุ่น (ตัวใหญ่) · reading = บรรทัดรอง · label = ข้อความสำหรับโปรแกรมอ่านหน้าจอ
+ */
+export interface RouteStop {
+  code: string;
+  name: string;
+  reading: string;
+  label: string;
+  /** ใส่เมื่อกดสถานีแล้วไปฝึกได้ */
+  href?: string;
+}
+
+export function stationStop(st: Station, href?: string): RouteStop {
+  return {
+    code: st.code,
+    name: stationName(st.group),
+    reading: stationReading(st.group),
+    label: `${st.code} ${groupLabel(st.group)}`,
+    href,
+  };
 }

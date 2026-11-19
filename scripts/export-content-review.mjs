@@ -28,6 +28,7 @@ const server = await createServer({
 });
 const { scriptList, groupLabel, romajiLabel } = await server.ssrLoadModule('/src/data/scripts/index.ts');
 const { MINIMAL_PAIRS } = await server.ssrLoadModule('/src/data/minimalPairs.ts');
+const { vocabDecks, lessonCode, WORD_KIND_LABEL } = await server.ssrLoadModule('/src/data/vocab/index.ts');
 await server.close();
 
 /** ชื่อชุดของแถวคู่คำ (บทเรียน "ตัวเล็กและเสียงยาว" ในหน้า /start) */
@@ -82,6 +83,17 @@ for (const p of MINIMAL_PAIRS) {
   }
 }
 
+// คำศัพท์ (หมวด JLPT ฯลฯ): 1 แถวต่อ 1 คำ — "แถว" = บทเรียน, หมายเหตุ = ชนิดคำ + หมายเหตุบนการ์ด
+for (const deck of vocabDecks) {
+  for (const lesson of deck.lessons) {
+    for (const id of lesson.words) {
+      const w = deck.words[id];
+      const note = [WORD_KIND_LABEL[w.kind], w.note].filter(Boolean).join(' · ');
+      rows.push([deck.name, `${lessonCode(deck, lesson)} ${lesson.title}`, '', '', '', note, wordCell(w), w.romaji, w.thai, '', '', '']);
+    }
+  }
+}
+
 // ── CSV (มี BOM เพื่อให้ Excel แสดงภาษาไทย/ญี่ปุ่นถูกต้อง) ──
 const csvCell = (v) => (/[",\n]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v);
 const csv = '\uFEFF' + [COLUMNS, ...rows].map((r) => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
@@ -128,6 +140,16 @@ const md = [
   '',
   mdTable(rows.filter((r) => r[0] === PAIRS_SET)),
   '',
+  ...vocabDecks.flatMap((deck) => [
+    `## ${deck.name} — ${Object.keys(deck.words).length} คำ (${deck.lessons.length} บท)`,
+    '',
+    'คำอ่านและคันจิตรวจกับพจนานุกรม JMdict · **ความหมายภาษาไทยและหมายเหตุเขียนโดยผู้พัฒนา ยังไม่มีใครตรวจ**',
+    '— ช่วยดูว่าความหมายถูก เหมาะกับผู้เริ่มต้น และหมายเหตุ (วิธีใช้ / ความสุภาพ) ไม่ทำให้เข้าใจผิด',
+    'โรมาจิใช้แบบ Hepburn ที่สะกดตามคานะ (おう = ou) ยกเว้น は ที่เป็นคำช่วยในวลีทักทาย (こんにちは = konnichiwa)',
+    '',
+    mdTable(rows.filter((r) => r[0] === deck.name)),
+    '',
+  ]),
 ].join('\n');
 
 await mkdir(OUT_DIR, { recursive: true });

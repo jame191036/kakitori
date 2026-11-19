@@ -1,0 +1,278 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  padding-block: 28px 48px;
+}
+
+.muted {
+  color: var(--text-2);
+  font-size: 0.92rem;
+}
+
+/* ── หัวบท: ป้ายเลขสถานี + ชื่อบท ── */
+.head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 22px;
+  padding: 22px 24px;
+  background: var(--c-soft);
+  border: 1px solid color-mix(in srgb, var(--c) 18%, var(--border));
+  border-top: 8px solid var(--c);
+  border-radius: var(--radius-lg);
+}
+
+.code {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  width: 72px;
+  height: 72px;
+  border: 6px solid var(--c);
+  border-radius: 12px;
+  background: var(--surface);
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.code small {
+  font-size: 0.8rem;
+}
+
+.headText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nameJa {
+  color: var(--c-text);
+  font-size: 1.2rem;
+}
+
+.h1 {
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.passed {
+  color: var(--good);
+}
+
+.h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+/* ── ขั้นตอน: เรียน → ฝึก → ทดสอบ ── */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  max-width: 760px;
+  width: 100%;
+  margin-inline: auto;
+}
+
+.step {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    transform var(--press);
+}
+
+.step:active {
+  transform: scale(0.98);
+}
+
+.step[aria-pressed='true'] {
+  border-color: var(--c);
+  background: var(--c-soft);
+  box-shadow: inset 0 -3px 0 var(--c);
+}
+
+/* ลูกศรเชื่อมขั้น (จอกว้าง) */
+.step:not(:last-child)::after {
+  content: '→';
+  position: absolute;
+  right: -9px;
+  color: var(--text-3);
+  font-weight: 400;
+}
+
+.stepNum {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--c);
+  color: var(--c-text);
+  font-size: 0.75rem;
+}
+
+.step[aria-pressed='true'] .stepNum {
+  background: var(--c);
+  color: #ffffff;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .step:hover {
+    border-color: color-mix(in srgb, var(--c) 50%, var(--border));
+  }
+}
+
+.intro,
+.result {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  max-width: 760px;
+  width: 100%;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.resultBig {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* ตราสถานี (ได้เมื่อผ่านบท) — เพิ่งได้ตรารอบนี้: ประทับลงมา */
+.stamp {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  border: 4px solid var(--stamp-1);
+  box-shadow:
+    inset 0 0 0 5px var(--surface),
+    inset 0 0 0 7px var(--stamp-1);
+  color: var(--stamp-1);
+  background: color-mix(in srgb, var(--stamp-1) 7%, transparent);
+  rotate: -8deg;
+  line-height: 1.15;
+}
+
+.stamp :global(.kana) {
+  font-size: 1.4rem;
+}
+
+.stamp small {
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.stampNew {
+  animation: stamp-in 320ms var(--ease-out) 150ms both;
+}
+
+@keyframes stamp-in {
+  from {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stampNew {
+    animation-name: stamp-fade;
+  }
+
+  @keyframes stamp-fade {
+    from {
+      opacity: 0;
+    }
+  }
+}
+
+.wrongList {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.wrongList li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  background: var(--bad-soft);
+}
+
+.wrongList :global(.kana) {
+  font-size: 1.25rem;
+}
+
+.lessonNav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  max-width: 760px;
+  width: 100%;
+  margin: 12px auto 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 560px) {
+  .head {
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .code {
+    width: 58px;
+    height: 58px;
+    font-size: 1.2rem;
+  }
+
+  .step {
+    flex-direction: column;
+    gap: 2px;
+    min-height: 60px;
+    font-size: 0.85rem;
+  }
+
+  .step :global(svg) {
+    display: none;
+  }
+
+  .step:not(:last-child)::after {
+    display: none;
+  }
+}

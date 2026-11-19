@@ -148,7 +148,7 @@
 }
 
 .scroll {
-  min-width: calc(var(--n) * 64px);
+  min-width: calc(var(--n) * var(--min, 64px));
 }
 
 @media (max-width: 1100px) {

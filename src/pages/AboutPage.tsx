@@ -62,6 +62,17 @@ export default function AboutPage() {
             (ข้อมูลที่แปลงแล้วในเว็บนี้ใช้สัญญาอนุญาตเดียวกัน)
           </li>
           <li>
+            คำอ่านและคันจิของคำศัพท์ตรวจกับพจนานุกรม{' '}
+            <a href="https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project" target="_blank" rel="noreferrer">
+              JMdict
+            </a>{' '}
+            ของ Electronic Dictionary Research and Development Group — สัญญาอนุญาต{' '}
+            <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">
+              CC BY-SA 4.0
+            </a>{' '}
+            · ความหมายภาษาไทยเขียนโดยผู้พัฒนา (ยังไม่ได้ให้ผู้รู้ภาษาญี่ปุ่นตรวจ)
+          </li>
+          <li>
             ฟอนต์:{' '}
             <a href="https://fonts.google.com/specimen/Klee+One" target="_blank" rel="noreferrer">
               Klee One

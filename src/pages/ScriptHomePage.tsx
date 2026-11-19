@@ -12,7 +12,14 @@ import { useStrokeData } from '../data/useStrokes';
 import { buildPath, nextStep, stepHref } from '../features/progress/learningPath';
 import { masteryLevel } from '../features/progress/progressLogic';
 import { progressStore } from '../features/progress/progressStore';
-import { lineLetter, packStations, stationName, stationStates, type Station } from '../features/progress/stations';
+import {
+  lineLetter,
+  packStations,
+  stationName,
+  stationStates,
+  stationStop,
+  type Station,
+} from '../features/progress/stations';
 import { StrokeDraw } from '../features/writing/StrokeDraw';
 import { cx } from '../lib/cx';
 import { useStore } from '../lib/persistentStore';
@@ -115,10 +122,9 @@ export default function ScriptHomePage() {
                 </span>
               </p>
               <RouteMap
-                stations={idx.map((i) => stations[i]!)}
+                stops={idx.map((i) => stationStop(stations[i]!, hrefFor(stations[i]!)))}
                 states={idx.map((i) => states[i]!)}
                 scroll
-                hrefFor={hrefFor}
               />
             </div>
           );
