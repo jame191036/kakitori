@@ -114,12 +114,16 @@
   font-size: 1.05rem;
 }
 
-/* ทางลัดไปอีกสาย (ตัวอักษร ⇄ คำศัพท์) ใต้ปุ่มหลัก */
+/* ทางลัดไปสายอื่นที่เรียนค้างไว้ (ตัวอักษร · คำศัพท์ · คันจิ) ใต้ปุ่มหลัก */
 .switch {
   margin-top: 12px;
   font-size: 0.92rem;
   font-weight: 600;
   color: var(--text-2);
+}
+
+.switch + .switch {
+  margin-top: 6px;
 }
 
 @media (hover: hover) and (pointer: fine) {

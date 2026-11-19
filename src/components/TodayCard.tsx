@@ -1,14 +1,13 @@
 import { Link } from 'react-router';
-import { vocabReviewPath } from '../app/paths';
+import type { LineDeck } from '../data/line';
 import type { ScriptPack } from '../data/types';
-import type { VocabDeck } from '../data/vocab';
 import {
   deckProgress,
   dueWords,
   nextWordReview,
-  VOCAB_REVIEW_BATCH,
+  REVIEW_BATCH_SIZE,
   wordsAnswered,
-} from '../features/vocab/vocabLogic';
+} from '../features/line/lineLogic';
 import { GOAL_OPTIONS, streakInfo } from '../features/progress/activity';
 import {
   dueChars,
@@ -25,36 +24,45 @@ import { useStore } from '../lib/persistentStore';
 import { useNow } from '../lib/useNow';
 import styles from './TodayCard.module.css';
 
-interface TodayCardProps {
-  packs: readonly ScriptPack[];
-  /** ชุดคำศัพท์ที่นับรอบทบทวนด้วย (ตอนนี้มีแค่ N5 — ปุ่มพาไปหน้าทบทวนคำศัพท์ N5) */
-  decks?: readonly VocabDeck[];
+/** สายบทเรียน (คำศัพท์ / คันจิ) ที่นับรอบทบทวนในการ์ดด้วย */
+export interface TodayLine {
+  deck: LineDeck;
+  /** ลักษณนาม เช่น "คำ" / "ตัว" */
+  unit: string;
+  /** หน้าทบทวนของสาย — เปิดแล้วเริ่มทบทวนตัวที่ถึงรอบทันที */
+  dueHref: string;
 }
 
-/** การ์ด "วันนี้": วันที่ฝึกต่อเนื่อง เป้ารายวัน และตัวอักษร/คำที่ถึงรอบทบทวน (ซ่อนไว้จนกว่าจะเริ่มฝึก) */
-export function TodayCard({ packs, decks = [] }: TodayCardProps) {
+interface TodayCardProps {
+  packs: readonly ScriptPack[];
+  lines?: readonly TodayLine[];
+}
+
+/** การ์ด "วันนี้": วันที่ฝึกต่อเนื่อง เป้ารายวัน และตัวอักษร/คำ/คันจิที่ถึงรอบทบทวน (ซ่อนไว้จนกว่าจะเริ่มฝึก) */
+export function TodayCard({ packs, lines = [] }: TodayCardProps) {
   const now = useNow();
   const { dailyGoal } = useSettings();
   const activity = useStore(activityStore);
   const progress = useStore(progressStore);
   const streak = streakInfo(activity, now, dailyGoal);
   const kanaAnswered = packs.some((p) => hasAnswered(progress.scripts[p.id]));
-  const wordAnswered = decks.some((d) => wordsAnswered(deckProgress(d, progress)));
-  const answered = kanaAnswered || wordAnswered;
+  const linesAnswered = lines.filter((l) => wordsAnswered(deckProgress(l.deck, progress)));
+  const answered = kanaAnswered || linesAnswered.length > 0;
 
   if (!streak.hasAny && !answered) return null;
 
   const due = packs
     .map((pack) => ({ pack, chars: dueChars(pack, progress.scripts[pack.id], now) }))
     .filter((d) => d.chars.length > 0);
-  const dueDecks = decks
-    .map((deck) => ({ deck, words: dueWords(deck, deckProgress(deck, progress), now) }))
+  const dueLines = lines
+    .map((line) => ({ line, words: dueWords(line.deck, deckProgress(line.deck, progress), now) }))
     .filter((d) => d.words.length > 0);
-  // หน่วยของรอบถัดไป: ตัวอักษร = "ตัว" · คำศัพท์ = "คำ" · ปนกัน = "รายการ"
-  const unit = kanaAnswered && wordAnswered ? 'รายการ' : wordAnswered ? 'คำ' : 'ตัว';
+  // หน่วยของรอบถัดไป: ใช้หน่วยเดียวกันถ้าทุกชุดที่เริ่มแล้วนับเหมือนกัน (ตัวอักษร/คันจิ = "ตัว") · ปนกัน = "รายการ"
+  const units = new Set([...(kanaAnswered ? ['ตัว'] : []), ...linesAnswered.map((l) => l.unit)]);
+  const unit = units.size === 1 ? [...units][0]! : 'รายการ';
   const upcoming = [
     ...packs.map((pack) => nextReview(pack, progress.scripts[pack.id], now)),
-    ...decks.map((deck) => nextWordReview(deck, deckProgress(deck, progress), now)),
+    ...lines.map((line) => nextWordReview(line.deck, deckProgress(line.deck, progress), now)),
   ].reduce<{ inDays: number; count: number } | null>((best, r) => {
       if (!r) return best;
       if (!best || r.inDays < best.inDays) return r;
@@ -135,7 +143,7 @@ export function TodayCard({ packs, decks = [] }: TodayCardProps) {
 
       <div className={styles.review}>
         <p className={styles.reviewTitle}>ถึงรอบทบทวน</p>
-        {due.length + dueDecks.length > 0 ? (
+        {due.length + dueLines.length > 0 ? (
           <div className="row">
             {due.map(({ pack, chars }) => (
               <Link key={pack.id} to={reviewHref(pack.id, chars)} className="btn btn-primary btn-sm">
@@ -143,10 +151,10 @@ export function TodayCard({ packs, decks = [] }: TodayCardProps) {
                 {chars.length > REVIEW_BATCH && ` (จาก ${chars.length})`}
               </Link>
             ))}
-            {dueDecks.map(({ deck, words }) => (
-              <Link key={deck.id} to={vocabReviewPath('due')} className="btn btn-primary btn-sm">
-                ทบทวน{deck.name} {Math.min(words.length, VOCAB_REVIEW_BATCH)} คำ
-                {words.length > VOCAB_REVIEW_BATCH && ` (จาก ${words.length})`}
+            {dueLines.map(({ line, words }) => (
+              <Link key={line.deck.id} to={line.dueHref} className="btn btn-primary btn-sm">
+                ทบทวน{line.deck.name} {Math.min(words.length, REVIEW_BATCH_SIZE)} {line.unit}
+                {words.length > REVIEW_BATCH_SIZE && ` (จาก ${words.length})`}
               </Link>
             ))}
           </div>

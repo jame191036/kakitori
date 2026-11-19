@@ -1,6 +1,10 @@
-import { buildDeck, segment } from '../build';
+import { buildDeck } from '../build';
+import { ACTIONS } from './actions';
+import { DESCRIBE } from './describe';
+import { NATURE } from './nature';
 import { NUMBERS } from './numbers';
 import { PEOPLE } from './people';
+import { PLACES } from './places';
 import { TIME } from './time';
 
 /**
@@ -19,10 +23,10 @@ export const KANJI_N5 = buildDeck({ id: 'kanji-n5', progressKey: 'kanji-n5', nam
   NUMBERS,
   TIME,
   PEOPLE,
-  segment('nature', 'しぜん', 'ธรรมชาติและทิศทาง'),
-  segment('describe', 'ようす', 'คำบอกลักษณะ'),
-  segment('actions', 'うごき', 'คำกริยา'),
-  segment('places', 'ばしょ', 'โรงเรียน เมือง และคำถาม'),
+  NATURE,
+  DESCRIBE,
+  ACTIONS,
+  PLACES,
 ]);
 
 /** คันจิทั้ง 103 ตัวของ N5 (ตามลำดับช่วง) — ใช้ตรวจว่าเปิดครบ และใช้ทำฟอนต์ชุดย่อย */

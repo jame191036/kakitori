@@ -7,11 +7,12 @@
  *   /kana/:script             ชุดตัวอักษร — เมนูย่อย + ตาราง
  *   /kana/:script/practice/…  คัดตัวอักษร · /quiz แบบทดสอบ · /review ทบทวน · /worksheet พิมพ์แบบฝึก
  *   /review                   ทบทวน (รวมทุกชุด)
- *   /n5                       หมวด JLPT N5 — สายคำศัพท์ (คันจิ/ไวยากรณ์ภายหลัง)
+ *   /n5                       หมวด JLPT N5 — สายคำศัพท์ · สายคันจิ (ไวยากรณ์ภายหลัง)
  *   /n5/vocab                 สายคำศัพท์ N5 — แผนที่บท + ตรา
  *   /n5/vocab/:lesson         บทเรียน: เรียน → ฝึก → ทดสอบ
  *   /n5/vocab/review          ทบทวนคำศัพท์ (คำที่ถึงรอบ · คำที่ผิดบ่อย) — ?start=due เริ่มทบทวนทันที
  *   /n5/kanji                 สายคันจิ N5 · /n5/kanji/:lesson บทเรียน: เรียน → ฝึกเขียน → ทดสอบ
+ *   /n5/kanji/review          ทบทวนคันจิ (ตัวที่ถึงรอบ · ตัวที่ผิดบ่อย)
  * URL เดิม (/hiragana/…) ส่งต่อมาที่ /kana/hiragana/… ให้อัตโนมัติ
  */
 
@@ -32,6 +33,11 @@ export function kanjiPath(lessonId?: string): string {
 /** หน้าทบทวนคำศัพท์ N5 — start = เริ่มทบทวนชุดนั้นทันที (ใช้จากการ์ด "วันนี้") */
 export function vocabReviewPath(start?: 'due' | 'weak'): string {
   return `${vocabPath()}/review${start ? `?start=${start}` : ''}`;
+}
+
+/** หน้าทบทวนคันจิ N5 — start = เริ่มทบทวนชุดนั้นทันที (ใช้จากการ์ด "วันนี้") */
+export function kanjiReviewPath(start?: 'due' | 'weak'): string {
+  return `${kanjiPath()}/review${start ? `?start=${start}` : ''}`;
 }
 
 /** หน้าในชุดตัวอักษร เช่น scriptPath('hiragana', 'practice/ka') → /kana/hiragana/practice/ka */

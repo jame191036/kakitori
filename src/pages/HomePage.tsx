@@ -1,7 +1,7 @@
 import { ArrowRight, TrainFront } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router';
-import { REVIEW_ROOT, vocabPath } from '../app/paths';
+import { kanjiPath, REVIEW_ROOT, vocabPath } from '../app/paths';
 import { SECTIONS } from '../app/sections';
 import { LessonSign, StationSign, type LessonSignStop } from '../components/train/StationSign';
 import { groupLabel, scriptList } from '../data/scripts';
@@ -18,10 +18,10 @@ import {
 import type { ProgressData } from '../features/progress/progressLogic';
 import { activityStore, progressStore } from '../features/progress/progressStore';
 import { packStations } from '../features/progress/stations';
-import { lessonCode, lessonWords, segmentOf, type VocabLesson } from '../data/vocab';
 import { KANJI_N5 } from '../data/kanji/n5';
+import { lessonCode, lessonWords, segmentOf, type LineDeck, type LineLesson } from '../data/line';
 import { N5_DECK } from '../data/vocab/n5';
-import { deckProgress, lastStudied, lessonStates, nextLesson, wordPassed } from '../features/vocab/vocabLogic';
+import { deckProgress, lastStudied, lessonStates, nextLesson, wordPassed } from '../features/line/lineLogic';
 import { useSettings } from '../features/settings/settings';
 import { cx } from '../lib/cx';
 import { useStore } from '../lib/persistentStore';
@@ -49,24 +49,50 @@ export default function HomePage() {
   const station = stations[at]!;
   const isStart = !!step && step.index === 1 && step.status.kind === 'write' && step.status.remaining === step.chars.length;
 
-  const vocab = deckProgress(N5_DECK, progress);
-  const n5Passed = lessonStates(N5_DECK, vocab).filter((s) => s === 'done').length;
-  const kanjiPassed = lessonStates(KANJI_N5, deckProgress(KANJI_N5, progress)).filter((s) => s === 'done').length;
+  const lines = HERO_LINES.map((line) => {
+    const p = deckProgress(line.deck, progress);
+    return {
+      line,
+      next: nextLesson(line.deck, p),
+      last: lastStudied(p),
+      passed: lessonStates(line.deck, p).filter((s) => s === 'done').length,
+    };
+  });
+  const n5Passed = lines.reduce((n, l) => n + l.passed, 0);
+  const n5Total = lines.reduce((n, l) => n + l.line.deck.lessons.length, 0);
   // ตรา = สถานีที่ผ่านแล้วของทุกสาย (ตัวอักษร + คำศัพท์ + คันจิ)
-  const stamps = (step ? step.doneCount : path.length) + n5Passed + kanjiPassed;
-  const allStations = path.length + N5_DECK.lessons.length + KANJI_N5.lessons.length;
+  const stamps = (step ? step.doneCount : path.length) + n5Passed;
+  const allStations = path.length + n5Total;
   const remaining = Math.max(0, dailyGoal - streak.todayCount);
 
-  // ป้ายชี้สายที่เรียนล่าสุด (ฝึก/ตอบครั้งล่าสุด) · สายไหนจบแล้วชี้อีกสาย · จบทั้งคู่ = ปลายทางสายตัวอักษร
-  const vocabNext = nextLesson(N5_DECK, vocab);
-  const vocabLast = lastStudied(vocab);
+  // ป้ายชี้สายที่เรียนล่าสุด (ฝึก/ตอบครั้งล่าสุด) · สายที่จบแล้วไม่นับ · ยังไม่เคยเรียน = สายตัวอักษร
+  // จบทุกสาย = ปลายทางสายตัวอักษร
   const kanaLast = Math.max(0, ...scriptList.map((p) => lastStudied(progress.scripts[p.id])));
-  const showVocab = !!vocabNext && (!step || vocabLast > kanaLast);
+  const candidates = [
+    ...(step ? [{ id: 'kana', last: kanaLast }] : []),
+    ...lines.filter((l) => l.next).map((l) => ({ id: l.line.id, last: l.last })),
+  ];
+  const heroId = candidates.reduce<(typeof candidates)[number] | undefined>(
+    (best, c) => (!best || c.last > best.last ? c : best),
+    undefined,
+  )?.id;
+  const hero = lines.find((l) => l.line.id === heroId);
+  // ทางลัดไปสายบทเรียนอื่นที่เคยเรียนแล้วและยังไม่จบ
+  const switches = lines
+    .filter((l) => l.next && l.last > 0 && l.line.id !== heroId)
+    .map((l) => ({ line: l.line, lesson: l.next! }));
 
   return (
     <div className={cx('container', styles.page)}>
-      {showVocab && vocabNext ? (
-        <VocabHero lesson={vocabNext} started={vocabLast > 0} kanaStep={step} progress={progress} />
+      {hero?.next ? (
+        <LineHero
+          line={hero.line}
+          lesson={hero.next}
+          started={hero.last > 0}
+          kanaStep={step}
+          switches={switches}
+          progress={progress}
+        />
       ) : (
       <section className={styles.hero} aria-label="สถานีต่อไป">
         <div>
@@ -111,12 +137,7 @@ export default function HomePage() {
               <ArrowRight size={18} strokeWidth={2} aria-hidden />
             </Link>
           )}
-          {/* เคยเรียนคำศัพท์แล้ว: ทางลัดไปสายคำศัพท์ */}
-          {vocabNext && vocabLast > 0 && (
-            <Link to={vocabPath(vocabNext.id)} className={styles.switch}>
-              หรือไปต่อสายคำศัพท์ N5: {lessonCode(N5_DECK, vocabNext)} {vocabNext.title} →
-            </Link>
-          )}
+          <LineSwitches switches={switches} />
         </div>
       </section>
       )}
@@ -158,7 +179,7 @@ export default function HomePage() {
                 {sec.id === 'kana' ? (
                   <KanaTrack path={path} reached={step ? step.index - 1 : path.length} />
                 ) : sec.id === 'jlpt-n5' ? (
-                  <LessonTrack passed={n5Passed} total={N5_DECK.lessons.length} />
+                  <LessonTrack passed={n5Passed} total={n5Total} />
                 ) : (
                   <>
                     <span className={styles.trackSoon} />
@@ -236,26 +257,91 @@ function Platform({ step, progress }: { step: NextStep; progress: ProgressData }
   );
 }
 
-const lessonStop = (lesson: VocabLesson | undefined): LessonSignStop | null =>
-  lesson ? { code: lessonCode(N5_DECK, lesson), name: lesson.name, title: lesson.title } : null;
+/** สายบทเรียนที่ป้ายหน้าแรกชี้ได้ (นอกจากสายตัวอักษร) */
+interface HeroLine {
+  id: string;
+  deck: LineDeck;
+  /** ชื่อสายภาษาญี่ปุ่นบนป้าย */
+  lineJa: string;
+  lineName: string;
+  /** ชื่อสั้นในข้อความ "สถานีแรกของ…" */
+  shortName: string;
+  lessonHref: (lessonId: string) => string;
+  /** ข้อความในชิปของแต่ละรายการในบท */
+  chip: (id: string) => { main: string; small: string };
+  /** ชิปคำยาว (คำศัพท์) ใช้ตัวเล็กลง */
+  wideChips: boolean;
+  lead: string;
+  todo: (left: number) => string;
+}
 
-/** ป้ายสถานี + ชานชาลาเมื่อสายที่เรียนล่าสุดคือคำศัพท์ N5 */
-function VocabHero({
+// 単語線 = สายคำศัพท์ · 漢字線 = สายคันจิ
+const HERO_LINES: readonly HeroLine[] = [
+  {
+    id: 'vocab',
+    deck: N5_DECK,
+    lineJa: '単語線',
+    lineName: 'สายคำศัพท์ N5',
+    shortName: 'สายคำศัพท์',
+    lessonHref: vocabPath,
+    chip: (id) => {
+      const w = N5_DECK.words[id]!;
+      return { main: w.kana, small: w.thai };
+    },
+    wideChips: true,
+    lead: 'แต่ละบทคำศัพท์คือหนึ่งสถานี เรียน ฝึก แล้วทดสอบให้ถูกครบทุกคำ แล้วรับตราสถานีไปสะสม — ฟรี ไม่ต้องสมัครสมาชิก',
+    todo: (left) => `เรียนการ์ดคำ ฝึก แล้วทำแบบทดสอบให้ตอบถูกครบทุกคำ (เหลือ ${left} คำ)`,
+  },
+  {
+    id: 'kanji',
+    deck: KANJI_N5,
+    lineJa: '漢字線',
+    lineName: 'สายคันจิ N5',
+    shortName: 'สายคันจิ',
+    lessonHref: kanjiPath,
+    chip: (id) => {
+      const k = KANJI_N5.words[id]!;
+      return { main: k.char, small: k.thai.split(' / ')[0]! };
+    },
+    wideChips: false,
+    lead: 'แต่ละบทคันจิคือหนึ่งสถานี ดูลำดับขีด ฝึกเขียน แล้วทดสอบความหมายและคำอ่าน แล้วรับตราสถานีไปสะสม — ฟรี ไม่ต้องสมัครสมาชิก',
+    todo: (left) => `ดูลำดับขีด ฝึกเขียน แล้วทำแบบทดสอบให้ตอบถูกครบทุกตัว (เหลือ ${left} ตัว)`,
+  },
+];
+
+const lessonStop = (deck: LineDeck, lesson: LineLesson | undefined): LessonSignStop | null =>
+  lesson ? { code: lessonCode(deck, lesson), name: lesson.name, title: lesson.title } : null;
+
+/** ทางลัดไปสายบทเรียนอื่นที่เรียนค้างไว้ (ใต้ปุ่มหลัก) */
+function LineSwitches({ switches }: { switches: readonly { line: HeroLine; lesson: LineLesson }[] }) {
+  return switches.map(({ line, lesson }) => (
+    <Link key={line.id} to={line.lessonHref(lesson.id)} className={styles.switch}>
+      หรือไปต่อ{line.lineName}: {lessonCode(line.deck, lesson)} {lesson.title} →
+    </Link>
+  ));
+}
+
+/** ป้ายสถานี + ชานชาลาเมื่อสายที่เรียนล่าสุดคือสายบทเรียน (คำศัพท์ / คันจิ N5) */
+function LineHero({
+  line,
   lesson,
   started,
   kanaStep,
+  switches,
   progress,
 }: {
-  lesson: VocabLesson;
+  line: HeroLine;
+  lesson: LineLesson;
   started: boolean;
   kanaStep: NextStep | null;
+  switches: readonly { line: HeroLine; lesson: LineLesson }[];
   progress: ProgressData;
 }) {
-  const deck = N5_DECK;
+  const { deck } = line;
   const at = deck.lessons.indexOf(lesson);
   const p = deckProgress(deck, progress);
-  const words = lessonWords(deck, lesson);
-  const left = words.filter((w) => !wordPassed(w, p)).length;
+  const items = lessonWords(deck, lesson);
+  const left = items.filter((w) => !wordPassed(w, p)).length;
   const segment = segmentOf(deck, lesson);
   const STATE_TITLE = { done: 'ตอบถูกแล้ว', written: 'ฝึกแล้ว ยังไม่ผ่านแบบทดสอบ', todo: 'ยังไม่ได้ฝึก' } as const;
 
@@ -269,48 +355,46 @@ function VocabHero({
             </>
           ) : (
             <>
-              <span className="kana">始発</span> · สถานีแรกของสายคำศัพท์
+              <span className="kana">始発</span> · สถานีแรกของ{line.shortName}
             </>
           )}
         </p>
         <LessonSign
-          lesson={lessonStop(lesson)!}
-          prev={lessonStop(deck.lessons[at - 1])}
-          next={lessonStop(deck.lessons[at + 1])}
+          lesson={lessonStop(deck, lesson)!}
+          prev={lessonStop(deck, deck.lessons[at - 1])}
+          next={lessonStop(deck, deck.lessons[at + 1])}
           lineTone="n5"
-          lineJa="単語線"
-          lineName="สายคำศัพท์ N5"
+          lineJa={line.lineJa}
+          lineName={line.lineName}
         />
       </div>
 
       <div className={styles.side}>
         <h1 className={styles.h1}>เรียนภาษาญี่ปุ่น เหมือนนั่งรถไฟไปทีละสถานี</h1>
-        <p className={styles.lead}>
-          แต่ละบทคำศัพท์คือหนึ่งสถานี เรียน ฝึก แล้วทดสอบให้ถูกครบทุกคำ แล้วรับตราสถานีไปสะสม — ฟรี ไม่ต้องสมัครสมาชิก
-        </p>
+        <p className={styles.lead}>{line.lead}</p>
         <div className={styles.platform}>
           <p className={styles.platformLabel}>
-            ชานชาลา สายคำศัพท์ N5{segment ? ` · ${segment.title}` : ''}
+            ชานชาลา {line.lineName}
+            {segment ? ` · ${segment.title}` : ''}
           </p>
-          <ol className={cx(styles.chips, styles.wordChips)} aria-label="สถานะคำในบทนี้">
-            {words.map((w) => {
+          <ol className={cx(styles.chips, line.wideChips && styles.wordChips)} aria-label="สถานะในบทนี้">
+            {items.map((w) => {
               const stat = p?.[w.id];
               const state = wordPassed(w, p) ? 'done' : (stat?.practiced ?? 0) > 0 ? 'written' : 'todo';
+              const chip = line.chip(w.id);
               return (
                 <li key={w.id} className={styles[state]} title={STATE_TITLE[state]}>
                   <span className="kana" lang="ja">
-                    {w.kana}
+                    {chip.main}
                   </span>
-                  <small>{w.thai}</small>
+                  <small>{chip.small}</small>
                 </li>
               );
             })}
           </ol>
-          <p className={styles.todo}>
-            เรียนการ์ดคำ ฝึก แล้วทำแบบทดสอบให้ตอบถูกครบทุกคำ (เหลือ {left} คำ)
-          </p>
+          <p className={styles.todo}>{line.todo(left)}</p>
         </div>
-        <Link to={vocabPath(lesson.id)} className={cx('btn btn-primary', styles.cta)}>
+        <Link to={line.lessonHref(lesson.id)} className={cx('btn btn-primary', styles.cta)}>
           เรียนบท {lesson.title}
           <ArrowRight size={18} strokeWidth={2} aria-hidden />
         </Link>
@@ -319,6 +403,7 @@ function VocabHero({
             หรือไปต่อสายตัวอักษร: {kanaStep.pack.name} {groupLabel(kanaStep.group)} →
           </Link>
         )}
+        <LineSwitches switches={switches} />
       </div>
     </section>
   );

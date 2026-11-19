@@ -70,6 +70,7 @@ function crumbsFor(pathname: string): Crumb[] {
   if (kj) {
     const n5: Crumb = { label: 'JLPT N5', to: N5_ROOT };
     if (!kj.params['*']) return [home, n5, { label: 'คันจิ' }];
+    if (kj.params['*'] === 'review') return [home, n5, { label: 'คันจิ', to: kanjiPath() }, { label: 'ทบทวน' }];
     const lesson = getLesson(KANJI_N5, kj.params['*']);
     return lesson
       ? [home, n5, { label: 'คันจิ', to: kanjiPath() }, { label: lesson.title }]

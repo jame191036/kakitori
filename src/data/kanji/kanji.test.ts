@@ -31,6 +31,11 @@ describe('kanji N5 deck', () => {
     expect(lessonCode(deck, deck.lessons[0]!)).toBe('KJ01');
   });
 
+  it('teaches all 103 kanji with every segment open', () => {
+    expect(deck.segments.every((s) => s.lessons.length > 0)).toBe(true);
+    expect(all.map((e) => e.char).sort()).toEqual([...KANJI_N5_ALL].sort());
+  });
+
   it('opens segments in order, so station codes of open lessons never shift', () => {
     const open = deck.segments.map((s) => s.lessons.length > 0);
     expect(open.indexOf(false) === -1 || !open.slice(open.indexOf(false)).includes(true)).toBe(true);
@@ -47,10 +52,16 @@ describe('kanji N5 deck', () => {
       for (const r of e.readings) {
         expect(r.kana, e.char).toMatch(/^[ぁ-ゖ・()]+$/u);
         expect(['on', 'kun'], e.char).toContain(r.kind);
+        // รูปคำอ่าน (รวมเสียงที่เปลี่ยน เช่น ひ・び) ต้องได้ยินจริงในคำตัวอย่าง
+        const forms = r.kana.split('・').map((f) => f.replace(/\(.*\)/, ''));
         for (const id of r.words) {
           const w = N5_DECK.words[id];
           expect(w, `${e.char}: ไม่พบคำ ${id}`).toBeDefined();
           expect(w!.kanji ?? '', `${e.char}: คำ ${id}`).toContain(e.char);
+          expect(
+            forms.some((f) => w!.kana.includes(f)),
+            `${e.char} ${r.kana}: ไม่มีเสียงนี้ใน ${w!.kana}`,
+          ).toBe(true);
         }
       }
       for (const id of e.special ?? []) {

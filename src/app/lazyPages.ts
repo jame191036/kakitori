@@ -19,3 +19,4 @@ export const VocabLessonPage = lazy(() => import('../pages/VocabLessonPage'));
 export const VocabReviewPage = lazy(() => import('../pages/VocabReviewPage'));
 export const KanjiLinePage = lazy(() => import('../pages/KanjiLinePage'));
 export const KanjiLessonPage = lazy(() => import('../pages/KanjiLessonPage'));
+export const KanjiReviewPage = lazy(() => import('../pages/KanjiReviewPage'));
