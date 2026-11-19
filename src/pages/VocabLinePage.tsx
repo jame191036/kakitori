@@ -95,6 +95,7 @@ export default function VocabLinePage() {
         {open.map(({ segment, states: segStates, passed, current, range }, i) => {
           const total = segment.lessons.length;
           const done = passed === total;
+          const stops = lessonStops(deck, segment.lessons);
           return (
             <li key={segment.id}>
               <details className={cx(styles.segment, current && styles.segCurrent)} open={current}>
@@ -120,8 +121,14 @@ export default function VocabLinePage() {
                   <ChevronDown className={styles.chev} size={20} strokeWidth={2} aria-hidden />
                 </summary>
                 <div className={styles.segBody}>
-                  <RouteMap stops={lessonStops(deck, segment.lessons)} states={segStates} scroll minStop={120} />
+                  <RouteMap stops={stops} states={segStates} scroll minStop={120} />
                   <LessonCards deck={deck} lessons={segment.lessons} states={segStates} />
+                  <div className={styles.segStamps}>
+                    <p className={styles.segStampsHead}>
+                      <span className={cx('kana', styles.accentJa)}>駅スタンプ</span> ตราของช่วงนี้ {passed}/{total}
+                    </p>
+                    <StampBook stops={stops} states={segStates} />
+                  </div>
                 </div>
               </details>
             </li>
@@ -153,10 +160,16 @@ export default function VocabLinePage() {
         </section>
       )}
 
-      <h2 className={styles.sectionTitle}>
-        <span className={cx('kana', styles.accentJa)}>駅スタンプ</span> ตราสถานีของฉัน
-      </h2>
-      <StampBook stops={lessonStops(deck)} states={states} />
+      {/* สมุดตรา: ตราแยกอยู่ในการ์ดของแต่ละช่วงด้านบน — ตรงนี้สรุปแค่จำนวน (87 ดวงยาวเกินไปบนมือถือ) */}
+      <section className={styles.stampSummary} aria-labelledby="stamps-title">
+        <h2 id="stamps-title" className={styles.h2}>
+          <span className={cx('kana', styles.accentJa)}>駅スタンプ</span> ตราสถานีของฉัน
+        </h2>
+        <p>
+          สะสมแล้ว <strong className={styles.stampCount}>{passedLessons}</strong> / {deck.lessons.length} ดวง
+          <span className={styles.muted}> · ตราของแต่ละช่วงอยู่ในการ์ดช่วงด้านบน</span>
+        </p>
+      </section>
     </div>
   );
 }

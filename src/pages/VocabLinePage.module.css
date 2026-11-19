@@ -245,6 +245,40 @@ details[open] > summary .chev {
   padding: 4px clamp(14px, 2vw, 20px) clamp(16px, 2vw, 22px);
 }
 
+/* ตราของช่วงนี้ (อยู่บนการ์ดสีขาว → ช่องระหว่างวงแหวนตราใช้สีการ์ด) */
+.segStamps {
+  --stamp-gap: var(--surface);
+  display: grid;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+}
+
+.segStampsHead {
+  font-weight: 700;
+}
+
+/* สรุปสมุดตราท้ายหน้า */
+.stampSummary {
+  display: grid;
+  gap: 6px;
+  margin-top: clamp(8px, 1.5vw, 16px);
+  padding: 16px clamp(16px, 2.4vw, 24px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.h2 {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.stampCount {
+  font-size: 1.3rem;
+  color: var(--c-text);
+}
+
 /* ช่วงที่ยังไม่เปิด: ช่องเล็กเส้นประ สีจาง เรียงเป็นตาราง · ป้าย 工事中 ป้ายเดียวที่หัวข้อ */
 .soonBlock {
   display: grid;
