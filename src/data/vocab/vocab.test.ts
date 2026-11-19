@@ -73,6 +73,8 @@ describe('N5 deck', () => {
   it('spells romaji from kana, with phrase overrides only where は is read wa or words are spaced', () => {
     const r = (id: string) => N5_DECK.words[id]!.romaji;
     expect(r('konnichiwa')).toBe('konnichiwa');
+    expect(r('dewa')).toBe('dewa');
+    expect(r('soredewa')).toBe('soredewa');
     expect(r('ohayou-gozaimasu')).toBe('ohayou gozaimasu');
     expect(r('gyuunyuu')).toBe('gyuunyuu');
     expect(r('mittsu')).toBe('mittsu');
