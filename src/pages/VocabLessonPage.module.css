@@ -249,6 +249,30 @@
   border-top: 1px solid var(--border);
 }
 
+/* จอแคบ: บทก่อน | บทถัดไป อยู่แถวเดียวกัน · "แผนที่สาย" ลงไปแถวล่างตรงกลาง (ชื่อบทยาวจะได้ไม่ดันกันจนเบี้ยว) */
+@media (max-width: 560px) {
+  .lessonNav {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .lessonNav > :global(.btn) {
+    white-space: normal;
+    text-align: left;
+  }
+
+  .lessonNav > :nth-child(2) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: center;
+  }
+
+  .lessonNav > :nth-child(3) {
+    justify-self: end;
+    text-align: right;
+  }
+}
+
 @media (max-width: 560px) {
   .head {
     gap: 14px;

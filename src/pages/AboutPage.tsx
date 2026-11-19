@@ -73,6 +73,17 @@ export default function AboutPage() {
             · ความหมายภาษาไทยเขียนโดยผู้พัฒนา (ยังไม่ได้ให้ผู้รู้ภาษาญี่ปุ่นตรวจ)
           </li>
           <li>
+            รายการคำศัพท์ JLPT N5: รายการของ Jonathan Waller (เดิมเผยแพร่ที่ tanos.co.uk แบบ CC BY) ผ่านชุดข้อมูล{' '}
+            <a href="https://github.com/stephenmk/yomitan-jlpt-vocab" target="_blank" rel="noreferrer">
+              yomitan-jlpt-vocab
+            </a>{' '}
+            ของ stephenmk — สัญญาอนุญาต{' '}
+            <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">
+              CC BY-SA 4.0
+            </a>{' '}
+            · ข้อมูลคำศัพท์ของเว็บนี้ (รวมความหมายภาษาไทย) ใช้สัญญาอนุญาตเดียวกัน
+          </li>
+          <li>
             ฟอนต์:{' '}
             <a href="https://fonts.google.com/specimen/Klee+One" target="_blank" rel="noreferrer">
               Klee One

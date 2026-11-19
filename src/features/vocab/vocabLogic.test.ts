@@ -8,8 +8,11 @@ import {
   canWrite,
   lessonPassed,
   lessonStates,
+  meaningKeys,
+  meaningsOverlap,
   nextLesson,
   practiceQuestions,
+  segmentSummaries,
   testQuestions,
 } from './vocabLogic';
 
@@ -38,6 +41,19 @@ describe('vocab lessons as stations', () => {
     const after = { ...p, [first!.words[0]!]: applyAnswer(p[first!.words[0]!], false, 2) };
     expect(lessonPassed(deck, first!, after)).toBe(true);
   });
+
+  it('summarises segments: the one holding the next lesson is current, codes run on across segments', () => {
+    const [seg1, seg2] = deck.segments;
+    const all = passedWords(seg1!.lessons.flatMap((l) => l.words)).scripts[deck.progressKey];
+    const sums = segmentSummaries(deck, all);
+    expect(sums[0]).toMatchObject({ passed: seg1!.lessons.length, current: false });
+    expect(sums[1]).toMatchObject({ passed: 0, current: true });
+    expect(sums[1]!.states[0]).toBe('current');
+    const n = seg1!.lessons.length;
+    expect(sums[1]!.range).toBe(`N${String(n + 1).padStart(2, '0')}–N${String(n + seg2!.lessons.length).padStart(2, '0')}`);
+    // ช่วงที่ยังไม่เปิด
+    expect(sums.at(-1)).toMatchObject({ states: [], range: '', current: false });
+  });
 });
 
 describe('vocab questions', () => {
@@ -49,10 +65,25 @@ describe('vocab questions', () => {
         expect(q.choices).toHaveLength(4);
         expect(new Set(q.choices.map((c) => c.id)).size).toBe(4);
         expect(q.choices.some((c) => c.id === q.word.id)).toBe(true);
-        // ความหมายของตัวหลอกต้องไม่ซ้ำกับคำตอบ
-        expect(q.choices.filter((c) => c.thai === q.word.thai)).toHaveLength(1);
+        // ตัวเลือกทุกคู่ต้องไม่มีความหมายย่อยซ้อนกัน (เช่น あに "พี่ชาย" กับ おにいさん "พี่ชาย")
+        for (const a of q.choices) {
+          for (const b of q.choices) if (a !== b) expect(meaningsOverlap(a, b), `${a.id} / ${b.id}`).toBe(false);
+        }
       }
     }
+  });
+
+  it('splits Thai meanings into keys without the bracketed notes', () => {
+    expect(meaningKeys('ลุง / น้า / อา (ผู้ชาย)')).toEqual(['ลุง', 'น้า', 'อา']);
+    expect(meaningKeys('ร้อน (เมื่อสัมผัสหรือดื่ม)')).toEqual(['ร้อน']);
+    expect(meaningsOverlap(deck.words['ani']!, deck.words['oniisan']!)).toBe(true);
+    expect(meaningsOverlap(deck.words['ani']!, deck.words['ane']!)).toBe(false);
+  });
+
+  it('does not ask to hand-write words with loanword small kana (no stroke data)', () => {
+    expect(canWrite(deck.words['fooku']!)).toBe(false);
+    expect(canArrange(deck.words['fooku']!)).toBe(true);
+    expect(canWrite(deck.words['koppu']!)).toBe(true);
   });
 
   it('can limit the test to the words that were wrong', () => {

@@ -2,10 +2,21 @@
  * คำศัพท์ (หมวด JLPT ฯลฯ)
  * - id ของคำและบท = key ของความคืบหน้าใน localStorage และไฟล์สำรอง → **ห้ามเปลี่ยน id เดิม**
  *   (แก้คำอ่าน/ความหมายได้ตามสบาย แต่ id ต้องคงที่ เพื่อซิงก์/นำเข้าข้อมูลข้ามเครื่องได้ในอนาคต)
+ * - ชุดคำ (deck) → ช่วง (segment, 区間) → บท (lesson = 1 สถานี) → คำ
  */
 
 /** ชนิดคำ (แสดงเป็นป้ายเล็กๆ บนการ์ดคำ) */
-export type WordKind = 'expr' | 'num' | 'noun' | 'pron' | 'verb' | 'adj-i' | 'adj-na' | 'adv';
+export type WordKind =
+  | 'expr'
+  | 'num'
+  | 'noun'
+  | 'pron'
+  | 'q'
+  | 'verb'
+  | 'adj-i'
+  | 'adj-na'
+  | 'adv'
+  | 'conj';
 
 export interface VocabWord {
   /** รหัสถาวร (โรมาจิ + ตัวแยกถ้าซ้ำ) เช่น 'mizu', 'hashi-bridge' */
@@ -14,9 +25,12 @@ export interface VocabWord {
   kana: string;
   /** รูปที่เขียนด้วยคันจิตามปกติ (ไม่ใส่ = ปกติเขียนด้วยคานะ) — แสดงตัวเล็ก */
   kanji?: string;
-  /** โรมาจิ (Hepburn: おう = ou, ー = สระซ้ำ, は ที่เป็นคำช่วยในวลี = wa) */
+  /** โรมาจิ (Hepburn: おう = ou, ー = สระซ้ำ, は ที่เป็นคำช่วยในวลี = wa) — ปกติสร้างจากคานะอัตโนมัติ */
   romaji: string;
-  /** ความหมายภาษาไทย */
+  /**
+   * ความหมายภาษาไทย — คั่นความหมายย่อยด้วย " / " และขยายความในวงเล็บ
+   * (ตัวหลอกในข้อสอบจะไม่ใช้คำที่มีความหมายย่อยซ้ำกับคำตอบ เช่น "พี่ชาย" กับ "พี่ชาย (ของเรา)")
+   */
   thai: string;
   kind: WordKind;
   /** หมายเหตุสั้นๆ เช่น วิธีใช้ คำอ่านอื่น */
@@ -34,14 +48,28 @@ export interface VocabLesson {
   words: readonly string[];
 }
 
-export interface VocabDeck {
-  /** รหัสชุดคำ — ใช้เป็น key ความคืบหน้า (ProgressData.scripts[key]) */
+/** ช่วงของสาย (区間) — กลุ่มบทตามหัวข้อ เช่น "อาหาร" */
+export interface VocabSegment {
+  /** รหัสถาวรของช่วง */
   id: string;
-  /** key ความคืบหน้า (แยกจากชุดตัวอักษร) */
+  /** ชื่อช่วงภาษาญี่ปุ่น (คานะ) เช่น 'しょくじ' */
+  name: string;
+  /** ชื่อช่วงภาษาไทย */
+  title: string;
+  /** บทในช่วงนี้ — ว่าง = ยังไม่เปิด (แสดงป้าย 工事中) */
+  lessons: readonly VocabLesson[];
+}
+
+export interface VocabDeck {
+  /** รหัสชุดคำ */
+  id: string;
+  /** key ความคืบหน้า (ProgressData.scripts[key]) แยกจากชุดตัวอักษร */
   progressKey: string;
   name: string;
   /** อักษรนำหน้าเลขสถานี เช่น 'N' → N01 */
   letter: string;
+  segments: readonly VocabSegment[];
+  /** ทุกบทของทุกช่วงที่เปิดแล้ว เรียงต่อกัน (เลขสถานีนับต่อเนื่องข้ามช่วง) */
   lessons: readonly VocabLesson[];
   words: Readonly<Record<string, VocabWord>>;
 }

@@ -65,24 +65,40 @@
   font-size: 0.92rem;
 }
 
-.routeCard {
-  padding: clamp(18px, 2.4vw, 30px);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-}
-
-.routeHead {
+/* ── บทถัดไป (แถบชานชาลา) ── */
+.nextBar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 14px 24px;
-  margin-bottom: 18px;
+  gap: 12px 24px;
+  padding: 16px clamp(16px, 2.4vw, 24px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--c);
+  border-radius: var(--radius-lg);
 }
 
-.h2 {
-  font-size: 1.3rem;
+.nextText {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  min-width: 0;
+}
+
+.eyebrow {
+  color: var(--c-text);
+  font-weight: 700;
+}
+
+.nextCode {
+  font-weight: 800;
+  color: var(--c-text);
+}
+
+.nextTitle {
+  font-size: 1.15rem;
   font-weight: 800;
 }
 
@@ -100,6 +116,205 @@
   margin-top: clamp(16px, 2vw, 28px);
   font-size: 1.35rem;
   font-weight: 800;
+}
+
+/* ── ช่วงของสาย (区間) ── */
+.segments {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.segment {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.segCurrent {
+  border-color: color-mix(in srgb, var(--c) 45%, var(--border));
+}
+
+.segHead {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px clamp(14px, 2vw, 20px);
+  border-radius: var(--radius-lg);
+  list-style: none;
+}
+
+summary.segHead {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+summary.segHead::-webkit-details-marker {
+  display: none;
+}
+
+summary.segHead:focus-visible {
+  outline: 3px solid var(--c);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  summary.segHead:hover .segTitle {
+    color: var(--c-text);
+  }
+}
+
+/* เลขช่วง: ป้ายวงกลมสีสาย (ผ่านครบ = ทึบ) */
+.segNo {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--c);
+  border-radius: 50%;
+  font-weight: 800;
+}
+
+.segNoDone {
+  background: var(--c);
+  color: #ffffff;
+}
+
+.segText {
+  display: grid;
+  min-width: 0;
+}
+
+.segJa {
+  color: var(--c-text);
+  font-size: 0.9rem;
+}
+
+.segTitle {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.segMeta {
+  color: var(--text-2);
+  font-size: 0.85rem;
+}
+
+.segProgress {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.segCount {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.segBar {
+  display: block;
+  width: 72px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.segBar > span {
+  display: block;
+  height: 100%;
+  background: var(--c);
+}
+
+.chev {
+  color: var(--text-2);
+  transition: transform 200ms var(--ease-out);
+}
+
+details[open] > summary .chev {
+  transform: rotate(180deg);
+}
+
+.segBody {
+  display: grid;
+  gap: 18px;
+  padding: 4px clamp(14px, 2vw, 20px) clamp(16px, 2vw, 22px);
+}
+
+/* ช่วงที่ยังไม่เปิด: ช่องเล็กเส้นประ สีจาง เรียงเป็นตาราง · ป้าย 工事中 ป้ายเดียวที่หัวข้อ */
+.soonBlock {
+  display: grid;
+  gap: 10px;
+}
+
+.soonHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  color: var(--text-2);
+  font-weight: 700;
+}
+
+.soonGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 900px) {
+  .soonGrid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+}
+
+.soonItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.soonItem .segNo {
+  width: 34px;
+  height: 34px;
+  border-width: 3px;
+  border-color: var(--track-strong);
+  color: var(--text-2);
+  font-size: 0.9rem;
+}
+
+.soonTitle {
+  color: var(--text-2);
+  font-weight: 700;
+}
+
+/* ป้าย 工事中 สีเหลืองดำ (สีเดียวกันทั้งสองธีม) */
+.koji {
+  padding: 1px 10px;
+  border: 2px solid #1b1d22;
+  border-radius: 4px;
+  background: var(--koji);
+  color: #1b1d22;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chev {
+    transition: none;
+  }
 }
 
 /* ── การ์ดบทเรียน ── */
@@ -214,7 +429,22 @@
     padding: 20px 16px;
   }
 
-  .routeHead :global(.btn) {
+  .nextBar :global(.btn) {
     width: 100%;
+  }
+
+  /* จอแคบ: ซ่อนแถบความคืบหน้า เหลือแค่ตัวเลข */
+  .segHead {
+    gap: 10px;
+  }
+
+  .segBar {
+    display: none;
+  }
+
+  .segNo {
+    width: 34px;
+    height: 34px;
+    border-width: 3px;
   }
 }

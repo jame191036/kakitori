@@ -83,13 +83,16 @@ for (const p of MINIMAL_PAIRS) {
   }
 }
 
-// คำศัพท์ (หมวด JLPT ฯลฯ): 1 แถวต่อ 1 คำ — "แถว" = บทเรียน, หมายเหตุ = ชนิดคำ + หมายเหตุบนการ์ด
+// คำศัพท์ (หมวด JLPT ฯลฯ): 1 แถวต่อ 1 คำ — "ชุด" = ชุดคำ · ช่วง, "แถว" = บทเรียน, หมายเหตุ = ชนิดคำ + หมายเหตุบนการ์ด
+const segmentSet = (deck, segment) => `${deck.name} · ${segment.title}`;
 for (const deck of vocabDecks) {
-  for (const lesson of deck.lessons) {
-    for (const id of lesson.words) {
-      const w = deck.words[id];
-      const note = [WORD_KIND_LABEL[w.kind], w.note].filter(Boolean).join(' · ');
-      rows.push([deck.name, `${lessonCode(deck, lesson)} ${lesson.title}`, '', '', '', note, wordCell(w), w.romaji, w.thai, '', '', '']);
+  for (const segment of deck.segments) {
+    for (const lesson of segment.lessons) {
+      for (const id of lesson.words) {
+        const w = deck.words[id];
+        const note = [WORD_KIND_LABEL[w.kind], w.note].filter(Boolean).join(' · ');
+        rows.push([segmentSet(deck, segment), `${lessonCode(deck, lesson)} ${lesson.title}`, '', '', '', note, wordCell(w), w.romaji, w.thai, '', '', '']);
+      }
     }
   }
 }
@@ -143,12 +146,16 @@ const md = [
   ...vocabDecks.flatMap((deck) => [
     `## ${deck.name} — ${Object.keys(deck.words).length} คำ (${deck.lessons.length} บท)`,
     '',
-    'คำอ่านและคันจิตรวจกับพจนานุกรม JMdict · **ความหมายภาษาไทยและหมายเหตุเขียนโดยผู้พัฒนา ยังไม่มีใครตรวจ**',
+    'รายการคำมาจากรายการ JLPT N5 ของ Jonathan Waller · คำอ่านและคันจิตรวจกับพจนานุกรม JMdict',
+    '**ความหมายภาษาไทยและหมายเหตุเขียนโดยผู้พัฒนา ยังไม่มีใครตรวจ**',
     '— ช่วยดูว่าความหมายถูก เหมาะกับผู้เริ่มต้น และหมายเหตุ (วิธีใช้ / ความสุภาพ) ไม่ทำให้เข้าใจผิด',
-    'โรมาจิใช้แบบ Hepburn ที่สะกดตามคานะ (おう = ou) ยกเว้น は ที่เป็นคำช่วยในวลีทักทาย (こんにちは = konnichiwa)',
+    '- คันจิใส่เฉพาะคำที่ปกติเขียนด้วยคันจิ (คำที่ปกติเขียนด้วยคานะจะเว้นไว้)',
+    '- โรมาจิใช้แบบ Hepburn ที่สะกดตามคานะ (おう = ou, ー = สระซ้ำ, ん ก่อนสระ = n\') ยกเว้น は ที่เป็นคำช่วยในวลีทักทาย (こんにちは = konnichiwa)',
+    '- คำที่ความหมายเหมือนกัน (เช่น あに กับ おにいさん) ตั้งใจให้ความหมายไทยตรงกัน แล้วอธิบายความต่างในหมายเหตุ',
     '',
-    mdTable(rows.filter((r) => r[0] === deck.name)),
-    '',
+    ...deck.segments
+      .filter((s) => s.lessons.length)
+      .flatMap((s) => [`### ${s.title} (${s.name})`, '', mdTable(rows.filter((r) => r[0] === segmentSet(deck, s))), '']),
   ]),
 ].join('\n');
 

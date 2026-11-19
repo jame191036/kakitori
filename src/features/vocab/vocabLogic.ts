@@ -1,5 +1,14 @@
 import { vocabPath } from '../../app/paths';
-import { kanaOf, lessonCode, lessonWords, type VocabDeck, type VocabLesson, type VocabWord } from '../../data/vocab';
+import {
+  kanaOf,
+  lessonCode,
+  lessonWords,
+  type VocabDeck,
+  type VocabLesson,
+  type VocabSegment,
+  type VocabWord,
+} from '../../data/vocab';
+import { LOANWORD_SMALL_KANA } from '../../data/vocab/romaji';
 import type { ProgressData, ScriptProgress } from '../progress/progressLogic';
 import type { RouteStop, StationState } from '../progress/stations';
 
@@ -37,11 +46,39 @@ export function wordsPassed(deck: VocabDeck, progress: ScriptProgress | undefine
   return Object.values(deck.words).filter((w) => wordPassed(w, progress)).length;
 }
 
-/** บทเรียนเป็นจุดจอดบนแผนที่สาย (กดเพื่อเข้าบท) */
-export function lessonStops(deck: VocabDeck): RouteStop[] {
-  return deck.lessons.map((l) => {
+/** บทเรียนเป็นจุดจอดบนแผนที่สาย (กดเพื่อเข้าบท) — ไม่ระบุ lessons = ทุกบทของชุด */
+export function lessonStops(deck: VocabDeck, lessons: readonly VocabLesson[] = deck.lessons): RouteStop[] {
+  return lessons.map((l) => {
     const code = lessonCode(deck, l);
     return { code, name: l.name, reading: l.title, label: `${code} ${l.title}`, href: vocabPath(l.id) };
+  });
+}
+
+export interface SegmentSummary {
+  segment: VocabSegment;
+  /** สถานะของแต่ละบทในช่วง (ตามสถานะทั้งสาย: บทถัดไปมีได้บทเดียวทั้งสาย) */
+  states: StationState[];
+  passed: number;
+  /** ช่วงที่มีบทถัดไปอยู่ */
+  current: boolean;
+  /** เลขสถานีแรก–สุดท้าย เช่น "N01–N07" (ช่วงที่ยังไม่เปิด = '') */
+  range: string;
+}
+
+/** สรุปทุกช่วงของสาย (ใช้หน้าแผนที่สาย) */
+export function segmentSummaries(deck: VocabDeck, progress: ScriptProgress | undefined): SegmentSummary[] {
+  const all = lessonStates(deck, progress);
+  return deck.segments.map((segment) => {
+    const states = segment.lessons.map((l) => all[deck.lessons.indexOf(l)]!);
+    const first = segment.lessons[0];
+    const last = segment.lessons.at(-1);
+    return {
+      segment,
+      states,
+      passed: states.filter((s) => s === 'done').length,
+      current: states.includes('current'),
+      range: first && last ? `${lessonCode(deck, first)}–${lessonCode(deck, last)}` : '',
+    };
   });
 }
 
@@ -80,13 +117,33 @@ function shuffle<T>(items: readonly T[], rng: Rng): T[] {
   return a;
 }
 
-/** ตัวหลอก 3 คำ: ใช้คำในบทเดียวกันก่อน (หมวดเดียวกัน ยากกว่า) ไม่ให้ความหมายซ้ำกับคำตอบ */
+/** ความหมายย่อยของคำ: ตัดส่วนขยายในวงเล็บออก แล้วแยกตาม " / " เช่น "พี่ชาย (ของเรา)" → ["พี่ชาย"] */
+export function meaningKeys(thai: string): string[] {
+  return thai
+    .replace(/\([^)]*\)/g, '')
+    .split('/')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/** ความหมายซ้อนกันไหม (ใช้กันคำพ้องความหมายมาเป็นตัวหลอก เช่น あに กับ おにいさん) */
+export function meaningsOverlap(a: VocabWord, b: VocabWord): boolean {
+  const keys = new Set(meaningKeys(a.thai));
+  return meaningKeys(b.thai).some((k) => keys.has(k));
+}
+
+/** ตัวหลอก 3 คำ: ใช้คำในบทเดียวกันก่อน (หมวดเดียวกัน ยากกว่า) ไม่ให้ความหมายซ้อนกับคำตอบ */
 function choicesFor(word: VocabWord, deck: VocabDeck, lesson: VocabLesson, rng: Rng): VocabWord[] {
-  const pool = [
-    ...shuffle(lessonWords(deck, lesson), rng),
-    ...shuffle(Object.values(deck.words), rng),
-  ].filter((w, i, arr) => w.id !== word.id && w.thai !== word.thai && arr.findIndex((x) => x.id === w.id) === i);
-  return shuffle([word, ...pool.slice(0, 3)], rng);
+  const pool = [...shuffle(lessonWords(deck, lesson), rng), ...shuffle(Object.values(deck.words), rng)].filter(
+    (w, i, arr) => w.id !== word.id && !meaningsOverlap(w, word) && arr.findIndex((x) => x.id === w.id) === i,
+  );
+  const picked: VocabWord[] = [];
+  for (const w of pool) {
+    if (picked.length === 3) break;
+    // ตัวหลอกด้วยกันเองก็ต้องไม่ซ้อนความหมาย ไม่งั้นข้อ "ดูคำ → เลือกความหมาย" จะมีตัวเลือกคล้ายกัน 2 ตัว
+    if (!picked.some((p) => meaningsOverlap(p, w))) picked.push(w);
+  }
+  return shuffle([word, ...picked], rng);
 }
 
 const isKatakana = (ch: string) => ch >= '゠' && ch <= 'ヿ';
@@ -105,9 +162,13 @@ function tilesFor(word: VocabWord, deck: VocabDeck, rng: Rng): string[] {
   return shuffle([...own, ...shuffle(others, rng).slice(0, 2)], rng);
 }
 
-/** เรียงได้ถ้าไม่ยาวเกินไป · เขียนได้ถ้าสั้น (เขียนทีละตัวบนกระดาน) */
+/**
+ * เรียงได้ถ้าไม่ยาวเกินไป · เขียนได้ถ้าสั้น (เขียนทีละตัวบนกระดาน)
+ * และไม่มีตัวเล็กของคำทับศัพท์ (ォ ฯลฯ) ซึ่งยังไม่มีข้อมูลลำดับขีด
+ */
 export const canArrange = (w: VocabWord) => kanaOf(w).length >= 2 && kanaOf(w).length <= 6;
-export const canWrite = (w: VocabWord) => kanaOf(w).length <= 4;
+export const canWrite = (w: VocabWord) =>
+  kanaOf(w).length <= 4 && !kanaOf(w).some((ch) => LOANWORD_SMALL_KANA.includes(ch));
 
 function make(type: VocabQType, word: VocabWord, deck: VocabDeck, lesson: VocabLesson, rng: Rng): VocabQuestion {
   return {

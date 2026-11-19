@@ -1,12 +1,20 @@
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router';
 import { vocabPath } from '../app/paths';
 import { RouteMap } from '../components/train/RouteMap';
 import { StampBook } from '../components/train/StampBook';
-import { lessonCode, lessonWords } from '../data/vocab';
+import { lessonCode, lessonWords, type VocabDeck, type VocabLesson } from '../data/vocab';
 import { N5_DECK } from '../data/vocab/n5';
 import { progressStore } from '../features/progress/progressStore';
-import { deckProgress, lessonStates, lessonStops, nextLesson, wordsPassed } from '../features/vocab/vocabLogic';
+import type { StationState } from '../features/progress/stations';
+import {
+  deckProgress,
+  lessonStates,
+  lessonStops,
+  nextLesson,
+  segmentSummaries,
+  wordsPassed,
+} from '../features/vocab/vocabLogic';
 import { cx } from '../lib/cx';
 import { useStore } from '../lib/persistentStore';
 import { tone } from '../lib/tone';
@@ -14,15 +22,22 @@ import styles from './VocabLinePage.module.css';
 
 const STATE_TEXT = { done: 'ผ่านแล้ว', current: 'บทถัดไป', todo: 'ยังไม่ถึง' } as const;
 
-/** สายคำศัพท์ N5: แผนที่บท (สถานี) + การ์ดบทเรียน + ตราสถานี */
+/**
+ * สายคำศัพท์ N5: แบ่งเป็นช่วง (区間) ตามหัวข้อ — ช่วงที่มีบทถัดไปเปิดกางไว้ (แผนที่ช่วง + การ์ดบท)
+ * ช่วงอื่นพับไว้ ช่วงที่ยังไม่เปิดเป็น 工事中 · ท้ายหน้าเป็นสมุดตราของทุกบท
+ */
 export default function VocabLinePage() {
   const deck = N5_DECK;
   const progress = deckProgress(deck, useStore(progressStore));
   const states = lessonStates(deck, progress);
-  const stops = lessonStops(deck);
   const next = nextLesson(deck, progress);
+  const summaries = segmentSummaries(deck, progress);
+  // ช่วงที่เปิดแล้วอยู่หน้าเสมอ (เปิดต่อท้ายทีละช่วง) → แยกเป็น 2 กลุ่มได้โดยเลขช่วงไม่สลับกัน
+  const open = summaries.filter((s) => s.segment.lessons.length > 0);
+  const soon = summaries.filter((s) => s.segment.lessons.length === 0);
   const passedLessons = states.filter((s) => s === 'done').length;
   const totalWords = Object.keys(deck.words).length;
+  const openCount = open.length;
 
   return (
     <div className={cx('container tone', styles.page)} style={tone('n5')}>
@@ -37,7 +52,8 @@ export default function VocabLinePage() {
           </p>
           <h1 className={styles.h1}>สายคำศัพท์ N5</h1>
           <p className={styles.muted}>
-            คำศัพท์พื้นฐานระดับ JLPT N5 แบ่งเป็นบทตามหัวข้อ บทละประมาณ 8 คำ — เรียน ฝึก แล้วทดสอบให้ผ่านทีละสถานี
+            คำศัพท์พื้นฐานระดับ JLPT N5 แบ่งเป็นช่วงตามหัวข้อ ช่วงละหลายบท บทละประมาณ 8 คำ — เรียน ฝึก
+            แล้วทดสอบให้ผ่านทีละสถานี
           </p>
           <p className={styles.stats}>
             ผ่านแล้ว {passedLessons} จาก {deck.lessons.length} บท · ตอบถูกแล้ว {wordsPassed(deck, progress)} จาก{' '}
@@ -46,60 +62,140 @@ export default function VocabLinePage() {
         </div>
       </header>
 
-      <p className={styles.notice}>
-        ตอนนี้มี {deck.lessons.length} บทแรก ({totalWords} คำ) ให้ลองใช้ก่อน — กำลังทยอยเพิ่มจนครบคำศัพท์ N5
-      </p>
+      {openCount < deck.segments.length && (
+        <p className={styles.notice}>
+          เปิดแล้ว {openCount} จาก {deck.segments.length} ช่วง — ช่วงที่เหลือกำลังทยอยเพิ่มจนครบคำศัพท์ N5 (ประมาณ 670
+          คำ)
+        </p>
+      )}
 
-      <section className={styles.routeCard} aria-labelledby="route-title">
-        <div className={styles.routeHead}>
-          <h2 id="route-title" className={styles.h2}>
-            <span className={cx('kana', styles.accentJa)}>路線図</span> แผนที่สาย
-          </h2>
-          {next ? (
-            <Link to={vocabPath(next.id)} className="btn btn-primary">
-              เรียนบทถัดไป: {next.title} <ArrowRight size={18} strokeWidth={2} aria-hidden />
-            </Link>
-          ) : (
-            <p className={styles.allDone}>
-              <span className="kana">終点</span> ผ่านครบทุกบทแล้ว
+      <section className={styles.nextBar} aria-label="บทถัดไป">
+        {next ? (
+          <>
+            <p className={styles.nextText}>
+              <span className={cx('kana', styles.eyebrow)}>次は</span>
+              <span className={styles.nextCode}>{lessonCode(deck, next)}</span>
+              <span className={styles.nextTitle}>{next.title}</span>
             </p>
-          )}
-        </div>
-        <RouteMap stops={stops} states={states} scroll minStop={120} />
+            <Link to={vocabPath(next.id)} className="btn btn-primary">
+              เรียนบทถัดไป <ArrowRight size={18} strokeWidth={2} aria-hidden />
+            </Link>
+          </>
+        ) : (
+          <p className={styles.allDone}>
+            <span className="kana">終点</span> ผ่านครบทุกบทที่เปิดแล้ว
+          </p>
+        )}
       </section>
 
-      <h2 className={styles.sectionTitle}>บทเรียน</h2>
-      <ul className={styles.lessons}>
-        {deck.lessons.map((lesson, i) => {
-          const state = states[i]!;
+      <h2 className={styles.sectionTitle}>
+        <span className={cx('kana', styles.accentJa)}>区間</span> ช่วงของสาย
+      </h2>
+      <ol className={styles.segments}>
+        {open.map(({ segment, states: segStates, passed, current, range }, i) => {
+          const total = segment.lessons.length;
+          const done = passed === total;
           return (
-            <li key={lesson.id}>
-              <Link to={vocabPath(lesson.id)} className={cx(styles.lesson, styles[state])}>
-                <span className={styles.lessonCode}>{lessonCode(deck, lesson)}</span>
-                <span className={styles.lessonText}>
-                  <span className={cx('kana', styles.lessonJa)} lang="ja">
-                    {lesson.name}
+            <li key={segment.id}>
+              <details className={cx(styles.segment, current && styles.segCurrent)} open={current}>
+                <summary className={styles.segHead}>
+                  <span className={cx(styles.segNo, done && styles.segNoDone)}>{i + 1}</span>
+                  <span className={styles.segText}>
+                    <span className={cx('kana', styles.segJa)} lang="ja">
+                      {segment.name}
+                    </span>
+                    <span className={styles.segTitle}>{segment.title}</span>
+                    <span className={styles.segMeta}>
+                      {range} · {total} บท
+                    </span>
                   </span>
-                  <span className={styles.lessonTitle}>{lesson.title}</span>
-                  <span className={cx('kana', styles.preview)} lang="ja">
-                    {lessonWords(deck, lesson)
-                      .slice(0, 4)
-                      .map((w) => w.kana)
-                      .join('・')}
-                    {lesson.words.length > 4 && ' …'}
+                  <span className={styles.segProgress}>
+                    <span className={styles.segCount}>
+                      {passed}/{total}
+                    </span>
+                    <span className={styles.segBar} aria-hidden>
+                      <span style={{ width: `${(passed / total) * 100}%` }} />
+                    </span>
                   </span>
-                </span>
-                <span className={styles.state}>{STATE_TEXT[state]}</span>
-              </Link>
+                  <ChevronDown className={styles.chev} size={20} strokeWidth={2} aria-hidden />
+                </summary>
+                <div className={styles.segBody}>
+                  <RouteMap stops={lessonStops(deck, segment.lessons)} states={segStates} scroll minStop={120} />
+                  <LessonCards deck={deck} lessons={segment.lessons} states={segStates} />
+                </div>
+              </details>
             </li>
           );
         })}
-      </ul>
+      </ol>
+
+      {soon.length > 0 && (
+        <section className={styles.soonBlock} aria-labelledby="soon-title">
+          <p id="soon-title" className={styles.soonHead}>
+            <span className={styles.koji}>
+              <span className="kana">工事中</span> กำลังสร้าง
+            </span>
+            อีก {soon.length} ช่วง
+          </p>
+          <ol className={styles.soonGrid}>
+            {soon.map(({ segment }, i) => (
+              <li key={segment.id} className={styles.soonItem}>
+                <span className={styles.segNo}>{open.length + i + 1}</span>
+                <span className={styles.segText}>
+                  <span className={cx('kana', styles.segJa)} lang="ja">
+                    {segment.name}
+                  </span>
+                  <span className={styles.soonTitle}>{segment.title}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
 
       <h2 className={styles.sectionTitle}>
         <span className={cx('kana', styles.accentJa)}>駅スタンプ</span> ตราสถานีของฉัน
       </h2>
-      <StampBook stops={stops} states={states} />
+      <StampBook stops={lessonStops(deck)} states={states} />
     </div>
+  );
+}
+
+function LessonCards({
+  deck,
+  lessons,
+  states,
+}: {
+  deck: VocabDeck;
+  lessons: readonly VocabLesson[];
+  states: readonly StationState[];
+}) {
+  return (
+    <ul className={styles.lessons}>
+      {lessons.map((lesson, i) => {
+        const state = states[i]!;
+        return (
+          <li key={lesson.id}>
+            <Link to={vocabPath(lesson.id)} className={cx(styles.lesson, styles[state])}>
+              <span className={styles.lessonCode}>{lessonCode(deck, lesson)}</span>
+              <span className={styles.lessonText}>
+                <span className={cx('kana', styles.lessonJa)} lang="ja">
+                  {lesson.name}
+                </span>
+                <span className={styles.lessonTitle}>{lesson.title}</span>
+                <span className={cx('kana', styles.preview)} lang="ja">
+                  {lessonWords(deck, lesson)
+                    .slice(0, 4)
+                    .map((w) => w.kana)
+                    .join('・')}
+                  {lesson.words.length > 4 && ' …'}
+                </span>
+              </span>
+              <span className={styles.state}>{STATE_TEXT[state]}</span>
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
