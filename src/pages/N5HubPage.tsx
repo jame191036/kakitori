@@ -1,6 +1,7 @@
 import { ArrowRight, Lightbulb } from 'lucide-react';
 import { Link } from 'react-router';
-import { kanjiPath, scriptPath, vocabPath } from '../app/paths';
+import { grammarPath, kanjiPath, scriptPath, vocabPath } from '../app/paths';
+import { GRAMMAR_N5 } from '../data/grammar/n5';
 import { KANJI_N5 } from '../data/kanji/n5';
 import type { LineDeck } from '../data/line';
 import { scripts } from '../data/scripts';
@@ -14,11 +15,8 @@ import { useStore } from '../lib/persistentStore';
 import { tone } from '../lib/tone';
 import styles from './N5HubPage.module.css';
 
-/** สายที่ยังไม่เปิด (แสดงเป็น 工事中) */
-const COMING = [{ glyph: '文', name: 'ไวยากรณ์ N5', desc: 'รูปประโยคพื้นฐาน คำช่วย และการผันคำกริยา' }];
-
 /**
- * หมวด JLPT N5 — สายคำศัพท์และสายคันจิ · ไวยากรณ์ตามมา
+ * หมวด JLPT N5 — สายคำศัพท์ สายคันจิ และสายไวยากรณ์ (ไวยากรณ์ทยอยเปิดทีละช่วง)
  * (ไม่มีรายการเนื้อหา N5 อย่างเป็นทางการ จำนวนคำ/คันจิเป็นตัวเลขโดยประมาณที่ใช้กันทั่วไป)
  */
 export default function N5HubPage() {
@@ -66,22 +64,15 @@ export default function N5HubPage() {
           unit="ตัว"
           href={kanjiPath()}
         />
-        {COMING.map((c) => (
-          <li key={c.name} className="tone" style={tone('n5')}>
-            <div className={cx(styles.line, styles.soon)} aria-disabled="true">
-              <span className={cx('kana', styles.badge)} lang="ja">
-                {c.glyph}
-              </span>
-              <span className={styles.info}>
-                <span className={styles.name}>{c.name}</span>
-                <span className={styles.desc}>{c.desc}</span>
-              </span>
-              <span className={styles.koji}>
-                <span className="kana">工事中</span> กำลังสร้าง
-              </span>
-            </div>
-          </li>
-        ))}
+        <LiveLine
+          deck={GRAMMAR_N5}
+          data={data}
+          glyph="文"
+          name="ไวยากรณ์ N5"
+          desc="รูปประโยค คำช่วย และการผันคำกริยา"
+          unit="รูป"
+          href={grammarPath()}
+        />
       </ul>
     </div>
   );

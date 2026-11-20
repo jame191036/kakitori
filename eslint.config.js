@@ -21,6 +21,25 @@ export default defineConfig([
     },
   },
   {
+    // ไฟล์ในก้อนหลัก (โหลดตอนเปิดหน้าแรก): ห้าม import ข้อมูลสาย N5 ตรงๆ — ใช้ useLineDecks / loadLineDecks
+    // (src/data/lineDecks.ts) ข้อมูลจะได้โหลดแยกเฉพาะตอนต้องใช้
+    files: ['src/main.tsx', 'src/app/**/*.{ts,tsx}', 'src/components/**/*.{ts,tsx}', 'src/pages/HomePage.tsx'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '/data/(vocab|kanji|grammar)/n5(/|$)|/data/vocab$',
+              allowTypeImports: true,
+              message: 'ข้อมูลสาย N5 ต้องโหลดแยก — ใช้ useLineDecks / loadLineDecks จาก src/data/lineDecks.ts',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['scripts/**/*.mjs', '*.config.{js,ts}'],
     languageOptions: { globals: globals.node },
   },

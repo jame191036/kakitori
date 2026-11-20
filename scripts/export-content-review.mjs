@@ -17,7 +17,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ExcelJS from 'exceljs';
 import { createServer } from 'vite';
-import { KANA_PRIORITY, KANJI_PRIORITY, VOCAB_PRIORITY } from './content-review-priority.mjs';
+import { GRAMMAR_PRIORITY, KANA_PRIORITY, KANJI_PRIORITY, VOCAB_PRIORITY } from './content-review-priority.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT_DIR = join(ROOT, 'docs');
@@ -37,11 +37,13 @@ const { MINIMAL_PAIRS } = await server.ssrLoadModule('/src/data/minimalPairs.ts'
 const { vocabDecks, lessonCode, WORD_KIND_LABEL } = await server.ssrLoadModule('/src/data/vocab/index.ts');
 const { N5_DECK } = await server.ssrLoadModule('/src/data/vocab/n5/index.ts');
 const { KANJI_N5 } = await server.ssrLoadModule('/src/data/kanji/n5/index.ts');
+const { GRAMMAR_N5 } = await server.ssrLoadModule('/src/data/grammar/n5/index.ts');
+const { parseInline, plainOf } = await server.ssrLoadModule('/src/data/grammar/sentence.ts');
 await server.close();
 
 // จุดที่ควรให้ผู้ตรวจดูก่อน — ตรวจว่า id ในรายการมีอยู่จริง (กันพิมพ์ผิดแล้วหายเงียบ)
 const usedPriority = new Set();
-const PRIORITY_TABLES = { kana: KANA_PRIORITY, vocab: VOCAB_PRIORITY, kanji: KANJI_PRIORITY };
+const PRIORITY_TABLES = { kana: KANA_PRIORITY, vocab: VOCAB_PRIORITY, kanji: KANJI_PRIORITY, grammar: GRAMMAR_PRIORITY };
 const priorityOf = (tag, key) => {
   const reason = PRIORITY_TABLES[tag][key];
   if (reason) usedPriority.add(`${tag}:${key}`);
@@ -179,6 +181,52 @@ for (const segment of KANJI_N5.segments) {
   }
 }
 
+// ไวยากรณ์: 1 แถวต่อรูป (รูปประโยค ความหมาย คำอธิบาย) + 1 แถวต่อประโยคตัวอย่าง
+// แถวประโยค: "คำตัวอย่าง" = ประโยคแบบเขียนจริง（คานะ）· "หมายเหตุ" = ส่วนไวยากรณ์ + ตัวเลือกผิดในข้อเติมคำ
+const grammarSet = (segment) => `${GRAMMAR_N5.name} · ${segment.title}`;
+for (const segment of GRAMMAR_N5.segments) {
+  for (const lesson of segment.lessons) {
+    for (const id of lesson.words) {
+      const p = GRAMMAR_N5.words[id];
+      const where = `${lessonCode(GRAMMAR_N5, lesson)} ${lesson.title}`;
+      rows.push(tag([
+        grammarSet(segment),
+        where,
+        p.pattern,
+        '',
+        '',
+        [...p.explain, p.note].filter(Boolean).join(' · '),
+        '',
+        '',
+        p.title,
+        '',
+        priorityOf('grammar', id),
+        '',
+        '',
+      ], `${GRAMMAR_N5.id}:${id}`, GRAMMAR_N5.name));
+      p.examples.forEach((ex, i) => {
+        const s = ex.sentence;
+        const wrong = ex.wrong.map((w) => plainOf(parseInline(w))).join(' / ');
+        rows.push(tag([
+          grammarSet(segment),
+          where,
+          '',
+          '',
+          '',
+          `ส่วนไวยากรณ์: ${s.target} · ตัวเลือกผิด: ${wrong}${ex.arrange ? ' · ใช้ทำข้อเรียงประโยค' : ''}`,
+          `${s.plain}${s.end}（${s.kana}）`,
+          '',
+          ex.thai,
+          '',
+          '',
+          '',
+          '',
+        ], `${GRAMMAR_N5.id}:${id}#${i + 1}`, GRAMMAR_N5.name));
+      });
+    }
+  }
+}
+
 const missing = Object.entries(PRIORITY_TABLES)
   .flatMap(([tag, table]) => Object.keys(table).map((k) => `${tag}:${k}`))
   .filter((k) => !usedPriority.has(k));
@@ -211,6 +259,14 @@ const VOCAB_NOTES = [
 ];
 const KANJI_INTRO =
   'รายการคันจิ จำนวนขีด และคำอ่านจาก KANJIDIC2 · ลำดับขีดจาก KanjiVG · **ความหมายไทยและหมายเหตุเขียนโดยผู้พัฒนา ยังไม่มีใครตรวจ**';
+const GRAMMAR_INTRO =
+  'รายการรูปไวยากรณ์ตามที่ตำราเรียนระดับต้นทั่วไปสอน (JLPT ไม่มีรายการทางการ) · **คำอธิบาย ประโยคตัวอย่าง และคำแปลเขียนโดยผู้พัฒนา ยังไม่มีใครตรวจ** — กำลังทยอยเปิดทีละช่วง';
+const GRAMMAR_NOTES = [
+  'แต่ละรูปมี 1 แถวคำอธิบาย ตามด้วยแถวประโยคตัวอย่าง — ช่วยดูว่าคำอธิบายถูก ประโยคเป็นธรรมชาติ และคำแปลตรง',
+  'ข้อเติมคำ: ผู้เรียนเห็นประโยคที่เว้น "ส่วนไวยากรณ์" ไว้ พร้อมคำแปลไทยเป็นคำใบ้ แล้วเลือกจาก 4 ตัวเลือก — ช่วยดูว่าตัวเลือกผิดผิดจริงทุกตัว (ไม่มีตัวไหนถูกได้อีก)',
+  'ประโยคที่เขียนว่า "ใช้ทำข้อเรียงประโยค" ผู้เรียนต้องเรียงชิ้นประโยคตามคำแปล — ช่วยดูว่าเรียงได้แบบเดียวจริง',
+  'คันจิในประโยคใช้เฉพาะคันจิ N5 พร้อมคำอ่านตัวเล็กด้านบน คำที่มีคันจินอก N5 เขียนเป็นคานะ (แบบข้อสอบ N5)',
+];
 const KANJI_NOTES = [
   'คำอ่านเขียนเป็นฮิรางานะ (อง = เสียงจีน · คุง = เสียงญี่ปุ่น) แสดงเฉพาะคำอ่านที่ใช้ในคำศัพท์ N5 ของเว็บ — คำอ่านที่เสียงเปลี่ยนในคำเขียนคู่กัน เช่น ひ・び',
   'ช่วยดูว่าความหมายถูก คำอ่านจับคู่กับคำตัวอย่างถูก และคำที่ทำเครื่องหมาย [อ่านพิเศษ] อ่านพิเศษทั้งคำจริง',
@@ -257,7 +313,7 @@ const md = [
   '',
   '## สำหรับผู้ช่วยตรวจ',
   '',
-  'ขอบคุณที่ช่วยตรวจครับ เว็บนี้สอนคนไทยที่ไม่รู้ภาษาญี่ปุ่นเลยให้อ่านเขียนฮิรางานะ คาตาคานะ คำศัพท์ และคันจิ JLPT N5',
+  'ขอบคุณที่ช่วยตรวจครับ เว็บนี้สอนคนไทยที่ไม่รู้ภาษาญี่ปุ่นเลยให้อ่านเขียนฮิรางานะ คาตาคานะ คำศัพท์ คันจิ และไวยากรณ์ JLPT N5',
   'รบกวนช่วยดูว่าข้อมูลแต่ละแถวถูกต้องและเหมาะกับผู้เริ่มต้นไหม แล้วใส่ ✓ หรือ ✗ ในคอลัมน์ "ถูกต้อง?" พร้อมความเห็น',
   '(ไฟล์สำหรับกรอกผลคือ `content-review.xlsx` — เปิดใน Excel / Google Sheets ได้ มีแท็บวิธีตรวจและแท็บแยกตามหมวด)',
   '',
@@ -297,6 +353,14 @@ const md = [
   ...KANJI_N5.segments
     .filter((s) => s.lessons.length)
     .flatMap((s) => [`### ${s.title} (${s.name})`, '', mdTable(rows.filter((r) => r[0] === kanjiSet(s))), '']),
+  `## ${GRAMMAR_N5.name} — ${Object.keys(GRAMMAR_N5.words).length} รูป (${GRAMMAR_N5.lessons.length} บท · เปิดแล้ว ${GRAMMAR_N5.segments.filter((s) => s.lessons.length).length} จาก ${GRAMMAR_N5.segments.length} ช่วง)`,
+  '',
+  GRAMMAR_INTRO,
+  ...GRAMMAR_NOTES.map((n) => `- ${n}`),
+  '',
+  ...GRAMMAR_N5.segments
+    .filter((s) => s.lessons.length)
+    .flatMap((s) => [`### ${s.title} (${s.name})`, '', mdTable(rows.filter((r) => r[0] === grammarSet(s))), '']),
 ].join('\n');
 
 // ── Excel สำหรับส่งให้ผู้ตรวจ ──
@@ -368,6 +432,18 @@ const SHEETS = [
       ['คำตัวอย่าง', at(6), 46],
     ],
   },
+  {
+    name: GRAMMAR_N5.name,
+    match: (r) => r.sheet === GRAMMAR_N5.name,
+    cols: [
+      ['ช่วง', segmentOfSet, 20],
+      ['บท', at(1), 22],
+      ['รูปไวยากรณ์', at(2), 24],
+      ['ความหมาย / คำแปล', at(8), 30],
+      ['ประโยคตัวอย่าง（คำอ่าน）', at(6), 44],
+      ['คำอธิบาย / ส่วนไวยากรณ์และตัวเลือกผิด', at(5), 56],
+    ],
+  },
 ];
 // ทุกแท็บหมวดมีคอลัมน์ "ควรดูก่อน" (เหตุผลเต็ม) ยกเว้นคู่คำซึ่งไม่มีจุดที่ทำเครื่องหมาย
 for (const s of SHEETS) if (s.name !== PAIRS_SET) s.cols.push(['ควรดูก่อน', at(PRIORITY_COL), 30]);
@@ -435,8 +511,8 @@ wb.creator = 'kakitori';
   });
   gap();
   line(
-    'ขอบคุณที่ช่วยตรวจครับ kakitori เป็นเว็บฟรีสอนคนไทยที่ไม่รู้ภาษาญี่ปุ่นเลย ให้อ่านเขียนฮิรางานะ คาตาคานะ คำศัพท์ และคันจิ JLPT N5 ' +
-      'เนื้อหาภาษาไทยทั้งหมด (คำอ่าน ความหมาย หมายเหตุ) ผู้พัฒนาเขียนเอง ยังไม่เคยมีผู้รู้ภาษาญี่ปุ่นตรวจ',
+    'ขอบคุณที่ช่วยตรวจครับ kakitori เป็นเว็บฟรีสอนคนไทยที่ไม่รู้ภาษาญี่ปุ่นเลย ให้อ่านเขียนฮิรางานะ คาตาคานะ คำศัพท์ คันจิ และไวยากรณ์ JLPT N5 ' +
+      'เนื้อหาภาษาไทยทั้งหมด (คำอ่าน ความหมาย หมายเหตุ) และประโยคตัวอย่างไวยากรณ์ ผู้พัฒนาเขียนเอง ยังไม่เคยมีผู้รู้ภาษาญี่ปุ่นตรวจ',
   );
   gap();
   line('วิธีกรอก', { size: 13, bold: true });
@@ -491,6 +567,10 @@ wb.creator = 'kakitori';
   line('คันจิ N5', { bold: true });
   line(KANJI_INTRO);
   for (const note of KANJI_NOTES) line(`• ${note}`);
+  gap();
+  line('ไวยากรณ์ N5', { bold: true });
+  line(GRAMMAR_INTRO);
+  for (const note of GRAMMAR_NOTES) line(`• ${note}`);
   gap();
   line('คู่คำฝึกฟัง', { bold: true });
   line(PAIRS_NOTE);

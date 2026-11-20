@@ -17,10 +17,9 @@ import { getScript } from '../data/scripts';
 import { updateSettings, useSettings, type ThemePref } from '../features/settings/settings';
 import { SITE_NAME } from './config';
 import { GoalToast } from './GoalToast';
-import { KANJI_N5 } from '../data/kanji/n5';
 import { getLesson } from '../data/line';
-import { N5_DECK } from '../data/vocab/n5';
-import { KANA_ROOT, kanjiPath, N5_ROOT, REVIEW_ROOT, scriptPath, vocabPath } from './paths';
+import { useLineDecks, type LineDecks } from '../data/lineDecks';
+import { grammarPath, KANA_ROOT, kanjiPath, N5_ROOT, REVIEW_ROOT, scriptPath, vocabPath } from './paths';
 import { UpdatePrompt } from './UpdatePrompt';
 import { useApplyTheme } from './useTheme';
 import styles from './AppLayout.module.css';
@@ -39,8 +38,25 @@ interface Crumb {
   to?: string;
 }
 
-/** เส้นทางของหน้านี้ เช่น หน้าแรก › ตัวอักษร › ฮิรางานะ › คัดตัวอักษร (หน้าแรกเองไม่มี) */
-function crumbsFor(pathname: string): Crumb[] {
+/** สายในหมวด N5: ส่วนของ URL → ชื่อในเส้นทาง */
+const N5_LINES = [
+  { seg: 'vocab', label: 'คำศัพท์', deck: 'vocab', href: vocabPath },
+  { seg: 'kanji', label: 'คันจิ', deck: 'kanji', href: kanjiPath },
+  { seg: 'grammar', label: 'ไวยากรณ์', deck: 'grammar', href: grammarPath },
+] as const;
+
+/** หน้าบทเรียนของสาย N5 (ต้องใช้ข้อมูลสายเพื่อแสดงชื่อบท) */
+const n5LessonMatch = (pathname: string) =>
+  N5_LINES.some((l) => {
+    const rest = matchPath(`${N5_ROOT}/${l.seg}/*`, pathname)?.params['*'];
+    return !!rest && rest !== 'review';
+  });
+
+/**
+ * เส้นทางของหน้านี้ เช่น หน้าแรก › ตัวอักษร › ฮิรางานะ › คัดตัวอักษร (หน้าแรกเองไม่มี)
+ * decks = ข้อมูลสาย N5 (โหลดแยก) — ระหว่างโหลด ชื่อบทแสดงเป็น …
+ */
+function crumbsFor(pathname: string, decks: LineDecks | null): Crumb[] {
   const home: Crumb = { label: 'หน้าแรก', to: '/' };
   const kana: Crumb = { label: 'ตัวอักษร', to: KANA_ROOT };
   const notFound: Crumb = { label: 'ไม่พบหน้านี้' };
@@ -56,32 +72,24 @@ function crumbsFor(pathname: string): Crumb[] {
       : [home, kana, { label: pack.name }];
   }
   if (pathname === N5_ROOT) return [home, { label: 'JLPT N5' }];
-  const v = matchPath(`${N5_ROOT}/vocab/*`, pathname);
-  if (v) {
+  for (const line of N5_LINES) {
+    const m = matchPath(`${N5_ROOT}/${line.seg}/*`, pathname);
+    if (!m) continue;
     const n5: Crumb = { label: 'JLPT N5', to: N5_ROOT };
-    const lesson = getLesson(N5_DECK, v.params['*']);
-    if (!v.params['*']) return [home, n5, { label: 'คำศัพท์' }];
-    if (v.params['*'] === 'review') return [home, n5, { label: 'คำศัพท์', to: vocabPath() }, { label: 'ทบทวน' }];
-    return lesson
-      ? [home, n5, { label: 'คำศัพท์', to: vocabPath() }, { label: lesson.title }]
-      : [home, n5, { label: 'คำศัพท์', to: vocabPath() }, notFound];
-  }
-  const kj = matchPath(`${N5_ROOT}/kanji/*`, pathname);
-  if (kj) {
-    const n5: Crumb = { label: 'JLPT N5', to: N5_ROOT };
-    if (!kj.params['*']) return [home, n5, { label: 'คันจิ' }];
-    if (kj.params['*'] === 'review') return [home, n5, { label: 'คันจิ', to: kanjiPath() }, { label: 'ทบทวน' }];
-    const lesson = getLesson(KANJI_N5, kj.params['*']);
-    return lesson
-      ? [home, n5, { label: 'คันจิ', to: kanjiPath() }, { label: lesson.title }]
-      : [home, n5, { label: 'คันจิ', to: kanjiPath() }, notFound];
+    const rest = m.params['*'];
+    if (!rest) return [home, n5, { label: line.label }];
+    const up: Crumb = { label: line.label, to: line.href() };
+    if (rest === 'review') return [home, n5, up, { label: 'ทบทวน' }];
+    if (!decks) return [home, n5, up, { label: '…' }];
+    const lesson = getLesson(decks[line.deck], rest);
+    return [home, n5, up, lesson ? { label: lesson.title } : notFound];
   }
   if (pathname === '/start') return [home, kana, { label: 'เริ่มต้นที่นี่' }];
   if (pathname === REVIEW_ROOT) return [home, { label: 'ทบทวน' }];
   if (pathname === '/about') return [home, { label: 'เกี่ยวกับ' }];
   // ลิงก์แบบเก่า (/hiragana/...) กำลังถูกพาไป /kana/... — ใช้เส้นทางของหน้าใหม่เลย ไม่ให้ "ไม่พบหน้านี้" แวบขึ้นมา
   const legacy = matchPath('/:script/*', pathname);
-  if (legacy && getScript(legacy.params.script)) return crumbsFor(`${KANA_ROOT}${pathname}`);
+  if (legacy && getScript(legacy.params.script)) return crumbsFor(`${KANA_ROOT}${pathname}`, decks);
   return [home, notFound];
 }
 
@@ -193,7 +201,9 @@ function PageLoading() {
 
 export function AppLayout() {
   const { pathname } = useLocation();
-  const crumbs = crumbsFor(pathname);
+  // ข้อมูลสาย N5 ใช้แค่แสดงชื่อบทในหน้าบทเรียน — หน้าอื่นไม่ต้องโหลด
+  const decks = useLineDecks(n5LessonMatch(pathname));
+  const crumbs = crumbsFor(pathname, decks);
   const { introSeen } = useSettings();
   const onStartPage = useMatch('/start') !== null;
   const showIntro = !introSeen && !onStartPage;

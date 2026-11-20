@@ -7,12 +7,13 @@
  *   /kana/:script             ชุดตัวอักษร — เมนูย่อย + ตาราง
  *   /kana/:script/practice/…  คัดตัวอักษร · /quiz แบบทดสอบ · /review ทบทวน · /worksheet พิมพ์แบบฝึก
  *   /review                   ทบทวน (รวมทุกชุด)
- *   /n5                       หมวด JLPT N5 — สายคำศัพท์ · สายคันจิ (ไวยากรณ์ภายหลัง)
+ *   /n5                       หมวด JLPT N5 — สายคำศัพท์ · สายคันจิ · สายไวยากรณ์
  *   /n5/vocab                 สายคำศัพท์ N5 — แผนที่บท + ตรา
  *   /n5/vocab/:lesson         บทเรียน: เรียน → ฝึก → ทดสอบ
  *   /n5/vocab/review          ทบทวนคำศัพท์ (คำที่ถึงรอบ · คำที่ผิดบ่อย) — ?start=due เริ่มทบทวนทันที
  *   /n5/kanji                 สายคันจิ N5 · /n5/kanji/:lesson บทเรียน: เรียน → ฝึกเขียน → ทดสอบ
  *   /n5/kanji/review          ทบทวนคันจิ (ตัวที่ถึงรอบ · ตัวที่ผิดบ่อย)
+ *   /n5/grammar               สายไวยากรณ์ N5 · /n5/grammar/:lesson บทเรียน · /n5/grammar/review ทบทวน
  * URL เดิม (/hiragana/…) ส่งต่อมาที่ /kana/hiragana/… ให้อัตโนมัติ
  */
 
@@ -38,6 +39,16 @@ export function vocabReviewPath(start?: 'due' | 'weak'): string {
 /** หน้าทบทวนคันจิ N5 — start = เริ่มทบทวนชุดนั้นทันที (ใช้จากการ์ด "วันนี้") */
 export function kanjiReviewPath(start?: 'due' | 'weak'): string {
   return `${kanjiPath()}/review${start ? `?start=${start}` : ''}`;
+}
+
+/** สายไวยากรณ์ N5 / บทเรียน เช่น grammarPath('g-desu') → /n5/grammar/g-desu */
+export function grammarPath(lessonId?: string): string {
+  return `${N5_ROOT}/grammar${lessonId ? `/${lessonId}` : ''}`;
+}
+
+/** หน้าทบทวนไวยากรณ์ N5 — start = เริ่มทบทวนชุดนั้นทันที (ใช้จากการ์ด "วันนี้") */
+export function grammarReviewPath(start?: 'due' | 'weak'): string {
+  return `${grammarPath()}/review${start ? `?start=${start}` : ''}`;
 }
 
 /** หน้าในชุดตัวอักษร เช่น scriptPath('hiragana', 'practice/ka') → /kana/hiragana/practice/ka */

@@ -1,8 +1,9 @@
 import { ArrowRight, RotateCcw } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { Link } from 'react-router';
-import { KANA_ROOT, kanjiReviewPath, N5_ROOT, scriptPath, vocabReviewPath } from '../app/paths';
+import { grammarReviewPath, KANA_ROOT, kanjiReviewPath, N5_ROOT, scriptPath, vocabReviewPath } from '../app/paths';
 import { TodayCard, type TodayLine } from '../components/TodayCard';
+import { GRAMMAR_N5 } from '../data/grammar/n5';
 import { KANJI_N5 } from '../data/kanji/n5';
 import type { LineDeck } from '../data/line';
 import { scriptList } from '../data/scripts';
@@ -26,7 +27,7 @@ interface LineCard {
   desc: string;
 }
 
-// 単語線 = สายคำศัพท์ · 漢字線 = สายคันจิ
+// 単語線 = สายคำศัพท์ · 漢字線 = สายคันจิ · 文法線 = สายไวยากรณ์
 const LINE_CARDS: readonly LineCard[] = [
   {
     deck: N5_DECK,
@@ -44,11 +45,20 @@ const LINE_CARDS: readonly LineCard[] = [
     title: 'ทบทวนคันจิ N5',
     desc: 'คันจิที่ถึงรอบ ตัวที่ผิดบ่อย และความคืบหน้าทั้งสาย',
   },
+  {
+    deck: GRAMMAR_N5,
+    href: grammarReviewPath(),
+    glyph: '文',
+    lineJa: '文法線',
+    title: 'ทบทวนไวยากรณ์ N5',
+    desc: 'รูปไวยากรณ์ที่ถึงรอบ รูปที่ผิดบ่อย และความคืบหน้าทั้งสาย',
+  },
 ];
 
 const TODAY_LINES: readonly TodayLine[] = [
   { deck: N5_DECK, unit: 'คำ', dueHref: vocabReviewPath('due') },
   { deck: KANJI_N5, unit: 'ตัว', dueHref: kanjiReviewPath('due') },
+  { deck: GRAMMAR_N5, unit: 'รูป', dueHref: grammarReviewPath('due') },
 ];
 
 /** ทบทวน (เมนูหลัก): วันนี้ (เป้า + รอบทบทวน) แล้วการ์ดทบทวนของแต่ละสาย */
@@ -63,7 +73,8 @@ export default function ReviewHubPage() {
       <header className={styles.head}>
         <h1 className={styles.h1}>ทบทวน</h1>
         <p className={styles.lead}>
-          ระบบนัดทบทวนตัวอักษร คำศัพท์ และคันจิที่ใกล้จะลืม และรวมที่ผิดบ่อยไว้ให้ฝึกซ้ำ — ทบทวนวันละนิดช่วยให้จำได้นาน
+          ระบบนัดทบทวนตัวอักษร คำศัพท์ คันจิ และไวยากรณ์ที่ใกล้จะลืม และรวมที่ผิดบ่อยไว้ให้ฝึกซ้ำ —
+          ทบทวนวันละนิดช่วยให้จำได้นาน
         </p>
       </header>
 

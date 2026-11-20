@@ -40,6 +40,8 @@ export interface Settings {
   introSeen: boolean;
   /** เป้ารายวัน (จำนวนครั้งที่ตอบ/เขียน) — ถึงเป้าแล้วนับเป็นวันที่ฝึกต่อเนื่อง */
   dailyGoal: number;
+  /** แสดงคำอ่านตัวเล็กเหนือคันจิ (furigana) ในประโยคไวยากรณ์ */
+  furigana: boolean;
 }
 
 export const SETTINGS_KEY = 'jp-learn:settings:v1';
@@ -74,6 +76,7 @@ const defaults: Settings = {
   quiz: {},
   introSeen: false,
   dailyGoal: DEFAULT_GOAL,
+  furigana: true,
 };
 
 function sanitizeQuizPrefs(raw: unknown): QuizPrefs {
@@ -105,6 +108,7 @@ function sanitize(raw: unknown): Settings {
     quiz,
     introSeen: raw.introSeen === true,
     dailyGoal: sanitizeGoal(raw.dailyGoal),
+    furigana: raw.furigana !== false,
   };
 }
 

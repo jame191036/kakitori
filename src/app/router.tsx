@@ -5,6 +5,9 @@ import { AppLayout } from './AppLayout';
 import { LegacyScriptRedirect } from './LegacyScriptRedirect';
 import {
   AboutPage,
+  GrammarLessonPage,
+  GrammarLinePage,
+  GrammarReviewPage,
   KanaHubPage,
   KanjiLessonPage,
   KanjiLinePage,
@@ -61,6 +64,9 @@ export const router = createBrowserRouter([
           { path: 'n5/vocab/:lessonId', element: <VocabLessonPage /> },
           { path: 'n5/kanji', element: <KanjiLinePage /> },
           { path: 'n5/kanji/review', element: <KanjiReviewPage /> },
+          { path: 'n5/grammar', element: <GrammarLinePage /> },
+          { path: 'n5/grammar/review', element: <GrammarReviewPage /> },
+          { path: 'n5/grammar/:lessonId', element: <GrammarLessonPage /> },
           { path: 'n5/kanji/:lessonId', element: <KanjiLessonPage /> },
           { path: ':script/*', element: <LegacyScriptRedirect /> },
           { path: '*', element: <NotFoundPage /> },

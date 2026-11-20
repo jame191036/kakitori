@@ -12,6 +12,18 @@
   gap: clamp(24px, 4vw, 64px);
 }
 
+/* ระหว่างโหลดข้อมูลสาย N5: กรอบป้ายเปล่าขนาดใกล้ป้ายจริง กันหน้ากระโดด */
+.heroLoading {
+  min-height: 300px;
+}
+
+.signGhost {
+  height: 220px;
+  border-radius: var(--radius-lg, 12px);
+  border: 2px dashed var(--border);
+  background: var(--surface);
+}
+
 .kicker {
   margin-bottom: 12px;
   color: var(--accent);
