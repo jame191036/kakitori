@@ -22,8 +22,10 @@ const SRC = join(ROOT, 'src');
 const FONT_DIR = join(SRC, 'assets', 'fonts');
 const CSS_FILE = join(SRC, 'styles', 'kanji-font.css');
 const CHARS_FILE = join(SRC, 'styles', 'kanjiFontChars.ts');
-// น้ำหนักปกติอย่างเดียว: คันจิตัวหนาในเว็บมีน้อย เบราว์เซอร์ทำตัวหนาให้เองได้ (ประหยัด ~140 KB)
-const WEIGHTS = [400];
+// ต้องมีทั้ง 2 น้ำหนัก: ข้อความญี่ปุ่น (.kana) เป็นตัวหนา 600 โดยค่าเริ่มต้น และ Klee One 600 ของคานะ
+// (src/styles/fonts.css) มีอยู่แล้ว — เบราว์เซอร์จึงไม่ทำตัวหนาจากไฟล์ 400 ให้ แต่ไปใช้ฟอนต์ในเครื่องแทน
+// แต่ละไฟล์โหลดเฉพาะเมื่อหน้านั้นมีคันจิในน้ำหนักนั้นจริง (unicode-range + font-weight)
+const WEIGHTS = [400, 600];
 // ขอ woff2 แบบเบราว์เซอร์ปัจจุบัน
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
 

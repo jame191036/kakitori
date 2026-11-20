@@ -10,7 +10,9 @@
 :root {
   color-scheme: light;
   --font-ui: 'Noto Sans Thai', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-kana: 'Klee One', 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif JP', serif;
+  /* ตัวสำรองเป็นฟอนต์ญี่ปุ่นของเครื่องก่อน serif ทั่วไป — ไม่งั้น Windows ที่ไม่มี Yu Mincho ไปได้ฟอนต์จีน (รูปคันจิต่างกัน) */
+  --font-kana: 'Klee One', 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif JP', 'Yu Gothic', 'Meiryo', 'Hiragino Sans',
+    'Noto Sans JP', serif;
 
   /* พื้น / การ์ด */
   --bg: #f4f0e6;
