@@ -1,13 +1,16 @@
-import { buildDeck, segment } from '../build';
+import { buildDeck } from '../build';
 import { ADJECTIVE } from './adjective';
 import { BASICS } from './basics';
 import { COMPARE } from './compare';
 import { INVITE } from './invite';
+import { MORE } from './more';
 import { PLACE } from './place';
+import { PLAIN } from './plain';
+import { TE_FORM } from './te-form';
 import { VERBS } from './verbs';
 
 /**
- * ไวยากรณ์ JLPT N5 — ประมาณ 75 รูป แบ่งเป็น 9 ช่วง (แผนทั้งสาย: docs/n5-grammar-plan.md)
+ * ไวยากรณ์ JLPT N5 — 77 รูป 30 บท 9 ช่วง (แผนและกติกาเนื้อหา: docs/n5-grammar-plan.md)
  *
  * - ไม่มีรายการไวยากรณ์ N5 อย่างเป็นทางการ — ใช้รายการตามที่ตำราเรียนระดับต้นทั่วไปสอน
  * - คำอธิบาย ประโยคตัวอย่าง และคำแปล เขียนโดยผู้พัฒนา (ผู้ใช้เลือกแล้ว) ใช้เฉพาะคำศัพท์ N5 ของเว็บ
@@ -22,7 +25,7 @@ export const GRAMMAR_N5 = buildDeck({ id: 'grammar-n5', progressKey: 'grammar-n5
   INVITE,
   ADJECTIVE,
   COMPARE,
-  segment('te-form', 'てけい', 'รูป て'),
-  segment('plain-form', 'ふつうけい', 'รูปธรรมดา'),
-  segment('more', 'いろいろ', 'รูปอื่นๆ ที่ใช้บ่อย'),
+  TE_FORM,
+  PLAIN,
+  MORE,
 ]);

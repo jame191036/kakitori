@@ -5,5 +5,5 @@
 export const LINE_LESSON_COUNT = {
   'vocab-n5': 87,
   'kanji-n5': 18,
-  'grammar-n5': 18,
+  'grammar-n5': 30,
 } as const;
