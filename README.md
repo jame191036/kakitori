@@ -164,7 +164,8 @@ URL: `/` (เลือกหมวด) → `/kana` (หมวดตัวอั�
 ## ตรวจเนื้อหาภาษาญี่ปุ่น
 
 `npm run content:review` สร้างตารางเนื้อหาภาษาญี่ปุ่นทั้งหมด (คำอ่าน หมายเหตุ คำตัวอย่าง) ไว้ส่งให้ผู้รู้ช่วยตรวจ:
-[docs/content-review.md](docs/content-review.md) (อ่านบน GitHub) และ `docs/content-review.csv` (เปิดใน Excel / Google Sheets)
+[docs/content-review.md](docs/content-review.md) (อ่านบน GitHub), `docs/content-review.csv` และ **`docs/content-review.xlsx`**
+(ไฟล์ที่ส่งให้ผู้ตรวจ: แท็บวิธีตรวจ · ควรดูก่อน · แยกตามหมวด) — ผลที่ส่งกลับมาอ่านด้วย `node scripts/read-content-review.mjs <ไฟล์>`
 — รันใหม่ทุกครั้งที่แก้เนื้อหา
 
 ## เครดิตและสัญญาอนุญาต
