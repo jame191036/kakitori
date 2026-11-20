@@ -1,5 +1,8 @@
 import { buildDeck, segment } from '../build';
+import { ADJECTIVE } from './adjective';
 import { BASICS } from './basics';
+import { COMPARE } from './compare';
+import { INVITE } from './invite';
 import { PLACE } from './place';
 import { VERBS } from './verbs';
 
@@ -16,9 +19,9 @@ export const GRAMMAR_N5 = buildDeck({ id: 'grammar-n5', progressKey: 'grammar-n5
   BASICS,
   PLACE,
   VERBS,
-  segment('invite', 'さそう', 'ชวนและอยาก'),
-  segment('adjective', 'けいようし', 'คำคุณศัพท์'),
-  segment('compare', 'くらべる', 'เปรียบเทียบและเหตุผล'),
+  INVITE,
+  ADJECTIVE,
+  COMPARE,
   segment('te-form', 'てけい', 'รูป て'),
   segment('plain-form', 'ふつうけい', 'รูปธรรมดา'),
   segment('more', 'いろいろ', 'รูปอื่นๆ ที่ใช้บ่อย'),
