@@ -1,0 +1,266 @@
+/* ── วลี: คานะใหญ่ · แบบเขียนจริง · โรมาจิ ── */
+.face {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.kana {
+  font-size: clamp(1.7rem, 5.6vw, 2.4rem);
+  line-height: 1.4;
+  /* ขึ้นบรรทัดใหม่ตรงช่องเว้นวรรคระหว่างชิ้น ไม่ตัดกลางคำ */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.written {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text-2);
+}
+
+.romaji {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--c-text, var(--text));
+}
+
+.thai {
+  font-weight: 600;
+}
+
+.faceSm {
+  gap: 2px;
+}
+
+.faceSm .kana {
+  font-size: 1.25rem;
+}
+
+.faceSm .written {
+  font-size: 0.85rem;
+}
+
+.faceSm .romaji {
+  font-size: 0.9rem;
+}
+
+.kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.kindSay {
+  background: var(--c-soft, var(--accent-soft));
+  color: var(--c-text, var(--text));
+}
+
+.kindHear {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+/* ── การ์ดเรียน ── */
+.learn {
+  display: grid;
+  gap: 16px;
+  max-width: 760px;
+  width: 100%;
+  margin-inline: auto;
+}
+
+.card {
+  display: grid;
+  gap: 14px;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  flex-wrap: wrap;
+}
+
+.counter {
+  font-weight: 700;
+  color: var(--c-text, var(--text-2));
+  font-variant-numeric: tabular-nums;
+}
+
+.cardBody {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding-block: 8px;
+  animation: card-in 220ms var(--ease-out);
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardBody {
+    animation: none;
+  }
+}
+
+.cardThai {
+  font-size: clamp(1.15rem, 3vw, 1.35rem);
+  font-weight: 800;
+  text-align: center;
+}
+
+.note {
+  justify-self: stretch;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 0.92rem;
+}
+
+.cardNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+
+.dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dots li {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--track-strong);
+}
+
+.dots .dotSeen {
+  background: var(--c, var(--primary));
+  border-color: var(--c, var(--primary));
+}
+
+.dots .dotOn {
+  border-color: var(--c, var(--primary));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c, var(--primary)) 20%, transparent);
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  text-align: start;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    transform var(--press);
+}
+
+.chip:active {
+  transform: scale(0.98);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover {
+    border-color: var(--c, var(--primary));
+  }
+}
+
+.chipOn {
+  border-color: var(--c, var(--primary));
+  background: var(--c-soft, var(--accent-soft));
+}
+
+.chipKana {
+  font-size: 1rem;
+  word-break: keep-all;
+}
+
+.chipThai {
+  font-size: 0.8rem;
+  color: var(--text-2);
+}
+
+.chipHear {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+/* ── คำถาม ── */
+.promptThai {
+  font-size: clamp(1.2rem, 3.4vw, 1.5rem);
+  font-weight: 800;
+  text-align: center;
+}
+
+/* ตัวเลือกเป็นวลี (ยาว): คอลัมน์เดียวบนมือถือ · 2 คอลัมน์บนจอกว้าง (div. = ชนะกฎ 4 คอลัมน์ของ quiz.module.css) */
+div.choicesPhrase {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 760px) {
+  div.choicesPhrase {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.choicePhrase {
+  padding: 10px 18px 4px;
+}
+
+/* ความหมายยาวขึ้นหลายบรรทัดได้ — เว้นที่ให้เลขข้อและเครื่องหมายถูก/ผิด */
+.choiceThai {
+  padding: 14px 18px 4px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.feedbackBody {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+
+.feedbackBody .face {
+  justify-items: start;
+  text-align: start;
+}

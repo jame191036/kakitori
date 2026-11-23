@@ -24,4 +24,7 @@ export const GrammarLinePage = lazy(() => import('../pages/GrammarLinePage'));
 export const GrammarLessonPage = lazy(() => import('../pages/GrammarLessonPage'));
 export const GrammarReviewPage = lazy(() => import('../pages/GrammarReviewPage'));
 export const ExamHubPage = lazy(() => import('../pages/ExamHubPage'));
+export const TravelLinePage = lazy(() => import('../pages/TravelLinePage'));
+export const TravelLessonPage = lazy(() => import('../pages/TravelLessonPage'));
+export const TravelReviewPage = lazy(() => import('../pages/TravelReviewPage'));
 export const ExamPage = lazy(() => import('../pages/ExamPage'));

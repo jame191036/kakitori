@@ -22,6 +22,7 @@ import {
   GRAMMAR_PRIORITY,
   KANA_PRIORITY,
   KANJI_PRIORITY,
+  TRAVEL_PRIORITY,
   VOCAB_PRIORITY,
 } from './content-review-priority.mjs';
 
@@ -49,6 +50,7 @@ const { EXAM_SETS } = await server.ssrLoadModule('/src/data/exam/n5/index.ts');
 const { KIND_INFO } = await server.ssrLoadModule('/src/data/exam/build.ts');
 const { examPlain, examWithReading, passageSegs } = await server.ssrLoadModule('/src/data/exam/text.ts');
 const { answerSentence } = await server.ssrLoadModule('/src/features/exam/examLogic.ts');
+const { TRAVEL_DECK } = await server.ssrLoadModule('/src/data/travel/index.ts');
 await server.close();
 
 // จุดที่ควรให้ผู้ตรวจดูก่อน — ตรวจว่า id ในรายการมีอยู่จริง (กันพิมพ์ผิดแล้วหายเงียบ)
@@ -59,6 +61,7 @@ const PRIORITY_TABLES = {
   kanji: KANJI_PRIORITY,
   grammar: GRAMMAR_PRIORITY,
   exam: EXAM_PRIORITY,
+  travel: TRAVEL_PRIORITY,
 };
 const priorityOf = (tag, key) => {
   const reason = PRIORITY_TABLES[tag][key];
@@ -293,6 +296,38 @@ for (const set of EXAM_SETS) {
   });
 }
 
+// ท่องเที่ยว: 1 แถวต่อวลี — "คำตัวอย่าง" = แบบเขียนจริง（คานะ）· "หมายเหตุ" = พูด/ได้ยิน + วิธีใช้
+const travelSet = (segment) => `${TRAVEL_DECK.name} · ${segment.title}`;
+for (const segment of TRAVEL_DECK.segments) {
+  for (const lesson of segment.lessons) {
+    for (const id of lesson.words) {
+      const x = TRAVEL_DECK.words[id];
+      const note = [
+        x.kind === 'say' ? 'ประโยคที่พูด' : 'ประโยคที่จะได้ยิน (พนักงาน / ประกาศ)',
+        x.note,
+        x.arrange ? 'ใช้ทำข้อเรียงวลี' : '',
+      ]
+        .filter(Boolean)
+        .join(' · ');
+      rows.push(tag([
+        travelSet(segment),
+        `${lessonCode(TRAVEL_DECK, lesson)} ${lesson.title}`,
+        '',
+        '',
+        '',
+        note,
+        x.written === x.kana.replaceAll(' ', '') ? x.kana : `${x.written}（${x.kana}）`,
+        x.romaji,
+        x.thai,
+        '',
+        priorityOf('travel', id),
+        '',
+        '',
+      ], `${TRAVEL_DECK.id}:${id}`, TRAVEL_DECK.name));
+    }
+  }
+}
+
 const missing = Object.entries(PRIORITY_TABLES)
   .flatMap(([tag, table]) => Object.keys(table).map((k) => `${tag}:${k}`))
   .filter((k) => !usedPriority.has(k));
@@ -332,6 +367,14 @@ const GRAMMAR_NOTES = [
   'ข้อเติมคำ: ผู้เรียนเห็นประโยคที่เว้น "ส่วนไวยากรณ์" ไว้ พร้อมคำแปลไทยเป็นคำใบ้ แล้วเลือกจาก 4 ตัวเลือก — ช่วยดูว่าตัวเลือกผิดผิดจริงทุกตัว (ไม่มีตัวไหนถูกได้อีก)',
   'ประโยคที่เขียนว่า "ใช้ทำข้อเรียงประโยค" ผู้เรียนต้องเรียงชิ้นประโยคตามคำแปล — ช่วยดูว่าเรียงได้แบบเดียวจริง',
   'คันจิในประโยคใช้เฉพาะคันจิ N5 พร้อมคำอ่านตัวเล็กด้านบน คำที่มีคันจินอก N5 เขียนเป็นคานะ (แบบข้อสอบ N5)',
+];
+const TRAVEL_INTRO =
+  'วลีที่ใช้ตอนเที่ยวญี่ปุ่น แบ่งตามสถานการณ์ (ทยอยเปิดทีละ 3 ช่วง) · **วลี คำแปล และวิธีใช้ ผู้พัฒนาเขียนเอง ยังไม่มีใครตรวจ**';
+const TRAVEL_NOTES = [
+  '"ประโยคที่พูด" = นักท่องเที่ยวพูดเอง (ควรสุภาพพอดี ใช้ได้จริง ไม่แข็งเกินไป) · "ประโยคที่จะได้ยิน" = พนักงานหรือประกาศพูด (มักเป็นภาษาสุภาพพิเศษ) ผู้เรียนแค่ฟังให้ออก',
+  'คำตัวอย่างแสดงแบบเขียนจริง（คานะเว้นวรรคตามที่ผู้เรียนเห็น）— คันจิไม่จำกัดแค่ N5 เพราะเป็นวลีที่เจอจริง · ชื่อสถานีเขียนเป็นคานะ',
+  'โรมาจิสร้างอัตโนมัติจากคานะ (คำช่วย は へ を อ่านตามเสียง wa e o) — ช่วยดูว่าเว้นวรรคอ่านง่ายและไม่มีที่ผิด',
+  'ความหมายไทยใช้เป็นตัวเลือกในแบบฝึกด้วย จึงต้องไม่มี 2 วลีที่แปลได้เหมือนกัน — ถ้าเห็นคู่ที่ความหมายทับกัน ช่วยบอก',
 ];
 const EXAM_INTRO =
   'ข้อสอบจำลองแบบเดียวกับ JLPT N5 จริง (ส่วนคำศัพท์ และส่วนไวยากรณ์ + การอ่าน ยังไม่มีการฟัง) 2 ชุด ชุดละ 43 ข้อ · **โจทย์ บทความ ตัวเลือก คำแปล และเหตุผล ผู้พัฒนาแต่งเอง ยังไม่มีใครตรวจ**';
@@ -383,12 +426,12 @@ const md = [
   '',
   '> ไฟล์นี้สร้างอัตโนมัติด้วย `npm run content:review` — อย่าแก้ไฟล์นี้โดยตรง ให้แก้ที่ `src/data/scripts/*.ts`',
   '> (ตัวอักษร), `src/data/vocab/n5/*.ts` (คำศัพท์), `src/data/kanji/n5/*.ts` (คันจิ), `src/data/grammar/n5/*.ts` (ไวยากรณ์)',
-  '> หรือ `src/data/exam/n5/*.ts` (ข้อสอบจำลอง) แล้วรันใหม่',
+  '> `src/data/exam/n5/*.ts` (ข้อสอบจำลอง) หรือ `src/data/travel/*.ts` (ท่องเที่ยว) แล้วรันใหม่',
   '> · รายการ "ควรดูก่อน" อยู่ที่ `scripts/content-review-priority.mjs`',
   '',
   '## สำหรับผู้ช่วยตรวจ',
   '',
-  'ขอบคุณที่ช่วยตรวจครับ เว็บนี้สอนคนไทยที่ไม่รู้ภาษาญี่ปุ่นเลยให้อ่านเขียนฮิรางานะ คาตาคานะ คำศัพท์ คันจิ และไวยากรณ์ JLPT N5',
+  'ขอบคุณที่ช่วยตรวจครับ เว็บนี้สอนคนไทยที่ไม่รู้ภาษาญี่ปุ่นเลยให้อ่านเขียนฮิรางานะ คาตาคานะ คำศัพท์ คันจิ ไวยากรณ์ JLPT N5 และวลีท่องเที่ยว',
   'รบกวนช่วยดูว่าข้อมูลแต่ละแถวถูกต้องและเหมาะกับผู้เริ่มต้นไหม แล้วใส่ ✓ หรือ ✗ ในคอลัมน์ "ถูกต้อง?" พร้อมความเห็น',
   '(ไฟล์สำหรับกรอกผลคือ `content-review.xlsx` — เปิดใน Excel / Google Sheets ได้ มีแท็บวิธีตรวจและแท็บแยกตามหมวด)',
   '',
@@ -447,6 +490,14 @@ const md = [
     mdTable(rows.filter((r) => r[0] === `${EXAM_NAME} · ${set.title}`)),
     '',
   ]),
+  `## ${TRAVEL_DECK.name} — ${Object.keys(TRAVEL_DECK.words).length} วลี (${TRAVEL_DECK.lessons.length} บท · เปิดแล้ว ${TRAVEL_DECK.segments.filter((s) => s.lessons.length).length} จาก ${TRAVEL_DECK.segments.length} ช่วง)`,
+  '',
+  TRAVEL_INTRO,
+  ...TRAVEL_NOTES.map((n) => `- ${n}`),
+  '',
+  ...TRAVEL_DECK.segments
+    .filter((s) => s.lessons.length)
+    .flatMap((s) => [`### ${s.title} (${s.name})`, '', mdTable(rows.filter((r) => r[0] === travelSet(s))), '']),
 ].join('\n');
 
 // ── Excel สำหรับส่งให้ผู้ตรวจ ──
@@ -541,6 +592,18 @@ const SHEETS = [
       ['ตัวเลือก (✓ = ข้อที่ถูก) · เหตุผล', at(5), 56],
     ],
   },
+  {
+    name: TRAVEL_DECK.name,
+    match: (r) => r.sheet === TRAVEL_DECK.name,
+    cols: [
+      ['ช่วง', segmentOfSet, 18],
+      ['บท', at(1), 24],
+      ['วลี（คานะ）', at(6), 40],
+      ['โรมาจิ', at(7), 30],
+      ['ความหมาย', at(8), 30],
+      ['พูด/ได้ยิน · วิธีใช้', at(5), 46],
+    ],
+  },
 ];
 // ทุกแท็บหมวดมีคอลัมน์ "ควรดูก่อน" (เหตุผลเต็ม) ยกเว้นคู่คำซึ่งไม่มีจุดที่ทำเครื่องหมาย
 for (const s of SHEETS) if (s.name !== PAIRS_SET) s.cols.push(['ควรดูก่อน', at(PRIORITY_COL), 30]);
@@ -608,7 +671,7 @@ wb.creator = 'kakitori';
   });
   gap();
   line(
-    'ขอบคุณที่ช่วยตรวจครับ kakitori เป็นเว็บฟรีสอนคนไทยที่ไม่รู้ภาษาญี่ปุ่นเลย ให้อ่านเขียนฮิรางานะ คาตาคานะ คำศัพท์ คันจิ และไวยากรณ์ JLPT N5 ' +
+    'ขอบคุณที่ช่วยตรวจครับ kakitori เป็นเว็บฟรีสอนคนไทยที่ไม่รู้ภาษาญี่ปุ่นเลย ให้อ่านเขียนฮิรางานะ คาตาคานะ คำศัพท์ คันจิ ไวยากรณ์ JLPT N5 และวลีท่องเที่ยว ' +
       'เนื้อหาภาษาไทยทั้งหมด (คำอ่าน ความหมาย หมายเหตุ) ประโยคตัวอย่างไวยากรณ์ และข้อสอบจำลอง ผู้พัฒนาเขียนเอง ยังไม่เคยมีผู้รู้ภาษาญี่ปุ่นตรวจ',
   );
   gap();
@@ -672,6 +735,10 @@ wb.creator = 'kakitori';
   line(EXAM_NAME, { bold: true });
   line(EXAM_INTRO);
   for (const note of EXAM_NOTES) line(`• ${note}`);
+  gap();
+  line(TRAVEL_DECK.name, { bold: true });
+  line(TRAVEL_INTRO);
+  for (const note of TRAVEL_NOTES) line(`• ${note}`);
   gap();
   line('คู่คำฝึกฟัง', { bold: true });
   line(PAIRS_NOTE);

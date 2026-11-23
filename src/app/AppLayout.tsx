@@ -6,6 +6,7 @@ import {
   Languages,
   Monitor,
   Moon,
+  Plane,
   Sun,
   Target,
   X,
@@ -19,7 +20,18 @@ import { SITE_NAME } from './config';
 import { GoalToast } from './GoalToast';
 import { getLesson } from '../data/line';
 import { useLineDecks, type LineDecks } from '../data/lineDecks';
-import { examPath, grammarPath, KANA_ROOT, kanjiPath, N5_ROOT, REVIEW_ROOT, scriptPath, vocabPath } from './paths';
+import {
+  examPath,
+  grammarPath,
+  KANA_ROOT,
+  kanjiPath,
+  N5_ROOT,
+  REVIEW_ROOT,
+  scriptPath,
+  TRAVEL_ROOT,
+  travelPath,
+  vocabPath,
+} from './paths';
 import { UpdatePrompt } from './UpdatePrompt';
 import { useApplyTheme } from './useTheme';
 import styles from './AppLayout.module.css';
@@ -38,17 +50,20 @@ interface Crumb {
   to?: string;
 }
 
-/** สายในหมวด N5: ส่วนของ URL → ชื่อในเส้นทาง */
-const N5_LINES = [
-  { seg: 'vocab', label: 'คำศัพท์', deck: 'vocab', href: vocabPath },
-  { seg: 'kanji', label: 'คันจิ', deck: 'kanji', href: kanjiPath },
-  { seg: 'grammar', label: 'ไวยากรณ์', deck: 'grammar', href: grammarPath },
+const N5_CRUMB: Crumb = { label: 'JLPT N5', to: N5_ROOT };
+
+/** สายบทเรียน: URL ของสาย → ชื่อในเส้นทาง (above = ชั้นที่อยู่เหนือสาย) */
+const LESSON_LINES = [
+  { root: `${N5_ROOT}/vocab`, above: [N5_CRUMB], label: 'คำศัพท์', deck: 'vocab', href: vocabPath },
+  { root: `${N5_ROOT}/kanji`, above: [N5_CRUMB], label: 'คันจิ', deck: 'kanji', href: kanjiPath },
+  { root: `${N5_ROOT}/grammar`, above: [N5_CRUMB], label: 'ไวยากรณ์', deck: 'grammar', href: grammarPath },
+  { root: TRAVEL_ROOT, above: [], label: 'ใช้ท่องเที่ยว', deck: 'travel', href: travelPath },
 ] as const;
 
-/** หน้าบทเรียนของสาย N5 (ต้องใช้ข้อมูลสายเพื่อแสดงชื่อบท) */
-const n5LessonMatch = (pathname: string) =>
-  N5_LINES.some((l) => {
-    const rest = matchPath(`${N5_ROOT}/${l.seg}/*`, pathname)?.params['*'];
+/** หน้าบทเรียนของสายบทเรียน (ต้องใช้ข้อมูลสายเพื่อแสดงชื่อบท) */
+const lessonMatch = (pathname: string) =>
+  LESSON_LINES.some((l) => {
+    const rest = matchPath(`${l.root}/*`, pathname)?.params['*'];
     return !!rest && rest !== 'review';
   });
 
@@ -80,17 +95,16 @@ function crumbsFor(pathname: string, decks: LineDecks | null): Crumb[] {
       ? [home, n5, { label: 'ข้อสอบจำลอง', to: examPath() }, { label: `ชุดที่ ${setId}` }]
       : [home, n5, { label: 'ข้อสอบจำลอง' }];
   }
-  for (const line of N5_LINES) {
-    const m = matchPath(`${N5_ROOT}/${line.seg}/*`, pathname);
+  for (const line of LESSON_LINES) {
+    const m = matchPath(`${line.root}/*`, pathname);
     if (!m) continue;
-    const n5: Crumb = { label: 'JLPT N5', to: N5_ROOT };
     const rest = m.params['*'];
-    if (!rest) return [home, n5, { label: line.label }];
+    if (!rest) return [home, ...line.above, { label: line.label }];
     const up: Crumb = { label: line.label, to: line.href() };
-    if (rest === 'review') return [home, n5, up, { label: 'ทบทวน' }];
-    if (!decks) return [home, n5, up, { label: '…' }];
+    if (rest === 'review') return [home, ...line.above, up, { label: 'ทบทวน' }];
+    if (!decks) return [home, ...line.above, up, { label: '…' }];
     const lesson = getLesson(decks[line.deck], rest);
-    return [home, n5, up, lesson ? { label: lesson.title } : notFound];
+    return [home, ...line.above, up, lesson ? { label: lesson.title } : notFound];
   }
   if (pathname === '/start') return [home, kana, { label: 'เริ่มต้นที่นี่' }];
   if (pathname === REVIEW_ROOT) return [home, { label: 'ทบทวน' }];
@@ -157,7 +171,7 @@ interface MainNavItem {
   active: (pathname: string) => boolean;
 }
 
-/** เมนูหลัก (หมวด) — หมวดใหม่ (ท่องเที่ยว ฯลฯ) เพิ่มที่นี่เมื่อทำเสร็จ */
+/** เมนูหลัก (หมวด) เรียงตามหน้าแรก — หมวดใหม่ (ชีวิตประจำวัน ฯลฯ) เพิ่มที่นี่เมื่อเปิดใช้ */
 const MAIN_NAV: MainNavItem[] = [
   { to: '/', label: 'หน้าแรก', icon: House, active: (p) => p === '/' },
   {
@@ -165,6 +179,12 @@ const MAIN_NAV: MainNavItem[] = [
     label: 'ตัวอักษร',
     icon: Languages,
     active: (p) => p === KANA_ROOT || p.startsWith(`${KANA_ROOT}/`) || p === '/start',
+  },
+  {
+    to: TRAVEL_ROOT,
+    label: 'ท่องเที่ยว',
+    icon: Plane,
+    active: (p) => p === TRAVEL_ROOT || p.startsWith(`${TRAVEL_ROOT}/`),
   },
   {
     to: N5_ROOT,
@@ -210,7 +230,7 @@ function PageLoading() {
 export function AppLayout() {
   const { pathname } = useLocation();
   // ข้อมูลสาย N5 ใช้แค่แสดงชื่อบทในหน้าบทเรียน — หน้าอื่นไม่ต้องโหลด
-  const decks = useLineDecks(n5LessonMatch(pathname));
+  const decks = useLineDecks(lessonMatch(pathname));
   const crumbs = crumbsFor(pathname, decks);
   const { introSeen } = useSettings();
   const onStartPage = useMatch('/start') !== null;

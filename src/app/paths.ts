@@ -16,12 +16,25 @@
  *   /n5/grammar               สายไวยากรณ์ N5 · /n5/grammar/:lesson บทเรียน · /n5/grammar/review ทบทวน
  *   /n5/exam                  ข้อสอบจำลอง N5 — เลือกชุด + ประวัติผลสอบ
  *   /n5/exam/:set             ทำข้อสอบชุดนั้น · ?result=<id> ดูผลสอบครั้งนั้น
+ *   /travel                   หมวดท่องเที่ยว = สายวลีท่องเที่ยว (แผนที่บท + ตรา)
+ *   /travel/:lesson           บทเรียน: เรียน → ฝึก → ทดสอบ · /travel/review ทบทวนวลี
  * URL เดิม (/hiragana/…) ส่งต่อมาที่ /kana/hiragana/… ให้อัตโนมัติ
  */
 
 export const KANA_ROOT = '/kana';
 export const REVIEW_ROOT = '/review';
 export const N5_ROOT = '/n5';
+export const TRAVEL_ROOT = '/travel';
+
+/** สายท่องเที่ยว / บทเรียน เช่น travelPath('kippu') → /travel/kippu */
+export function travelPath(lessonId?: string): string {
+  return `${TRAVEL_ROOT}${lessonId ? `/${lessonId}` : ''}`;
+}
+
+/** หน้าทบทวนวลีท่องเที่ยว — start = เริ่มทบทวนชุดนั้นทันที (ใช้จากการ์ด "วันนี้") */
+export function travelReviewPath(start?: 'due' | 'weak'): string {
+  return `${TRAVEL_ROOT}/review${start ? `?start=${start}` : ''}`;
+}
 
 /** สายคำศัพท์ N5 / บทเรียน เช่น vocabPath('family') → /n5/vocab/family */
 export function vocabPath(lessonId?: string): string {

@@ -1,25 +1,29 @@
 import { useEffect, useState } from 'react';
 import type { GrammarDeck } from './grammar/types';
 import type { KanjiDeck } from './kanji/types';
+import type { TravelDeck } from './travel/types';
 import type { VocabDeck } from './vocab';
 
 /**
- * ข้อมูลสาย N5 (คำศัพท์ · คันจิ · ไวยากรณ์) โหลดแยกจากก้อนหลักของเว็บ — หน้าแรกจะได้เปิดเร็ว
- * หน้าในหมวด N5 import ข้อมูลตรงๆ ได้ตามเดิม (หน้าพวกนั้นโหลดแยกอยู่แล้ว)
- * ส่วนที่อยู่ในก้อนหลัก (หน้าแรก · หัวเว็บ) ต้องใช้ตัวนี้แทน — ห้าม import data/(vocab|kanji|grammar)/n5 ตรงๆ
+ * ข้อมูลสายบทเรียน (N5: คำศัพท์ · คันจิ · ไวยากรณ์ + ท่องเที่ยว) โหลดแยกจากก้อนหลักของเว็บ — หน้าแรกจะได้เปิดเร็ว
+ * หน้าของแต่ละสาย import ข้อมูลตรงๆ ได้ตามเดิม (หน้าพวกนั้นโหลดแยกอยู่แล้ว)
+ * ส่วนที่อยู่ในก้อนหลัก (หน้าแรก · หัวเว็บ) ต้องใช้ตัวนี้แทน — ห้าม import data/(vocab|kanji|grammar)/n5 · data/travel ตรงๆ
  */
 export interface LineDecks {
   vocab: VocabDeck;
   kanji: KanjiDeck;
   grammar: GrammarDeck;
+  travel: TravelDeck;
 }
 
 let loaded: LineDecks | null = null;
 let loading: Promise<LineDecks> | null = null;
 
 export function loadLineDecks(): Promise<LineDecks> {
-  loading ??= Promise.all([import('./vocab/n5'), import('./kanji/n5'), import('./grammar/n5')])
-    .then(([v, k, g]) => (loaded = { vocab: v.N5_DECK, kanji: k.KANJI_N5, grammar: g.GRAMMAR_N5 }))
+  loading ??= Promise.all([import('./vocab/n5'), import('./kanji/n5'), import('./grammar/n5'), import('./travel')])
+    .then(
+      ([v, k, g, t]) => (loaded = { vocab: v.N5_DECK, kanji: k.KANJI_N5, grammar: g.GRAMMAR_N5, travel: t.TRAVEL_DECK }),
+    )
     .catch((err: unknown) => {
       // โหลดไม่สำเร็จ (เช่น ออฟไลน์ก่อนแคชเสร็จ) — ครั้งหน้าลองใหม่
       loading = null;

@@ -1,7 +1,7 @@
 import { ArrowRight, TrainFront } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router';
-import { grammarPath, kanjiPath, REVIEW_ROOT, vocabPath } from '../app/paths';
+import { grammarPath, kanjiPath, REVIEW_ROOT, travelPath, vocabPath } from '../app/paths';
 import { SECTIONS } from '../app/sections';
 import { LessonSign, StationSign, type LessonSignStop } from '../components/train/StationSign';
 import { groupLabel, scriptList } from '../data/scripts';
@@ -25,7 +25,7 @@ import { deckProgress, lastStudied, lessonStates, nextLesson, wordPassed } from 
 import { useSettings } from '../features/settings/settings';
 import { cx } from '../lib/cx';
 import { useStore } from '../lib/persistentStore';
-import { tone } from '../lib/tone';
+import { tone, type Tone } from '../lib/tone';
 import { useNow } from '../lib/useNow';
 import styles from './HomePage.module.css';
 
@@ -68,11 +68,18 @@ export default function HomePage() {
       passed: deck ? lessonStates(deck, p).filter((s) => s === 'done').length : l.started ? null : 0,
     };
   });
-  const n5Passed = lines.some((l) => l.passed === null) ? null : lines.reduce((n, l) => n + (l.passed ?? 0), 0);
-  const n5Total = HERO_LINES.reduce((n, l) => n + LINE_LESSON_COUNT[l.progressKey], 0);
-  // ตรา = สถานีที่ผ่านแล้วของทุกสาย (ตัวอักษร + คำศัพท์ + คันจิ + ไวยากรณ์)
-  const stamps = n5Passed === null ? null : (step ? step.doneCount : path.length) + n5Passed;
-  const allStations = path.length + n5Total;
+  // บทที่ผ่านแล้ว / ทั้งหมด ของสายบทเรียนในหมวดนั้น (null = ยังโหลดข้อมูลไม่เสร็จ)
+  const sectionLines = (section?: HeroLine['section']) => lines.filter((l) => !section || l.line.section === section);
+  const passedIn = (section?: HeroLine['section']) => {
+    const list = sectionLines(section);
+    return list.some((l) => l.passed === null) ? null : list.reduce((n, l) => n + (l.passed ?? 0), 0);
+  };
+  const totalIn = (section?: HeroLine['section']) =>
+    sectionLines(section).reduce((n, l) => n + LINE_LESSON_COUNT[l.line.progressKey], 0);
+  const linesPassed = passedIn();
+  // ตรา = สถานีที่ผ่านแล้วของทุกสาย (ตัวอักษร + คำศัพท์ + คันจิ + ไวยากรณ์ + ท่องเที่ยว)
+  const stamps = linesPassed === null ? null : (step ? step.doneCount : path.length) + linesPassed;
+  const allStations = path.length + totalIn();
   const remaining = Math.max(0, dailyGoal - streak.todayCount);
 
   // ป้ายชี้สายที่เรียนล่าสุด (ฝึก/ตอบครั้งล่าสุด) · สายที่จบแล้วไม่นับ · ยังไม่เคยเรียน = สายตัวอักษร
@@ -192,8 +199,8 @@ export default function HomePage() {
               <span className={styles.trackWrap}>
                 {sec.id === 'kana' ? (
                   <KanaTrack path={path} reached={step ? step.index - 1 : path.length} />
-                ) : sec.id === 'jlpt-n5' ? (
-                  <LessonTrack passed={n5Passed ?? 0} total={n5Total} />
+                ) : sec.id === 'jlpt-n5' || sec.id === 'travel' ? (
+                  <LessonTrack passed={passedIn(sec.id) ?? 0} total={totalIn(sec.id)} />
                 ) : (
                   <>
                     <span className={styles.trackSoon} />
@@ -275,6 +282,10 @@ function Platform({ step, progress }: { step: NextStep; progress: ProgressData }
 interface HeroLine {
   id: keyof LineDecks;
   progressKey: keyof typeof LINE_LESSON_COUNT;
+  /** หมวดบนหน้าแรกที่สายนี้อยู่ (นับรางย่อของหมวด) */
+  section: 'jlpt-n5' | 'travel';
+  /** สีสายบนป้าย */
+  tone: Tone;
   /** ชื่อสายภาษาญี่ปุ่นบนป้าย */
   lineJa: string;
   lineName: string;
@@ -294,6 +305,8 @@ const HERO_LINES: readonly HeroLine[] = [
   {
     id: 'vocab',
     progressKey: 'vocab-n5',
+    section: 'jlpt-n5',
+    tone: 'n5',
     lineJa: '単語線',
     lineName: 'สายคำศัพท์ N5',
     shortName: 'สายคำศัพท์',
@@ -309,6 +322,8 @@ const HERO_LINES: readonly HeroLine[] = [
   {
     id: 'kanji',
     progressKey: 'kanji-n5',
+    section: 'jlpt-n5',
+    tone: 'n5',
     lineJa: '漢字線',
     lineName: 'สายคันจิ N5',
     shortName: 'สายคันจิ',
@@ -324,6 +339,8 @@ const HERO_LINES: readonly HeroLine[] = [
   {
     id: 'grammar',
     progressKey: 'grammar-n5',
+    section: 'jlpt-n5',
+    tone: 'n5',
     lineJa: '文法線',
     lineName: 'สายไวยากรณ์ N5',
     shortName: 'สายไวยากรณ์',
@@ -335,6 +352,24 @@ const HERO_LINES: readonly HeroLine[] = [
     wideChips: true,
     lead: 'แต่ละบทไวยากรณ์คือหนึ่งสถานี อ่านคำอธิบายและประโยคตัวอย่าง ฝึก แล้วทดสอบให้ถูกครบทุกรูป แล้วรับตราสถานีไปสะสม — ฟรี ไม่ต้องสมัครสมาชิก',
     todo: (left) => `อ่านการ์ดไวยากรณ์ ฝึก แล้วทำแบบทดสอบให้ตอบถูกครบทุกรูป (เหลือ ${left} รูป)`,
+  },
+  {
+    // 旅行線 = สายท่องเที่ยว
+    id: 'travel',
+    progressKey: 'travel',
+    section: 'travel',
+    tone: 'travel',
+    lineJa: '旅行線',
+    lineName: 'สายท่องเที่ยว',
+    shortName: 'สายท่องเที่ยว',
+    lessonHref: travelPath,
+    chip: (decks, id) => {
+      const x = decks.travel.words[id]!;
+      return { main: x.kana, small: x.thai };
+    },
+    wideChips: true,
+    lead: 'แต่ละบทวลีท่องเที่ยวคือหนึ่งสถานี ฟังวลี ฝึกพูดและฟังให้ออก แล้วทดสอบให้ถูกครบทุกวลี แล้วรับตราสถานีไปสะสม — ฟรี ไม่ต้องสมัครสมาชิก',
+    todo: (left) => `ฟังการ์ดวลี ฝึก แล้วทำแบบทดสอบให้ตอบถูกครบทุกวลี (เหลือ ${left} วลี)`,
   },
 ];
 
@@ -411,7 +446,7 @@ function LineHero({
           lesson={lessonStop(deck, lesson)!}
           prev={lessonStop(deck, deck.lessons[at - 1])}
           next={lessonStop(deck, deck.lessons[at + 1])}
-          lineTone="n5"
+          lineTone={line.tone}
           lineJa={line.lineJa}
           lineName={line.lineName}
         />

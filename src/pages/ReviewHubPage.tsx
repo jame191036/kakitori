@@ -1,25 +1,36 @@
 import { ArrowRight, RotateCcw } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { Link } from 'react-router';
-import { grammarReviewPath, KANA_ROOT, kanjiReviewPath, N5_ROOT, scriptPath, vocabReviewPath } from '../app/paths';
+import {
+  grammarReviewPath,
+  KANA_ROOT,
+  kanjiReviewPath,
+  N5_ROOT,
+  scriptPath,
+  TRAVEL_ROOT,
+  travelReviewPath,
+  vocabReviewPath,
+} from '../app/paths';
 import { TodayCard, type TodayLine } from '../components/TodayCard';
 import { GRAMMAR_N5 } from '../data/grammar/n5';
 import { KANJI_N5 } from '../data/kanji/n5';
 import type { LineDeck } from '../data/line';
 import { scriptList } from '../data/scripts';
+import { TRAVEL_DECK } from '../data/travel';
 import { N5_DECK } from '../data/vocab/n5';
 import { deckProgress, dueWords, weakWords, wordsAnswered } from '../features/line/lineLogic';
 import { dueChars, hasAnswered, weakChars } from '../features/progress/progressLogic';
 import { progressStore } from '../features/progress/progressStore';
 import { cx } from '../lib/cx';
 import { useStore } from '../lib/persistentStore';
-import { packTone, tone } from '../lib/tone';
+import { packTone, tone, type Tone } from '../lib/tone';
 import { useNow } from '../lib/useNow';
 import styles from './ReviewHubPage.module.css';
 
-/** การ์ดทบทวนของสายบทเรียน N5 */
+/** การ์ดทบทวนของสายบทเรียน (N5 · ท่องเที่ยว) */
 interface LineCard {
   deck: LineDeck;
+  tone: Tone;
   href: string;
   glyph: string;
   lineJa: string;
@@ -31,6 +42,7 @@ interface LineCard {
 const LINE_CARDS: readonly LineCard[] = [
   {
     deck: N5_DECK,
+    tone: 'n5',
     href: vocabReviewPath(),
     glyph: '語',
     lineJa: '単語線',
@@ -39,6 +51,7 @@ const LINE_CARDS: readonly LineCard[] = [
   },
   {
     deck: KANJI_N5,
+    tone: 'n5',
     href: kanjiReviewPath(),
     glyph: '漢',
     lineJa: '漢字線',
@@ -47,11 +60,21 @@ const LINE_CARDS: readonly LineCard[] = [
   },
   {
     deck: GRAMMAR_N5,
+    tone: 'n5',
     href: grammarReviewPath(),
     glyph: '文',
     lineJa: '文法線',
     title: 'ทบทวนไวยากรณ์ N5',
     desc: 'รูปไวยากรณ์ที่ถึงรอบ รูปที่ผิดบ่อย และความคืบหน้าทั้งสาย',
+  },
+  {
+    deck: TRAVEL_DECK,
+    tone: 'travel',
+    href: travelReviewPath(),
+    glyph: '旅',
+    lineJa: '旅行線',
+    title: 'ทบทวนวลีท่องเที่ยว',
+    desc: 'วลีที่ถึงรอบ วลีที่ผิดบ่อย และความคืบหน้าทั้งสาย',
   },
 ];
 
@@ -59,6 +82,7 @@ const TODAY_LINES: readonly TodayLine[] = [
   { deck: N5_DECK, unit: 'คำ', dueHref: vocabReviewPath('due') },
   { deck: KANJI_N5, unit: 'ตัว', dueHref: kanjiReviewPath('due') },
   { deck: GRAMMAR_N5, unit: 'รูป', dueHref: grammarReviewPath('due') },
+  { deck: TRAVEL_DECK, unit: 'วลี', dueHref: travelReviewPath('due') },
 ];
 
 /** ทบทวน (เมนูหลัก): วันนี้ (เป้า + รอบทบทวน) แล้วการ์ดทบทวนของแต่ละสาย */
@@ -103,7 +127,7 @@ export default function ReviewHubPage() {
             <ReviewCard
               key={c.deck.id}
               to={c.href}
-              style={tone('n5')}
+              style={tone(c.tone)}
               glyph={c.glyph}
               lineJa={c.lineJa}
               title={c.title}
@@ -118,7 +142,7 @@ export default function ReviewHubPage() {
       {!started && (
         <p className={cx(styles.muted, styles.note)}>
           ยังไม่มีรายการที่ต้องทบทวน — ฝึกเขียนหรือทำแบบทดสอบใน <Link to={KANA_ROOT}>หมวดตัวอักษร</Link> หรือ
-          ทำแบบทดสอบในบทเรียน <Link to={N5_ROOT}>JLPT N5</Link> ก่อน แล้วระบบจะนัดวันทบทวนให้
+          ทำแบบทดสอบในบทเรียน <Link to={N5_ROOT}>JLPT N5</Link> หรือ <Link to={TRAVEL_ROOT}>ท่องเที่ยว</Link> ก่อน แล้วระบบจะนัดวันทบทวนให้
         </p>
       )}
     </div>
