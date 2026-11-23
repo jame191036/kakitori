@@ -18,9 +18,11 @@ function checkChoices(q: TravelQuestion) {
   expect(new Set(q.choices).size, q.id).toBe(4);
   expect(q.choices, q.id).toContain(q.answer);
   if (q.type === 'say') {
+    expect(q.phrase.kind, q.id).not.toBe('hear');
     for (const id of q.choices) {
       const o = deck.words[id]!;
-      expect(o.kind, q.id).toBe('say');
+      // เลือกวลีจากวลีที่พูดด้วยกัน · เลือกป้ายจากป้ายด้วยกัน
+      expect(o.kind, q.id).toBe(q.phrase.kind);
       if (id !== q.phrase.id) expect(phrasesOverlap(o, q.phrase), `${q.id} ↔ ${id}`).toBe(false);
     }
   }
@@ -59,6 +61,15 @@ describe('travel questions', () => {
     const qs = reviewQuestions(deck, items, { audio: true, rng: seeded(11) });
     expect(qs.length).toBe(items.length);
     qs.forEach(checkChoices);
+  });
+
+  it('signs: read the sign or pick the sign, never listening or arranging', () => {
+    const lesson = deck.lessons.find((l) => l.words.every((id) => deck.words[id]!.kind === 'sign'))!;
+    const practice = practiceQuestions(deck, lesson, { audio: true, rng: seeded(5) });
+    expect(new Set(practice.map((q) => q.type))).toEqual(new Set(['meaning', 'say']));
+    const test = testQuestions(deck, lesson, { audio: true, rng: seeded(5) });
+    expect(test.every((q) => q.type === 'meaning')).toBe(true);
+    [...practice, ...test].forEach(checkChoices);
   });
 
   it('never offers a phrase that contains the answer as a wrong "say" choice', () => {

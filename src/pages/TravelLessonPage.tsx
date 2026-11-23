@@ -13,7 +13,8 @@ import {
 import styles from '../components/line/LessonPage.module.css';
 import { getLesson, lessonCode, lessonWords, type LineLesson } from '../data/line';
 import { TRAVEL_DECK } from '../data/travel';
-import type { TravelDeck } from '../data/travel/types';
+import { faceText } from '../data/travel/build';
+import type { TravelDeck, TravelPhrase } from '../data/travel/types';
 import { deckProgress, lessonPassed } from '../features/line/lineLogic';
 import { recordAnswer, recordPractice, progressStore } from '../features/progress/progressStore';
 import { useSpeech } from '../features/speech/useSpeech';
@@ -52,7 +53,9 @@ function Lesson({ deck, lesson }: { deck: TravelDeck; lesson: LineLesson }) {
   const at = deck.lessons.indexOf(lesson);
   const prev = deck.lessons[at - 1];
   const next = deck.lessons[at + 1];
-  const says = items.filter((x) => x.kind === 'say').length;
+  const count = (kind: TravelPhrase['kind']) => items.filter((x) => x.kind === kind).length;
+  const signsOnly = count('sign') === items.length;
+  const kindsText = signsOnly ? `${items.length} ป้าย` : `${items.length} วลี (พูด ${count('say')} · ได้ยิน ${count('hear')})`;
 
   const [session, setSession] = useState<Session | null>(null);
   const [result, setResult] = useState<{ kind: Session['kind']; results: PhraseResult[]; passedBefore: boolean } | null>(
@@ -85,7 +88,7 @@ function Lesson({ deck, lesson }: { deck: TravelDeck; lesson: LineLesson }) {
         title={lesson.title}
         meta={
           <>
-            บทที่ {at + 1} · {items.length} วลี (พูด {says} · ได้ยิน {items.length - says}) ·{' '}
+            บทที่ {at + 1} · {kindsText} ·{' '}
             {passed ? <strong className={styles.passed}>ผ่านแล้ว ได้ตราสถานี {code}</strong> : 'ยังไม่ผ่าน'}
           </>
         }
@@ -118,9 +121,11 @@ function Lesson({ deck, lesson }: { deck: TravelDeck; lesson: LineLesson }) {
         <LessonIntro
           title="ฝึกวลีในบทนี้"
           text={
-            audio
-              ? 'วลีละ 2 ข้อ: เลือกวลีที่ควรพูดตามสถานการณ์ เรียงวลี และฟังแล้วเลือกความหมาย — ข้อที่ผิดจะได้ลองอีกครั้งท้ายชุด (ไม่นับเป็นผลสอบ)'
-              : 'วลีละ 2 ข้อ: เลือกวลีที่ควรพูดตามสถานการณ์ เรียงวลี และอ่านแล้วเลือกความหมาย (เครื่องนี้ไม่มีเสียงภาษาญี่ปุ่น จึงไม่มีข้อฟัง) — ไม่นับเป็นผลสอบ'
+            signsOnly
+              ? 'ป้ายละ 2 ข้อ: ดูป้ายแล้วเลือกความหมาย และดูความหมายแล้วเลือกป้าย — ข้อที่ผิดจะได้ลองอีกครั้งท้ายชุด (ไม่นับเป็นผลสอบ)'
+              : audio
+                ? 'วลีละ 2 ข้อ: เลือกวลีที่ควรพูดตามสถานการณ์ เรียงวลี และฟังแล้วเลือกความหมาย — ข้อที่ผิดจะได้ลองอีกครั้งท้ายชุด (ไม่นับเป็นผลสอบ)'
+                : 'วลีละ 2 ข้อ: เลือกวลีที่ควรพูดตามสถานการณ์ เรียงวลี และอ่านแล้วเลือกความหมาย (เครื่องนี้ไม่มีเสียงภาษาญี่ปุ่น จึงไม่มีข้อฟัง) — ไม่นับเป็นผลสอบ'
           }
           action="เริ่มฝึก"
           onStart={() => start('practice')}
@@ -129,7 +134,11 @@ function Lesson({ deck, lesson }: { deck: TravelDeck; lesson: LineLesson }) {
       {step === 'test' && !session && !result && (
         <LessonIntro
           title={`ทดสอบสถานี ${code}`}
-          text={`วลีละ 1 ข้อ (${items.length} ข้อ) — ประโยคที่พูด: เลือกวลีที่ควรพูด · ประโยคที่จะได้ยิน: ${audio ? 'ฟังแล้ว' : 'อ่านแล้ว'}เลือกความหมาย ตอบถูกครบทุกวลีได้ตราสถานี`}
+          text={
+            signsOnly
+              ? `ป้ายละ 1 ข้อ (${items.length} ข้อ) ดูป้ายแล้วเลือกความหมาย — ตอบถูกครบทุกป้ายได้ตราสถานี`
+              : `วลีละ 1 ข้อ (${items.length} ข้อ) — ประโยคที่พูด: เลือกวลีที่ควรพูด · ประโยคที่จะได้ยิน: ${audio ? 'ฟังแล้ว' : 'อ่านแล้ว'}เลือกความหมาย ตอบถูกครบทุกวลีได้ตราสถานี`
+          }
           action="เริ่มทดสอบ"
           onStart={() => start('test')}
         />
@@ -156,7 +165,7 @@ function Lesson({ deck, lesson }: { deck: TravelDeck; lesson: LineLesson }) {
             label: (
               <>
                 <span className="kana" lang="ja">
-                  {phrase.kana}
+                  {faceText(phrase)}
                 </span>
                 <span>{phrase.thai}</span>
               </>

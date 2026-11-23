@@ -1,6 +1,7 @@
 import { travelPath } from '../app/paths';
 import { LineReviewPage } from '../components/line/LineReviewPage';
 import { TRAVEL_DECK } from '../data/travel';
+import { faceText } from '../data/travel/build';
 import { useSpeech } from '../features/speech/useSpeech';
 import { reviewQuestions } from '../features/travel/travelLogic';
 import { TravelRunner } from '../features/travel/TravelRunner';
@@ -30,7 +31,7 @@ export default function TravelReviewPage() {
           onQuit={onQuit}
         />
       )}
-      itemLabel={(x) => ({ main: x.kana, thai: x.thai })}
+      itemLabel={(x) => ({ main: faceText(x), thai: x.thai })}
     />
   );
 }

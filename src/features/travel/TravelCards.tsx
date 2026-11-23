@@ -1,5 +1,6 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { faceText } from '../../data/travel/build';
 import type { TravelPhrase } from '../../data/travel/types';
 import { cx } from '../../lib/cx';
 import { KindTag, PhraseFace } from './PhraseFace';
@@ -83,7 +84,7 @@ export function TravelCards({ items, onDone }: TravelCardsProps) {
               aria-current={i === index ? 'true' : undefined}
             >
               <span className={cx('kana', styles.chipKana)} lang="ja">
-                {x.kana}
+                {faceText(x)}
               </span>
               <span className={styles.chipThai}>
                 {x.kind === 'hear' && <span className={styles.chipHear}>ได้ยิน · </span>}

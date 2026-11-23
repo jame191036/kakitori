@@ -38,7 +38,9 @@ describe('travel deck', () => {
       expect(l.words.length, l.id).toBeGreaterThanOrEqual(5);
       expect(l.words.length, l.id).toBeLessThanOrEqual(8);
       const kinds = l.words.map((id) => deck.words[id]!.kind);
-      expect(kinds, `${l.id} ต้องมีประโยคที่พูดอย่างน้อย 3 วลี`).toSatisfy((k: string[]) => k.filter((x) => x === 'say').length >= 3);
+      // บทป้ายเป็นป้ายล้วน · บทอื่นต้องมีประโยคที่พูดอย่างน้อย 3 วลี (ข้อ "ควรพูดว่าอะไร" ต้องมีตัวเลือกพอ)
+      if (kinds.includes('sign')) expect(kinds.every((k) => k === 'sign'), `${l.id} ป้ายต้องอยู่บทป้ายล้วน`).toBe(true);
+      else expect(kinds.filter((x) => x === 'say').length, `${l.id} ต้องมีประโยคที่พูดอย่างน้อย 3 วลี`).toBeGreaterThanOrEqual(3);
     }
     expect(lessonCode(deck, deck.lessons[0]!)).toBe('T01');
     const open = deck.segments.map((s) => s.lessons.length > 0);
@@ -62,7 +64,12 @@ describe('travel deck', () => {
       expect(x.kana.includes('/') || x.written.includes('/'), x.id).toBe(false);
       expect(x.romaji, x.id).toMatch(/^[a-z][a-z ,'?!-]*$/);
       expect(x.romaji, x.id).not.toMatch(/ {2}/);
-      expect(x.sentence.end, `${x.id} ต้องมี 。 หรือ ？ ท้ายวลี`).not.toBe('');
+      if (x.kind === 'sign') {
+        // ป้าย: ตัวหนังสือบนป้ายสั้นๆ ไม่มีเครื่องหมายท้าย และมีคันจิให้อ่าน
+        expect(x.sentence.end, x.id).toBe('');
+        expect(HAN.test(x.written), x.id).toBe(true);
+        expect(x.kanaSentence.chunks.length, x.id).toBe(1);
+      } else expect(x.sentence.end, `${x.id} ต้องมี 。 หรือ ？ ท้ายวลี`).not.toBe('');
     }
   });
 

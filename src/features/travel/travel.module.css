@@ -68,6 +68,42 @@
   color: var(--warn);
 }
 
+.kindSign {
+  background: var(--good-soft);
+  color: var(--good);
+}
+
+/* ป้าย: ตัวหนังสือในกรอบแบบป้ายจริง (พื้นเข้ม ตัวอักษรขาว) */
+.sign {
+  display: inline-block;
+  min-width: 4.5em;
+  padding: 0.2em 0.7em;
+  border-radius: var(--radius);
+  background: #1d3b5c;
+  color: #fff;
+  box-shadow: inset 0 0 0 3px #1d3b5c, inset 0 0 0 5px rgb(255 255 255 / 0.85);
+  font-size: clamp(2.2rem, 8vw, 3rem);
+  line-height: 1.35;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.faceSm .sign {
+  font-size: 1.6rem;
+  min-width: 3.6em;
+  box-shadow: inset 0 0 0 2px #1d3b5c, inset 0 0 0 4px rgb(255 255 255 / 0.85);
+}
+
+.signReading {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--c-text, var(--text));
+}
+
+.faceSm .signReading {
+  font-size: 0.88rem;
+}
+
 /* ── การ์ดเรียน ── */
 .learn {
   display: grid;
@@ -141,7 +177,15 @@
   border-top: 1px dashed var(--border);
 }
 
+/* บทละ 8 วลี: จุดขึ้นบรรทัดใหม่เองได้ แต่ปุ่มสองข้างต้องอยู่บรรทัดเดียว */
+.cardNav :global(.btn) {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .dots {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;

@@ -5,8 +5,8 @@ import { lessonOfWord } from '../line/lineLogic';
 
 /**
  * คำถามของสายท่องเที่ยว (ตรรกะสถานี/ตรา/ทบทวนใช้ features/line/lineLogic.ts ร่วมกับสายอื่น)
- * - say:     อ่านสถานการณ์ภาษาไทย → เลือกวลีที่ควรพูด (เฉพาะวลีที่พูด)
- * - meaning: ดูวลี (คานะ + โรมาจิ) → เลือกความหมาย
+ * - say:     อ่านสถานการณ์ภาษาไทย → เลือกวลีที่ควรพูด (วลีที่พูด) · ความหมาย → เลือกป้าย (ป้าย)
+ * - meaning: ดูวลี (คานะ + โรมาจิ) หรือป้าย → เลือกความหมาย
  * - listen:  ฟังเสียงอย่างเดียว → เลือกความหมาย (ต้องมีเสียงภาษาญี่ปุ่นในเครื่อง ไม่มีก็ใช้ meaning แทน)
  * - arrange: ความหมาย → เรียงชิ้นวลี (เฉพาะวลีที่ทำเครื่องหมาย · แบบฝึกเท่านั้น)
  */
@@ -73,14 +73,15 @@ function make(
   { audio, rng = Math.random }: Opts,
   key: string,
 ): TravelQuestion {
-  // ใช้แบบที่ทำได้: ข้อพูด/เรียงใช้กับวลีที่พูดเท่านั้น · ข้อฟังต้องมีเสียง
+  // ใช้แบบที่ทำได้: ข้อเรียงใช้กับวลีที่ทำเครื่องหมาย · ข้อเลือกวลีใช้กับวลีที่พูดและป้าย ·
+  // ข้อฟังต้องมีเสียง (ป้ายอ่านอย่างเดียว ไม่มีข้อฟัง)
   let t = type;
   if (t === 'arrange' && !x.arrange) t = 'say';
-  if (t === 'say' && x.kind !== 'say') t = 'listen';
-  if (t === 'listen' && !audio) t = 'meaning';
+  if (t === 'say' && x.kind === 'hear') t = 'listen';
+  if (t === 'listen' && (!audio || x.kind === 'sign')) t = 'meaning';
   const q: TravelQuestion = { id: `${t}:${x.id}:${key}`, type: t, phrase: x, choices: [], answer: '', tiles: [] };
   if (t === 'say') {
-    const others = pickOthers(x, pool.near, pool.all, (o) => o.kind === 'say' && !phrasesOverlap(o, x), rng);
+    const others = pickOthers(x, pool.near, pool.all, (o) => o.kind === x.kind && !phrasesOverlap(o, x), rng);
     q.choices = shuffle([x, ...others], rng).map((o) => o.id);
     q.answer = x.id;
   } else if (t === 'arrange') {
@@ -94,24 +95,30 @@ function make(
   return q;
 }
 
+/** แบบข้อของแบบฝึก (วลีละ 2 ข้อ) */
+const PRACTICE: Record<TravelPhrase['kind'], (x: TravelPhrase) => [TravelQType, TravelQType]> = {
+  say: (x) => ['say', x.arrange ? 'arrange' : 'listen'],
+  hear: () => ['listen', 'meaning'],
+  sign: () => ['meaning', 'say'],
+};
+
+/** แบบข้อของแบบทดสอบ/ทบทวน (วลีละ 1 ข้อ) */
+const TEST: Record<TravelPhrase['kind'], TravelQType> = { say: 'say', hear: 'listen', sign: 'meaning' };
+
 /**
- * แบบฝึก: วลีละ 2 ข้อ — วลีที่พูด: เลือกวลีที่ควรพูด + เรียงวลี (หรือฟัง) · วลีที่ได้ยิน: ฟัง + อ่านความหมาย
- * ไม่นับเป็นผลสอบ
+ * แบบฝึก: วลีละ 2 ข้อ — วลีที่พูด: เลือกวลีที่ควรพูด + เรียงวลี (หรือฟัง) · วลีที่ได้ยิน: ฟัง + อ่านความหมาย ·
+ * ป้าย: ดูป้ายเลือกความหมาย + ดูความหมายเลือกป้าย — ไม่นับเป็นผลสอบ
  */
 export function practiceQuestions(deck: TravelDeck, lesson: LineLesson, opts: Opts): TravelQuestion[] {
   const items = lessonWords(deck, lesson);
   const pool = { near: items, all: Object.values(deck.words) };
-  const qs = items.flatMap((x) =>
-    x.kind === 'say'
-      ? [make('say', x, pool, opts, '1'), make(x.arrange ? 'arrange' : 'listen', x, pool, opts, '2')]
-      : [make('listen', x, pool, opts, '1'), make('meaning', x, pool, opts, '2')],
-  );
+  const qs = items.flatMap((x) => PRACTICE[x.kind](x).map((t, i) => make(t, x, pool, opts, String(i + 1))));
   return shuffle(qs, opts.rng);
 }
 
-/** ข้อสอบ: วลีละ 1 ข้อ — วลีที่พูด = เลือกวลีที่ควรพูด · วลีที่ได้ยิน = ฟังแล้วเลือกความหมาย */
+/** ข้อสอบ: วลีละ 1 ข้อ — วลีที่พูด = เลือกวลีที่ควรพูด · วลีที่ได้ยิน = ฟังแล้วเลือกความหมาย · ป้าย = ดูป้ายแล้วเลือกความหมาย */
 function oneEach(items: readonly TravelPhrase[], near: (x: TravelPhrase) => readonly TravelPhrase[], all: readonly TravelPhrase[], opts: Opts) {
-  return shuffle(items, opts.rng).map((x) => make(x.kind === 'say' ? 'say' : 'listen', x, { near: near(x), all }, opts, 't'));
+  return shuffle(items, opts.rng).map((x) => make(TEST[x.kind], x, { near: near(x), all }, opts, 't'));
 }
 
 /** แบบทดสอบ: วลีละ 1 ข้อ — ถูกครบทุกวลี = ผ่านสถานี */

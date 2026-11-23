@@ -365,7 +365,8 @@ const HERO_LINES: readonly HeroLine[] = [
     lessonHref: travelPath,
     chip: (decks, id) => {
       const x = decks.travel.words[id]!;
-      return { main: x.kana, small: x.thai };
+      // ป้าย = ตัวหนังสือบนป้าย · วลี = คานะ
+      return { main: x.kind === 'sign' ? x.written : x.kana, small: x.thai };
     },
     wideChips: true,
     lead: 'แต่ละบทวลีท่องเที่ยวคือหนึ่งสถานี ฟังวลี ฝึกพูดและฟังให้ออก แล้วทดสอบให้ถูกครบทุกวลี แล้วรับตราสถานีไปสะสม — ฟรี ไม่ต้องสมัครสมาชิก',

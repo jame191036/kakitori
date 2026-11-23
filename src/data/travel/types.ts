@@ -1,8 +1,11 @@
 import type { Sentence } from '../grammar/sentence';
 import type { LineDeck } from '../line/types';
 
-/** say = ประโยคที่เราพูด · hear = ประโยคที่จะได้ยิน (พนักงาน / ประกาศ — แค่ฟังให้ออก ไม่ต้องพูดเอง) */
-export type PhraseKind = 'say' | 'hear';
+/**
+ * say = ประโยคที่เราพูด · hear = ประโยคที่จะได้ยิน (พนักงาน / ประกาศ — แค่ฟังให้ออก ไม่ต้องพูดเอง)
+ * · sign = ป้าย (อ่านให้ออก — แสดงตัวหนังสือบนป้ายตัวใหญ่)
+ */
+export type PhraseKind = 'say' | 'hear' | 'sign';
 
 /** วลี 1 รายการ = 1 รายการในสาย (ความคืบหน้าเก็บตาม id) */
 export interface TravelPhrase {

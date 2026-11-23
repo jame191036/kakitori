@@ -34,6 +34,12 @@ const TYPE_LABEL: Record<TravelQType, string> = {
   arrange: 'เรียงวลีให้ตรงกับความหมาย',
 };
 
+/** ป้าย: อ่านอย่างเดียว */
+const SIGN_LABEL: Partial<Record<TravelQType, string>> = {
+  say: 'ป้ายไหนมีความหมายนี้',
+  meaning: 'ป้ายนี้แปลว่าอะไร',
+};
+
 /** ตัวทำแบบฝึก/แบบทดสอบของสายท่องเที่ยว (หน้าตาเดียวกับสายคำศัพท์และไวยากรณ์) */
 export function TravelRunner({ deck, questions, mode, onAnswer, onFinish, onQuit }: TravelRunnerProps) {
   const [queue, setQueue] = useState<TravelQuestion[]>(() => [...questions]);
@@ -126,10 +132,10 @@ export function TravelRunner({ deck, questions, mode, onAnswer, onFinish, onQuit
       </div>
 
       <section className={cx('card', quiz.question)} aria-live="polite">
-        <p className="small muted">{TYPE_LABEL[q.type]}</p>
+        <p className="small muted">{(phrase.kind === 'sign' && SIGN_LABEL[q.type]) || TYPE_LABEL[q.type]}</p>
 
         {(q.type === 'say' || q.type === 'arrange') && <p className={styles.promptThai}>{phrase.thai}</p>}
-        {q.type === 'meaning' && <PhraseFace phrase={phrase} speak />}
+        {q.type === 'meaning' && <PhraseFace phrase={phrase} speak hideReading={phrase.kind === 'sign'} />}
         {q.type === 'listen' && (
           <button type="button" className={cx('btn', quiz.audioBtn)} onClick={() => speak(phrase.written)}>
             <Volume2 size={36} strokeWidth={1.6} aria-hidden />
@@ -164,7 +170,12 @@ export function TravelRunner({ deck, questions, mode, onAnswer, onFinish, onQuit
                     {i + 1}
                   </span>
                   {option ? (
-                    <PhraseFace phrase={option} size="sm" className={styles.choicePhrase} />
+                    <PhraseFace
+                      phrase={option}
+                      size="sm"
+                      hideReading={option.kind === 'sign'}
+                      className={styles.choicePhrase}
+                    />
                   ) : (
                     <span className={styles.choiceThai}>{opt}</span>
                   )}

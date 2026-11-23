@@ -26,6 +26,8 @@ const LOANWORD_SOUNDS: Record<string, string> = {
   シェ: 'she',
   ジェ: 'je',
   チェ: 'che',
+  トゥ: 'tu', // タトゥー (รอยสัก)
+  ドゥ: 'du',
 };
 for (const [k, r] of Object.entries(LOANWORD_SOUNDS)) TABLE.set(k, r);
 

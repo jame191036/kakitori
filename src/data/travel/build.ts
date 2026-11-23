@@ -14,7 +14,7 @@ function wordRomaji(kana: string): string {
   if (kana.endsWith('ですか')) return [kana.slice(0, -3) && wordRomaji(kana.slice(0, -3)), 'desu ka'].filter(Boolean).join(' ');
   if (kana.endsWith('です')) return [wordRomaji(kana.slice(0, -2)), 'desu'].join(' ');
   if (kana.length > 3 && kana.endsWith('でした')) return [wordRomaji(kana.slice(0, -3)), 'deshita'].join(' ');
-  if (/(ます|ません)か$/.test(kana)) return `${kanaToRomaji(kana.slice(0, -1))} ka`;
+  if (/(ます|ません|ました)か$/.test(kana)) return `${kanaToRomaji(kana.slice(0, -1))} ka`;
   return kanaToRomaji(kana);
 }
 
@@ -65,6 +65,8 @@ export function p(
   opts: {
     /** ประโยคที่จะได้ยิน (ไม่ต้องพูดเอง) */
     hear?: boolean;
+    /** ป้าย (อ่านให้ออก) — ไม่มีเครื่องหมายท้าย */
+    sign?: boolean;
     note?: string;
     /** ใช้ทำข้อเรียงประโยค — ใส่เฉพาะวลีที่เรียงได้แบบเดียว */
     arrange?: boolean;
@@ -79,7 +81,7 @@ export function p(
   const kanaSentence = parseSentence(kanaMarkup(markup));
   const chunksKana = kanaSentence.chunks.map((c) => c.map((s) => s.text).join(''));
   const end = sentence.end;
-  const kind: PhraseKind = opts.hear ? 'hear' : 'say';
+  const kind: PhraseKind = opts.sign ? 'sign' : opts.hear ? 'hear' : 'say';
   const romajiChunks = kanaMarkup(ja).replace(END, '').split(' ').filter(Boolean);
   const mark = end.includes('？') ? '?' : end.includes('！') ? '!' : '';
   return {
@@ -97,6 +99,9 @@ export function p(
     ...(opts.avoid ? { avoid: opts.avoid } : {}),
   };
 }
+
+/** ข้อความหลักของวลี: ป้าย = ตัวหนังสือบนป้าย · วลีอื่น = คานะ */
+export const faceText = (phrase: TravelPhrase) => (phrase.kind === 'sign' ? phrase.written : phrase.kana);
 
 /** ข้อความแบบเขียนจริงไม่มีคันจิ (= เหมือนคานะ) ไม่ต้องแสดงซ้ำ */
 export const hasWrittenForm = (phrase: TravelPhrase) => phrase.written.replaceAll(' ', '') !== phrase.kana.replaceAll(' ', '');
