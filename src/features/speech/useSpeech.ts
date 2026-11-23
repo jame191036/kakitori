@@ -48,6 +48,22 @@ export function speak(text: string, rate = 0.8): void {
   synth.speak(u);
 }
 
+/**
+ * อ่านหลายประโยคต่อกัน (บทสนทนา) — pitch ต่างกันให้พอแยกผู้พูดได้ (เครื่องส่วนใหญ่มีเสียงญี่ปุ่นเสียงเดียว)
+ */
+export function speakSequence(lines: readonly { text: string; pitch?: number }[], rate = 0.8): void {
+  if (!synth || !voice) return;
+  synth.cancel();
+  for (const line of lines) {
+    const u = new SpeechSynthesisUtterance(line.text);
+    u.voice = voice;
+    u.lang = voice.lang;
+    u.rate = rate;
+    if (line.pitch) u.pitch = line.pitch;
+    synth.speak(u);
+  }
+}
+
 export function useSpeech(): { available: boolean; speak: (text: string) => void } {
   const available = useSyncExternalStore(subscribe, getAvailable, () => false);
   const say = useCallback((text: string) => speak(text), []);

@@ -23,6 +23,7 @@ import {
   KANA_PRIORITY,
   KANJI_PRIORITY,
   TRAVEL_PRIORITY,
+  DAILY_PRIORITY,
   VOCAB_PRIORITY,
 } from './content-review-priority.mjs';
 
@@ -51,6 +52,7 @@ const { KIND_INFO } = await server.ssrLoadModule('/src/data/exam/build.ts');
 const { examPlain, examWithReading, passageSegs } = await server.ssrLoadModule('/src/data/exam/text.ts');
 const { answerSentence } = await server.ssrLoadModule('/src/features/exam/examLogic.ts');
 const { TRAVEL_DECK } = await server.ssrLoadModule('/src/data/travel/index.ts');
+const { DAILY_DECK } = await server.ssrLoadModule('/src/data/daily/index.ts');
 await server.close();
 
 // จุดที่ควรให้ผู้ตรวจดูก่อน — ตรวจว่า id ในรายการมีอยู่จริง (กันพิมพ์ผิดแล้วหายเงียบ)
@@ -62,6 +64,7 @@ const PRIORITY_TABLES = {
   grammar: GRAMMAR_PRIORITY,
   exam: EXAM_PRIORITY,
   travel: TRAVEL_PRIORITY,
+  daily: DAILY_PRIORITY,
 };
 const priorityOf = (tag, key) => {
   const reason = PRIORITY_TABLES[tag][key];
@@ -296,37 +299,65 @@ for (const set of EXAM_SETS) {
   });
 }
 
-// ท่องเที่ยว: 1 แถวต่อวลี — "คำตัวอย่าง" = แบบเขียนจริง（คานะ）· "หมายเหตุ" = พูด/ได้ยิน + วิธีใช้
-const travelSet = (segment) => `${TRAVEL_DECK.name} · ${segment.title}`;
-for (const segment of TRAVEL_DECK.segments) {
-  for (const lesson of segment.lessons) {
-    for (const id of lesson.words) {
-      const x = TRAVEL_DECK.words[id];
-      const note = [
-        { say: 'ประโยคที่พูด', hear: 'ประโยคที่จะได้ยิน (พนักงาน / ประกาศ)', sign: 'ป้าย (อ่านให้ออก)' }[x.kind],
-        x.note,
-        x.arrange ? 'ใช้ทำข้อเรียงวลี' : '',
-      ]
-        .filter(Boolean)
-        .join(' · ');
-      rows.push(tag([
-        travelSet(segment),
-        `${lessonCode(TRAVEL_DECK, lesson)} ${lesson.title}`,
-        '',
-        '',
-        '',
-        note,
-        x.written === x.kana.replaceAll(' ', '') ? x.kana : `${x.written}（${x.kana}）`,
-        x.romaji,
-        x.thai,
-        '',
-        priorityOf('travel', id),
-        '',
-        '',
-      ], `${TRAVEL_DECK.id}:${id}`, TRAVEL_DECK.name));
+// สายวลี (ท่องเที่ยว · ชีวิตประจำวัน): 1 แถวต่อวลี + 1 แถวต่อบทสนทนาตัวอย่าง
+// แถววลี: "คำตัวอย่าง" = แบบเขียนจริง（คานะ）· "หมายเหตุ" = พูด/ได้ยิน/ป้าย + แบบกันเอง + วิธีใช้
+const phraseSet = (deck, segment) => `${deck.name} · ${segment.title}`;
+const writtenWithKana = (t) => (t.written === t.kana.replaceAll(' ', '') ? t.kana : `${t.written}（${t.kana}）`);
+const KIND_NOTE = { say: 'ประโยคที่พูด', hear: 'ประโยคที่จะได้ยิน (พนักงาน / ประกาศ)', sign: 'ป้าย (อ่านให้ออก)' };
+function addPhraseRows(deck, priorityTag) {
+  for (const segment of deck.segments) {
+    for (const lesson of segment.lessons) {
+      const where = `${lessonCode(deck, lesson)} ${lesson.title}`;
+      for (const id of lesson.words) {
+        const x = deck.words[id];
+        const note = [
+          KIND_NOTE[x.kind],
+          x.casual ? `แบบกันเอง: ${writtenWithKana(x.casual)}` : '',
+          x.note,
+          x.arrange ? 'ใช้ทำข้อเรียงวลี' : '',
+        ]
+          .filter(Boolean)
+          .join(' · ');
+        rows.push(tag([
+          phraseSet(deck, segment),
+          where,
+          '',
+          '',
+          '',
+          note,
+          writtenWithKana(x),
+          x.romaji,
+          x.thai,
+          '',
+          priorityOf(priorityTag, id),
+          '',
+          '',
+        ], `${deck.id}:${id}`, deck.name));
+      }
+      const dlg = deck.dialogues?.[lesson.id];
+      if (dlg) {
+        rows.push(tag([
+          phraseSet(deck, segment),
+          where,
+          '',
+          '',
+          '',
+          `บทสนทนาตัวอย่าง: ${dlg.scene}`,
+          dlg.lines.map((l) => `${l.speaker}: ${writtenWithKana(l)}`).join(' / '),
+          dlg.lines.map((l) => l.romaji).join(' / '),
+          dlg.lines.map((l) => `${l.speaker}: ${l.thai}`).join(' / '),
+          '',
+          '',
+          '',
+          '',
+        ], `${deck.id}:${lesson.id}#dialogue`, deck.name));
+      }
     }
   }
 }
+addPhraseRows(TRAVEL_DECK, 'travel');
+addPhraseRows(DAILY_DECK, 'daily');
+const travelSet = (segment) => phraseSet(TRAVEL_DECK, segment);
 
 const missing = Object.entries(PRIORITY_TABLES)
   .flatMap(([tag, table]) => Object.keys(table).map((k) => `${tag}:${k}`))
@@ -367,6 +398,13 @@ const GRAMMAR_NOTES = [
   'ข้อเติมคำ: ผู้เรียนเห็นประโยคที่เว้น "ส่วนไวยากรณ์" ไว้ พร้อมคำแปลไทยเป็นคำใบ้ แล้วเลือกจาก 4 ตัวเลือก — ช่วยดูว่าตัวเลือกผิดผิดจริงทุกตัว (ไม่มีตัวไหนถูกได้อีก)',
   'ประโยคที่เขียนว่า "ใช้ทำข้อเรียงประโยค" ผู้เรียนต้องเรียงชิ้นประโยคตามคำแปล — ช่วยดูว่าเรียงได้แบบเดียวจริง',
   'คันจิในประโยคใช้เฉพาะคันจิ N5 พร้อมคำอ่านตัวเล็กด้านบน คำที่มีคันจินอก N5 เขียนเป็นคานะ (แบบข้อสอบ N5)',
+];
+const DAILY_INTRO =
+  'วลีสุภาพสำหรับคุยกับคนญี่ปุ่นและใช้ชีวิตในญี่ปุ่น (ทยอยเปิดทีละ 3 ช่วง) ทุกบทมีบทสนทนาตัวอย่าง · **วลี บทสนทนา คำแปล และวิธีใช้ ผู้พัฒนาเขียนเอง ยังไม่มีใครตรวจ**';
+const DAILY_NOTES = [
+  'ภาษาสุภาพ (です/ます) เป็นหลัก · "แบบกันเอง" ในหมายเหตุคือรูปที่ใช้กับเพื่อนหรือคนสนิท — ช่วยดูว่าเป็นธรรมชาติไหม',
+  'แถว "บทสนทนาตัวอย่าง" มีทุกบรรทัดของบทสนทนาในแถวเดียว (คั่นด้วย /) — ช่วยดูว่าคุยต่อกันเป็นธรรมชาติ ระดับความสุภาพเหมาะกับสถานการณ์',
+  'โรมาจิสร้างอัตโนมัติจากคานะเหมือนสายท่องเที่ยว',
 ];
 const TRAVEL_INTRO =
   'วลีที่ใช้ตอนเที่ยวญี่ปุ่น แบ่งตามสถานการณ์ (ทยอยเปิดทีละ 3 ช่วง) · **วลี คำแปล และวิธีใช้ ผู้พัฒนาเขียนเอง ยังไม่มีใครตรวจ**';
@@ -498,6 +536,14 @@ const md = [
   ...TRAVEL_DECK.segments
     .filter((s) => s.lessons.length)
     .flatMap((s) => [`### ${s.title} (${s.name})`, '', mdTable(rows.filter((r) => r[0] === travelSet(s))), '']),
+  `## ${DAILY_DECK.name} — ${Object.keys(DAILY_DECK.words).length} วลี (${DAILY_DECK.lessons.length} บท · เปิดแล้ว ${DAILY_DECK.segments.filter((s) => s.lessons.length).length} จาก ${DAILY_DECK.segments.length} ช่วง)`,
+  '',
+  DAILY_INTRO,
+  ...DAILY_NOTES.map((n) => `- ${n}`),
+  '',
+  ...DAILY_DECK.segments
+    .filter((s) => s.lessons.length)
+    .flatMap((s) => [`### ${s.title} (${s.name})`, '', mdTable(rows.filter((r) => r[0] === phraseSet(DAILY_DECK, s))), '']),
 ].join('\n');
 
 // ── Excel สำหรับส่งให้ผู้ตรวจ ──
@@ -602,6 +648,18 @@ const SHEETS = [
       ['โรมาจิ', at(7), 30],
       ['ความหมาย', at(8), 30],
       ['พูด/ได้ยิน · วิธีใช้', at(5), 46],
+    ],
+  },
+  {
+    name: DAILY_DECK.name,
+    match: (r) => r.sheet === DAILY_DECK.name,
+    cols: [
+      ['ช่วง', segmentOfSet, 18],
+      ['บท', at(1), 24],
+      ['วลี / บทสนทนา（คานะ）', at(6), 48],
+      ['โรมาจิ', at(7), 30],
+      ['ความหมาย', at(8), 34],
+      ['พูด/ได้ยิน · แบบกันเอง · วิธีใช้', at(5), 46],
     ],
   },
 ];
@@ -739,6 +797,10 @@ wb.creator = 'kakitori';
   line(TRAVEL_DECK.name, { bold: true });
   line(TRAVEL_INTRO);
   for (const note of TRAVEL_NOTES) line(`• ${note}`);
+  gap();
+  line(DAILY_DECK.name, { bold: true });
+  line(DAILY_INTRO);
+  for (const note of DAILY_NOTES) line(`• ${note}`);
   gap();
   line('คู่คำฝึกฟัง', { bold: true });
   line(PAIRS_NOTE);

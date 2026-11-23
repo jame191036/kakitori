@@ -23,6 +23,15 @@ import styles from './LinePage.module.css';
 
 const STATE_TEXT = { done: 'ผ่านแล้ว', current: 'บทถัดไป', todo: 'ยังไม่ถึง' } as const;
 
+/**
+ * ความกว้างขั้นต่ำต่อสถานีบนแผนที่ของช่วง — ชื่อสถานีไม่ตัดบรรทัด ชื่อยาว (เช่น まいにちの あいさつ)
+ * จึงต้องกว้างพอไม่ให้ทับชื่อข้างๆ (ตัวคานะบนมือถือ ~18px ต่อตัว) · เกินจอแล้วแถบเลื่อนซ้าย-ขวาได้
+ */
+function stopWidth(stops: readonly { name: string }[]): number {
+  const longest = Math.max(0, ...stops.map((s) => [...s.name].length));
+  return Math.max(120, longest * 19 + 24);
+}
+
 export interface LinePageProps<T extends { id: string }> {
   deck: LineDeck<T>;
   lineTone: Tone;
@@ -165,7 +174,7 @@ export function LinePage<T extends { id: string }>({
                   <ChevronDown className={styles.chev} size={20} strokeWidth={2} aria-hidden />
                 </summary>
                 <div className={styles.segBody}>
-                  <RouteMap stops={stops} states={segStates} scroll minStop={120} />
+                  <RouteMap stops={stops} states={segStates} scroll minStop={stopWidth(stops)} />
                   <LessonCards
                     deck={deck}
                     lessons={segment.lessons}

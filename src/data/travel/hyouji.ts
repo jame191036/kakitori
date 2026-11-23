@@ -1,4 +1,4 @@
-import { lesson, p, segment } from './build';
+import { lesson, p, segment } from '../phrase/build';
 
 /** ช่วง 10: ป้ายที่เห็นบ่อย — อ่านให้ออก (ป้ายเขียนด้วยคันจิ ไม่มีคำอ่าน) */
 export const HYOUJI = segment('hyouji', 'ひょうじ', 'ป้ายที่เห็นบ่อย', [

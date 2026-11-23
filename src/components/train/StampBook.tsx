@@ -13,6 +13,7 @@ export function StampBook({ stops, states }: StampBookProps) {
     <ol className={styles.stamps}>
       {stops.map((st, i) => {
         const got = states[i] === 'done';
+        const len = [...st.name].length;
         return (
           <li
             key={st.code}
@@ -20,8 +21,9 @@ export function StampBook({ stops, states }: StampBookProps) {
             style={got ? { rotate: `${((i * 37) % 17) - 8}deg` } : undefined}
             aria-label={`${st.label} — ${got ? 'ได้ตราแล้ว' : 'ยังไม่ได้'}`}
           >
-            <span className={cx('kana', styles.kana, [...st.name].length > 2 && styles.long)} aria-hidden>
-              {st.name}
+            <span className={cx('kana', styles.kana, len > 2 && styles.long, len > 5 && styles.longer)} aria-hidden>
+              {/* ・ เป็นจุดตัดบรรทัดได้ (ชื่อยาวตัดตรงช่องว่างหรือ ・ ก่อน) */}
+              {len > 5 ? st.name.replace(/・/g, '・​') : st.name}
             </span>
             <span className={styles.code} aria-hidden>
               {st.code}

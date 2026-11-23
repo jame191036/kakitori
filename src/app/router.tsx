@@ -5,6 +5,9 @@ import { AppLayout } from './AppLayout';
 import { LegacyScriptRedirect } from './LegacyScriptRedirect';
 import {
   AboutPage,
+  DailyLessonPage,
+  DailyLinePage,
+  DailyReviewPage,
   ExamHubPage,
   ExamPage,
   GrammarLessonPage,
@@ -78,6 +81,9 @@ export const router = createBrowserRouter([
           { path: 'travel', element: <TravelLinePage /> },
           { path: 'travel/review', element: <TravelReviewPage /> },
           { path: 'travel/:lessonId', element: <TravelLessonPage /> },
+          { path: 'daily', element: <DailyLinePage /> },
+          { path: 'daily/review', element: <DailyReviewPage /> },
+          { path: 'daily/:lessonId', element: <DailyLessonPage /> },
           { path: ':script/*', element: <LegacyScriptRedirect /> },
           { path: '*', element: <NotFoundPage /> },
         ],

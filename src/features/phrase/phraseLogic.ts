@@ -1,5 +1,5 @@
 import { lessonWords, type LineLesson } from '../../data/line';
-import type { TravelDeck, TravelPhrase } from '../../data/travel/types';
+import type { PhraseDeck, Phrase } from '../../data/phrase/types';
 import { shuffle, type Rng } from '../../lib/shuffle';
 import { lessonOfWord } from '../line/lineLogic';
 
@@ -11,12 +11,12 @@ import { lessonOfWord } from '../line/lineLogic';
  * - arrange: ความหมาย → เรียงชิ้นวลี (เฉพาะวลีที่ทำเครื่องหมาย · แบบฝึกเท่านั้น)
  */
 
-export type TravelQType = 'say' | 'meaning' | 'listen' | 'arrange';
+export type PhraseQType = 'say' | 'meaning' | 'listen' | 'arrange';
 
-export interface TravelQuestion {
+export interface PhraseQuestion {
   id: string;
-  type: TravelQType;
-  phrase: TravelPhrase;
+  type: PhraseQType;
+  phrase: Phrase;
   /** say: id ของวลี · meaning/listen: ความหมายไทย (รวมคำตอบทั้งคู่) */
   choices: string[];
   /** say: id ของวลี · meaning/listen: ความหมายไทย · arrange: คานะของวลี */
@@ -31,24 +31,24 @@ interface Opts {
   rng?: Rng;
 }
 
-const bare = (x: TravelPhrase) => x.kana.replace(/[\s、。？！]/g, '');
+const bare = (x: Phrase) => x.kana.replace(/[\s、。？！]/g, '');
 
 /**
  * ไม่ใช้เป็นตัวหลอกของกันและกัน: วลีหนึ่งอยู่ในอีกวลี (いくらですか กับ しんじゅくまで いくらですか)
  * หรือข้อมูลระบุว่าใช้แทนกันได้ (avoid — เช่น 袋はいりません กับ だいじょうぶです)
  */
-export const phrasesOverlap = (a: TravelPhrase, b: TravelPhrase) =>
+export const phrasesOverlap = (a: Phrase, b: Phrase) =>
   bare(a).includes(bare(b)) || bare(b).includes(bare(a)) || !!a.avoid?.includes(b.id) || !!b.avoid?.includes(a.id);
 
 /** ตัวหลอก 3 ตัว: บทเดียวกันก่อน แล้วจึงทั้งสาย */
 function pickOthers(
-  x: TravelPhrase,
-  near: readonly TravelPhrase[],
-  all: readonly TravelPhrase[],
-  ok: (o: TravelPhrase) => boolean,
+  x: Phrase,
+  near: readonly Phrase[],
+  all: readonly Phrase[],
+  ok: (o: Phrase) => boolean,
   rng: Rng,
-): TravelPhrase[] {
-  const picked: TravelPhrase[] = [];
+): Phrase[] {
+  const picked: Phrase[] = [];
   for (const o of [...shuffle(near, rng), ...shuffle(all, rng)]) {
     if (picked.length === 3) break;
     if (o.id !== x.id && !picked.includes(o) && ok(o)) picked.push(o);
@@ -67,19 +67,19 @@ function shuffledTiles(n: number, rng: Rng): number[] {
 }
 
 function make(
-  type: TravelQType,
-  x: TravelPhrase,
-  pool: { near: readonly TravelPhrase[]; all: readonly TravelPhrase[] },
+  type: PhraseQType,
+  x: Phrase,
+  pool: { near: readonly Phrase[]; all: readonly Phrase[] },
   { audio, rng = Math.random }: Opts,
   key: string,
-): TravelQuestion {
+): PhraseQuestion {
   // ใช้แบบที่ทำได้: ข้อเรียงใช้กับวลีที่ทำเครื่องหมาย · ข้อเลือกวลีใช้กับวลีที่พูดและป้าย ·
   // ข้อฟังต้องมีเสียง (ป้ายอ่านอย่างเดียว ไม่มีข้อฟัง)
   let t = type;
   if (t === 'arrange' && !x.arrange) t = 'say';
   if (t === 'say' && x.kind === 'hear') t = 'listen';
   if (t === 'listen' && (!audio || x.kind === 'sign')) t = 'meaning';
-  const q: TravelQuestion = { id: `${t}:${x.id}:${key}`, type: t, phrase: x, choices: [], answer: '', tiles: [] };
+  const q: PhraseQuestion = { id: `${t}:${x.id}:${key}`, type: t, phrase: x, choices: [], answer: '', tiles: [] };
   if (t === 'say') {
     const others = pickOthers(x, pool.near, pool.all, (o) => o.kind === x.kind && !phrasesOverlap(o, x), rng);
     q.choices = shuffle([x, ...others], rng).map((o) => o.id);
@@ -96,20 +96,20 @@ function make(
 }
 
 /** แบบข้อของแบบฝึก (วลีละ 2 ข้อ) */
-const PRACTICE: Record<TravelPhrase['kind'], (x: TravelPhrase) => [TravelQType, TravelQType]> = {
+const PRACTICE: Record<Phrase['kind'], (x: Phrase) => [PhraseQType, PhraseQType]> = {
   say: (x) => ['say', x.arrange ? 'arrange' : 'listen'],
   hear: () => ['listen', 'meaning'],
   sign: () => ['meaning', 'say'],
 };
 
 /** แบบข้อของแบบทดสอบ/ทบทวน (วลีละ 1 ข้อ) */
-const TEST: Record<TravelPhrase['kind'], TravelQType> = { say: 'say', hear: 'listen', sign: 'meaning' };
+const TEST: Record<Phrase['kind'], PhraseQType> = { say: 'say', hear: 'listen', sign: 'meaning' };
 
 /**
  * แบบฝึก: วลีละ 2 ข้อ — วลีที่พูด: เลือกวลีที่ควรพูด + เรียงวลี (หรือฟัง) · วลีที่ได้ยิน: ฟัง + อ่านความหมาย ·
  * ป้าย: ดูป้ายเลือกความหมาย + ดูความหมายเลือกป้าย — ไม่นับเป็นผลสอบ
  */
-export function practiceQuestions(deck: TravelDeck, lesson: LineLesson, opts: Opts): TravelQuestion[] {
+export function practiceQuestions(deck: PhraseDeck, lesson: LineLesson, opts: Opts): PhraseQuestion[] {
   const items = lessonWords(deck, lesson);
   const pool = { near: items, all: Object.values(deck.words) };
   const qs = items.flatMap((x) => PRACTICE[x.kind](x).map((t, i) => make(t, x, pool, opts, String(i + 1))));
@@ -117,12 +117,12 @@ export function practiceQuestions(deck: TravelDeck, lesson: LineLesson, opts: Op
 }
 
 /** ข้อสอบ: วลีละ 1 ข้อ — วลีที่พูด = เลือกวลีที่ควรพูด · วลีที่ได้ยิน = ฟังแล้วเลือกความหมาย · ป้าย = ดูป้ายแล้วเลือกความหมาย */
-function oneEach(items: readonly TravelPhrase[], near: (x: TravelPhrase) => readonly TravelPhrase[], all: readonly TravelPhrase[], opts: Opts) {
+function oneEach(items: readonly Phrase[], near: (x: Phrase) => readonly Phrase[], all: readonly Phrase[], opts: Opts) {
   return shuffle(items, opts.rng).map((x) => make(TEST[x.kind], x, { near: near(x), all }, opts, 't'));
 }
 
 /** แบบทดสอบ: วลีละ 1 ข้อ — ถูกครบทุกวลี = ผ่านสถานี */
-export function testQuestions(deck: TravelDeck, lesson: LineLesson, opts: Opts & { only?: readonly string[] }): TravelQuestion[] {
+export function testQuestions(deck: PhraseDeck, lesson: LineLesson, opts: Opts & { only?: readonly string[] }): PhraseQuestion[] {
   const items = lessonWords(deck, lesson);
   return oneEach(
     items.filter((x) => !opts.only || opts.only.includes(x.id)),
@@ -133,7 +133,7 @@ export function testQuestions(deck: TravelDeck, lesson: LineLesson, opts: Opts &
 }
 
 /** แบบทดสอบทบทวน: วลีจากหลายบท (ตัวหลอกมาจากบทของวลีนั้นก่อน) */
-export function reviewQuestions(deck: TravelDeck, items: readonly TravelPhrase[], opts: Opts): TravelQuestion[] {
+export function reviewQuestions(deck: PhraseDeck, items: readonly Phrase[], opts: Opts): PhraseQuestion[] {
   return oneEach(
     items,
     (x) => {

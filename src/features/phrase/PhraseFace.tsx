@@ -1,9 +1,10 @@
 import { Ear, MessageCircle, Signpost } from 'lucide-react';
 import { SpeakButton } from '../../components/SpeakButton';
-import { hasWrittenForm } from '../../data/travel/build';
-import type { TravelPhrase } from '../../data/travel/types';
+import { hasWrittenForm } from '../../data/phrase/build';
+import type { Phrase, PhraseText } from '../../data/phrase/types';
 import { cx } from '../../lib/cx';
-import styles from './travel.module.css';
+import { updateSettings, useSettings } from '../settings/settings';
+import styles from './phrase.module.css';
 
 const KIND_TAG = {
   say: { icon: MessageCircle, label: 'ประโยคที่พูด', className: styles.kindSay },
@@ -12,7 +13,7 @@ const KIND_TAG = {
 } as const;
 
 /** ป้าย "พูด" / "ได้ยิน" / "ป้าย" */
-export function KindTag({ phrase }: { phrase: TravelPhrase }) {
+export function KindTag({ phrase }: { phrase: Phrase }) {
   const { icon: Icon, label, className } = KIND_TAG[phrase.kind];
   return (
     <span className={cx(styles.kind, className)}>
@@ -21,8 +22,54 @@ export function KindTag({ phrase }: { phrase: TravelPhrase }) {
   );
 }
 
+/** ปุ่มแสดง/ซ่อนโรมาจิ (จำค่าไว้ในเครื่อง · ใช้ร่วมกันทุกสายวลี) */
+export function RomajiToggle() {
+  const { romaji } = useSettings();
+  return (
+    <button
+      type="button"
+      className={cx('btn btn-sm', styles.romajiToggle)}
+      aria-pressed={romaji}
+      onClick={() => updateSettings({ romaji: !romaji })}
+    >
+      <span className={styles.romajiToggleAbc} aria-hidden>
+        abc
+      </span>
+      {romaji ? 'ซ่อนโรมาจิ' : 'แสดงโรมาจิ'}
+    </button>
+  );
+}
+
+interface TextLinesProps {
+  text: PhraseText;
+  /** แบบเขียนจริงตัวเล็ก (ถ้ามีคันจิ) */
+  written?: boolean;
+}
+
+/** คานะใหญ่ · แบบเขียนจริงตัวเล็ก · โรมาจิ (ตามค่าตั้ง) — ใช้ทั้งวลี แบบกันเอง และบทสนทนา */
+export function TextLines({ text, written = true }: TextLinesProps) {
+  const { romaji } = useSettings();
+  return (
+    <>
+      <p className={cx('kana', styles.kana)} lang="ja">
+        {text.kana}
+      </p>
+      {written && hasWrittenForm(text) && (
+        <p className={cx('kana', styles.written)} lang="ja">
+          {text.written}
+        </p>
+      )}
+      {romaji && (
+        <p className={styles.romaji} lang="ja-Latn">
+          {text.romaji}
+        </p>
+      )}
+    </>
+  );
+}
+
 interface PhraseFaceProps {
-  phrase: TravelPhrase;
+  phrase: Phrase;
   /** lg = การ์ดเรียน/โจทย์ · sm = เฉลย/ตัวเลือก */
   size?: 'lg' | 'sm';
   /** แสดงความหมายไทยด้วย */
@@ -39,6 +86,7 @@ interface PhraseFaceProps {
  * ป้าย: ตัวหนังสือบนป้ายในกรอบ · คำอ่าน + โรมาจิ
  */
 export function PhraseFace({ phrase, size = 'lg', thai = false, speak = false, hideReading = false, className }: PhraseFaceProps) {
+  const { romaji } = useSettings();
   if (phrase.kind === 'sign') {
     return (
       <div className={cx(styles.face, size === 'sm' && styles.faceSm, className)}>
@@ -49,8 +97,13 @@ export function PhraseFace({ phrase, size = 'lg', thai = false, speak = false, h
           <p className={styles.signReading}>
             <span className="kana" lang="ja">
               {phrase.kana}
-            </span>{' '}
-            · <span lang="ja-Latn">{phrase.romaji}</span>
+            </span>
+            {romaji && (
+              <>
+                {' '}
+                · <span lang="ja-Latn">{phrase.romaji}</span>
+              </>
+            )}
           </p>
         )}
         {thai && <p className={styles.thai}>{phrase.thai}</p>}
@@ -60,17 +113,7 @@ export function PhraseFace({ phrase, size = 'lg', thai = false, speak = false, h
   }
   return (
     <div className={cx(styles.face, size === 'sm' && styles.faceSm, className)}>
-      <p className={cx('kana', styles.kana)} lang="ja">
-        {phrase.kana}
-      </p>
-      {hasWrittenForm(phrase) && (
-        <p className={cx('kana', styles.written)} lang="ja">
-          {phrase.written}
-        </p>
-      )}
-      <p className={styles.romaji} lang="ja-Latn">
-        {phrase.romaji}
-      </p>
+      <TextLines text={phrase} />
       {thai && <p className={styles.thai}>{phrase.thai}</p>}
       {speak && <SpeakButton text={phrase.written} size={size === 'sm' ? 'sm' : 'md'} label="ฟังวลีนี้" />}
     </div>

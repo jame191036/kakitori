@@ -1,7 +1,7 @@
 import { travelPath, travelReviewPath } from '../app/paths';
 import { LinePage } from '../components/line/LinePage';
 import { TRAVEL_DECK } from '../data/travel';
-import { faceText } from '../data/travel/build';
+import { faceText } from '../data/phrase/build';
 
 /** หมวดท่องเที่ยว = สายวลีท่องเที่ยว (หน้าแผนที่สายใช้ร่วมกับสาย N5 — components/line/LinePage) */
 export default function TravelLinePage() {

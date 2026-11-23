@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { GrammarDeck } from './grammar/types';
 import type { KanjiDeck } from './kanji/types';
-import type { TravelDeck } from './travel/types';
+import type { PhraseDeck } from './phrase/types';
 import type { VocabDeck } from './vocab';
 
 /**
@@ -13,16 +13,18 @@ export interface LineDecks {
   vocab: VocabDeck;
   kanji: KanjiDeck;
   grammar: GrammarDeck;
-  travel: TravelDeck;
+  travel: PhraseDeck;
+  daily: PhraseDeck;
 }
 
 let loaded: LineDecks | null = null;
 let loading: Promise<LineDecks> | null = null;
 
 export function loadLineDecks(): Promise<LineDecks> {
-  loading ??= Promise.all([import('./vocab/n5'), import('./kanji/n5'), import('./grammar/n5'), import('./travel')])
+  loading ??= Promise.all([import('./vocab/n5'), import('./kanji/n5'), import('./grammar/n5'), import('./travel'), import('./daily')])
     .then(
-      ([v, k, g, t]) => (loaded = { vocab: v.N5_DECK, kanji: k.KANJI_N5, grammar: g.GRAMMAR_N5, travel: t.TRAVEL_DECK }),
+      ([v, k, g, t, d]) =>
+        (loaded = { vocab: v.N5_DECK, kanji: k.KANJI_N5, grammar: g.GRAMMAR_N5, travel: t.TRAVEL_DECK, daily: d.DAILY_DECK }),
     )
     .catch((err: unknown) => {
       // โหลดไม่สำเร็จ (เช่น ออฟไลน์ก่อนแคชเสร็จ) — ครั้งหน้าลองใหม่

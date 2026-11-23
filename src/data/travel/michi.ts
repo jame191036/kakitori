@@ -1,4 +1,4 @@
-import { lesson, p, segment } from './build';
+import { lesson, p, segment } from '../phrase/build';
 
 /** ช่วง 5: ถามทาง — ถามว่าอยู่ที่ไหน · ฟังคนบอกทาง · หาที่ในอาคาร */
 export const MICHI = segment('michi', 'みち', 'ถามทาง', [

@@ -42,6 +42,8 @@ export interface Settings {
   dailyGoal: number;
   /** แสดงคำอ่านตัวเล็กเหนือคันจิ (furigana) ในประโยคไวยากรณ์ */
   furigana: boolean;
+  /** แสดงโรมาจิใต้วลี (สายท่องเที่ยว · ชีวิตประจำวัน) */
+  romaji: boolean;
 }
 
 export const SETTINGS_KEY = 'jp-learn:settings:v1';
@@ -77,6 +79,7 @@ const defaults: Settings = {
   introSeen: false,
   dailyGoal: DEFAULT_GOAL,
   furigana: true,
+  romaji: true,
 };
 
 function sanitizeQuizPrefs(raw: unknown): QuizPrefs {
@@ -109,6 +112,7 @@ function sanitize(raw: unknown): Settings {
     introSeen: raw.introSeen === true,
     dailyGoal: sanitizeGoal(raw.dailyGoal),
     furigana: raw.furigana !== false,
+    romaji: raw.romaji !== false,
   };
 }
 

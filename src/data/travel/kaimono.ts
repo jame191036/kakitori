@@ -1,4 +1,4 @@
-import { lesson, p, segment } from './build';
+import { lesson, p, segment } from '../phrase/build';
 
 /** ช่วง 4: ซื้อของ — ร้านค้า แคชเชียร์ ร้านสะดวกซื้อ */
 export const KAIMONO = segment('kaimono', 'かいもの', 'ซื้อของ', [

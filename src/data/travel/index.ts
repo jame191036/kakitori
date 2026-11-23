@@ -1,4 +1,4 @@
-import { buildDeck } from './build';
+import { buildDeck } from '../phrase/build';
 import { HOTERU } from './hoteru';
 import { HYOUJI } from './hyouji';
 import { KAIMONO } from './kaimono';
@@ -9,7 +9,7 @@ import { KUUKOU } from './kuukou';
 import { MICHI } from './michi';
 import { NORIMONO } from './norimono';
 import { RESTAURANT } from './restaurant';
-import type { TravelPhrase } from './types';
+import type { Phrase } from '../phrase/types';
 
 /**
  * สายท่องเที่ยว — วลีตามสถานการณ์ 10 ช่วง (แผน: docs/travel-plan.md)
@@ -19,7 +19,7 @@ import type { TravelPhrase } from './types';
  *
  * เปิดช่วงตามลำดับเสมอ (เลขสถานีของบทเดิมจะได้ไม่เปลี่ยน) · id ของวลีและบทห้ามเปลี่ยน
  */
-export const TRAVEL_DECK = buildDeck<TravelPhrase>({ id: 'travel', progressKey: 'travel', name: 'ท่องเที่ยว', letter: 'T' }, [
+export const TRAVEL_DECK = buildDeck<Phrase>({ id: 'travel', progressKey: 'travel', name: 'ท่องเที่ยว', letter: 'T' }, [
   KIHON,
   NORIMONO,
   RESTAURANT,

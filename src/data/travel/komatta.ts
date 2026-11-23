@@ -1,4 +1,4 @@
-import { lesson, p, segment } from './build';
+import { lesson, p, segment } from '../phrase/build';
 
 /** ช่วง 9: เหตุฉุกเฉิน — ขอความช่วยเหลือ ของหาย · ไม่สบาย */
 export const KOMATTA = segment('komatta', 'こまったとき', 'เหตุฉุกเฉิน', [

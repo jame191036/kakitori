@@ -18,6 +18,7 @@
  *   /n5/exam/:set             ทำข้อสอบชุดนั้น · ?result=<id> ดูผลสอบครั้งนั้น
  *   /travel                   หมวดท่องเที่ยว = สายวลีท่องเที่ยว (แผนที่บท + ตรา)
  *   /travel/:lesson           บทเรียน: เรียน → ฝึก → ทดสอบ · /travel/review ทบทวนวลี
+ *   /daily                    หมวดชีวิตประจำวัน = สายวลี + บทสนทนา · /daily/:lesson · /daily/review
  * URL เดิม (/hiragana/…) ส่งต่อมาที่ /kana/hiragana/… ให้อัตโนมัติ
  */
 
@@ -25,6 +26,17 @@ export const KANA_ROOT = '/kana';
 export const REVIEW_ROOT = '/review';
 export const N5_ROOT = '/n5';
 export const TRAVEL_ROOT = '/travel';
+export const DAILY_ROOT = '/daily';
+
+/** สายชีวิตประจำวัน / บทเรียน เช่น dailyPath('sasou') → /daily/sasou */
+export function dailyPath(lessonId?: string): string {
+  return `${DAILY_ROOT}${lessonId ? `/${lessonId}` : ''}`;
+}
+
+/** หน้าทบทวนวลีชีวิตประจำวัน — start = เริ่มทบทวนชุดนั้นทันที (ใช้จากการ์ด "วันนี้") */
+export function dailyReviewPath(start?: 'due' | 'weak'): string {
+  return `${DAILY_ROOT}/review${start ? `?start=${start}` : ''}`;
+}
 
 /** สายท่องเที่ยว / บทเรียน เช่น travelPath('kippu') → /travel/kippu */
 export function travelPath(lessonId?: string): string {

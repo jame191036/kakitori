@@ -1,4 +1,4 @@
-import { lesson, p, segment } from './build';
+import { lesson, p, segment } from '../phrase/build';
 
 /** ช่วง 3: ร้านอาหาร */
 export const RESTAURANT = segment('restaurant', 'レストラン', 'ร้านอาหาร', [

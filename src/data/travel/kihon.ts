@@ -1,4 +1,4 @@
-import { lesson, p, segment } from './build';
+import { lesson, p, segment } from '../phrase/build';
 
 /** ช่วง 1: วลีพื้นฐานที่ใช้ได้ทุกที่ */
 export const KIHON = segment('kihon', 'きほん', 'วลีพื้นฐาน', [

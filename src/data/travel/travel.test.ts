@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { lessonCode } from '../line';
-import { chunkRomaji, hasWrittenForm, p } from './build';
+import { chunkRomaji, hasWrittenForm, p } from '../phrase/build';
 import { TRAVEL_DECK } from './index';
 
 const deck = TRAVEL_DECK;

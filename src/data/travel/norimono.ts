@@ -1,4 +1,4 @@
-import { lesson, p, segment } from './build';
+import { lesson, p, segment } from '../phrase/build';
 
 /** ช่วง 2: รถไฟ รถเมล์ แท็กซี่ — ชื่อสถานีเขียนเป็นคานะ (เปลี่ยนเป็นที่ที่จะไปได้) */
 export const NORIMONO = segment('norimono', 'のりもの', 'รถไฟ รถเมล์ แท็กซี่', [

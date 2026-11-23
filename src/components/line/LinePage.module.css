@@ -427,6 +427,9 @@ details[open] > summary .chev {
 .lessonJa {
   color: var(--c-text);
   font-size: 0.95rem;
+  /* ชื่อหลายคำ (まいにちの あいさつ) ตัดบรรทัดตรงช่องว่าง ไม่ตัดกลางคำ */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .lessonTitle {

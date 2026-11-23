@@ -33,6 +33,8 @@ async function* sourceFiles(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name);
     if (entry.isDirectory()) yield* sourceFiles(path);
+    // ข้ามไฟล์ที่สคริปต์นี้สร้างเอง (รายชื่อคันจิรอบก่อน) — ไม่งั้นคันจิที่เลิกใช้จะค้างอยู่ในฟอนต์ตลอดไป
+    else if (path === CHARS_FILE) continue;
     else if (/\.(ts|tsx)$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name)) yield path;
   }
 }

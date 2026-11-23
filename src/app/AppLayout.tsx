@@ -21,6 +21,8 @@ import { GoalToast } from './GoalToast';
 import { getLesson } from '../data/line';
 import { useLineDecks, type LineDecks } from '../data/lineDecks';
 import {
+  DAILY_ROOT,
+  dailyPath,
   examPath,
   grammarPath,
   KANA_ROOT,
@@ -58,6 +60,7 @@ const LESSON_LINES = [
   { root: `${N5_ROOT}/kanji`, above: [N5_CRUMB], label: 'คันจิ', deck: 'kanji', href: kanjiPath },
   { root: `${N5_ROOT}/grammar`, above: [N5_CRUMB], label: 'ไวยากรณ์', deck: 'grammar', href: grammarPath },
   { root: TRAVEL_ROOT, above: [], label: 'ใช้ท่องเที่ยว', deck: 'travel', href: travelPath },
+  { root: DAILY_ROOT, above: [], label: 'ใช้ในชีวิตประจำวัน', deck: 'daily', href: dailyPath },
 ] as const;
 
 /** หน้าบทเรียนของสายบทเรียน (ต้องใช้ข้อมูลสายเพื่อแสดงชื่อบท) */

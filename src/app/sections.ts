@@ -1,4 +1,4 @@
-import { KANA_ROOT, N5_ROOT, TRAVEL_ROOT } from './paths';
+import { DAILY_ROOT, KANA_ROOT, N5_ROOT, TRAVEL_ROOT } from './paths';
 
 /**
  * หมวดหลักของเว็บ = "สายรถไฟ" บนหน้าแรก — หมวดที่ยังไม่มี to แสดงเป็น 工事中 (กำลังสร้าง กดไม่ได้)
@@ -32,7 +32,14 @@ export const SECTIONS: readonly Section[] = [
     tone: 'travel',
     to: TRAVEL_ROOT,
   },
-  { id: 'daily', name: 'ใช้ในชีวิตประจำวัน', desc: 'คำศัพท์และประโยคสุภาพที่ใช้บ่อย', glyph: '日', tone: 'daily' },
+  {
+    id: 'daily',
+    name: 'ใช้ในชีวิตประจำวัน',
+    desc: 'คุยกับคนญี่ปุ่นและใช้ชีวิตในญี่ปุ่น — ภาษาสุภาพ มีบทสนทนาตัวอย่างทุกบท',
+    glyph: '日',
+    tone: 'daily',
+    to: DAILY_ROOT,
+  },
   { id: 'anime', name: 'ดูการ์ตูน / ซีรีส์', desc: 'ภาษาพูดแบบกันเอง และฝึกฟัง', glyph: '漫', tone: 'anime' },
   {
     id: 'jlpt-n5',

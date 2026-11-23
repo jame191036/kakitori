@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { lessonWords } from '../../data/line';
 import { TRAVEL_DECK } from '../../data/travel';
-import { phrasesOverlap, practiceQuestions, reviewQuestions, testQuestions, type TravelQuestion } from './travelLogic';
+import { phrasesOverlap, practiceQuestions, reviewQuestions, testQuestions, type PhraseQuestion } from './phraseLogic';
 
 const deck = TRAVEL_DECK;
 const seeded = (seed: number) => () => {
@@ -9,7 +9,7 @@ const seeded = (seed: number) => () => {
   return seed / 2147483647;
 };
 
-function checkChoices(q: TravelQuestion) {
+function checkChoices(q: PhraseQuestion) {
   if (q.type === 'arrange') {
     expect([...q.tiles].sort()).toEqual(q.phrase.kanaSentence.chunks.map((_, i) => i));
     return;

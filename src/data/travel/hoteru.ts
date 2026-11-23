@@ -1,4 +1,4 @@
-import { lesson, p, segment } from './build';
+import { lesson, p, segment } from '../phrase/build';
 
 /** ช่วง 6: โรงแรม — เช็กอิน · ปัญหาในห้อง · เช็กเอาต์ */
 export const HOTERU = segment('hoteru', 'ホテル', 'โรงแรม', [

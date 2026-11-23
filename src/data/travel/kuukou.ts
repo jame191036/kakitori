@@ -1,4 +1,4 @@
-import { lesson, p, segment } from './build';
+import { lesson, p, segment } from '../phrase/build';
 
 /** ช่วง 7: สนามบิน ตรวจคนเข้าเมือง */
 export const KUUKOU = segment('kuukou', 'くうこう', 'สนามบิน ตรวจคนเข้าเมือง', [

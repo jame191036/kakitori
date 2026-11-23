@@ -1,4 +1,4 @@
-import { lesson, p, segment } from './build';
+import { lesson, p, segment } from '../phrase/build';
 
 /** ช่วง 8: เที่ยวชม — สถานที่ท่องเที่ยว · ออนเซ็นและวัด */
 export const KANKOU = segment('kankou', 'かんこう', 'เที่ยวชม', [

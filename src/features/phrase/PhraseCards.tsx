@@ -1,19 +1,20 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { faceText } from '../../data/travel/build';
-import type { TravelPhrase } from '../../data/travel/types';
+import { SpeakButton } from '../../components/SpeakButton';
+import { faceText } from '../../data/phrase/build';
+import type { Phrase } from '../../data/phrase/types';
 import { cx } from '../../lib/cx';
-import { KindTag, PhraseFace } from './PhraseFace';
-import styles from './travel.module.css';
+import { KindTag, PhraseFace, RomajiToggle, TextLines } from './PhraseFace';
+import styles from './phrase.module.css';
 
-interface TravelCardsProps {
-  items: readonly TravelPhrase[];
+interface PhraseCardsProps {
+  items: readonly Phrase[];
   /** ดูครบทุกวลีแล้วกด "ไปฝึก" */
   onDone: () => void;
 }
 
 /** ขั้น "เรียน" ของบทท่องเที่ยว: การ์ดทีละวลี — คานะ แบบเขียนจริง โรมาจิ ความหมาย วิธีใช้ และเสียง */
-export function TravelCards({ items, onDone }: TravelCardsProps) {
+export function PhraseCards({ items, onDone }: PhraseCardsProps) {
   const [index, setIndex] = useState(0);
   const phrase = items[index]!;
   const last = index === items.length - 1;
@@ -35,12 +36,24 @@ export function TravelCards({ items, onDone }: TravelCardsProps) {
           <span className={styles.counter}>
             {index + 1} / {items.length}
           </span>
-          <KindTag phrase={phrase} />
+          <span className={styles.cardTools}>
+            <KindTag phrase={phrase} />
+            <RomajiToggle />
+          </span>
         </div>
 
         <div key={phrase.id} className={styles.cardBody}>
           <PhraseFace phrase={phrase} speak />
           <p className={styles.cardThai}>{phrase.thai}</p>
+          {phrase.casual && (
+            <div className={styles.casual}>
+              <span className={styles.casualLabel}>แบบกันเอง (เพื่อน · คนสนิท)</span>
+              <div className={styles.casualText}>
+                <TextLines text={phrase.casual} />
+              </div>
+              <SpeakButton text={phrase.casual.written} size="sm" label="ฟังแบบกันเอง" />
+            </div>
+          )}
           {phrase.note && <p className={styles.note}>{phrase.note}</p>}
         </div>
 

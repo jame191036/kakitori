@@ -1,7 +1,7 @@
 import { ArrowRight, TrainFront } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router';
-import { grammarPath, kanjiPath, REVIEW_ROOT, travelPath, vocabPath } from '../app/paths';
+import { dailyPath, grammarPath, kanjiPath, REVIEW_ROOT, travelPath, vocabPath } from '../app/paths';
 import { SECTIONS } from '../app/sections';
 import { LessonSign, StationSign, type LessonSignStop } from '../components/train/StationSign';
 import { groupLabel, scriptList } from '../data/scripts';
@@ -199,7 +199,7 @@ export default function HomePage() {
               <span className={styles.trackWrap}>
                 {sec.id === 'kana' ? (
                   <KanaTrack path={path} reached={step ? step.index - 1 : path.length} />
-                ) : sec.id === 'jlpt-n5' || sec.id === 'travel' ? (
+                ) : sec.id === 'jlpt-n5' || sec.id === 'travel' || sec.id === 'daily' ? (
                   <LessonTrack passed={passedIn(sec.id) ?? 0} total={totalIn(sec.id)} />
                 ) : (
                   <>
@@ -283,7 +283,7 @@ interface HeroLine {
   id: keyof LineDecks;
   progressKey: keyof typeof LINE_LESSON_COUNT;
   /** หมวดบนหน้าแรกที่สายนี้อยู่ (นับรางย่อของหมวด) */
-  section: 'jlpt-n5' | 'travel';
+  section: 'jlpt-n5' | 'travel' | 'daily';
   /** สีสายบนป้าย */
   tone: Tone;
   /** ชื่อสายภาษาญี่ปุ่นบนป้าย */
@@ -371,6 +371,24 @@ const HERO_LINES: readonly HeroLine[] = [
     wideChips: true,
     lead: 'แต่ละบทวลีท่องเที่ยวคือหนึ่งสถานี ฟังวลี ฝึกพูดและฟังให้ออก แล้วทดสอบให้ถูกครบทุกวลี แล้วรับตราสถานีไปสะสม — ฟรี ไม่ต้องสมัครสมาชิก',
     todo: (left) => `ฟังการ์ดวลี ฝึก แล้วทำแบบทดสอบให้ตอบถูกครบทุกวลี (เหลือ ${left} วลี)`,
+  },
+  {
+    // 日常線 = สายชีวิตประจำวัน
+    id: 'daily',
+    progressKey: 'daily',
+    section: 'daily',
+    tone: 'daily',
+    lineJa: '日常線',
+    lineName: 'สายชีวิตประจำวัน',
+    shortName: 'สายชีวิตประจำวัน',
+    lessonHref: dailyPath,
+    chip: (decks, id) => {
+      const x = decks.daily.words[id]!;
+      return { main: x.kana, small: x.thai };
+    },
+    wideChips: true,
+    lead: 'แต่ละบทคือหนึ่งสถานี ฟังวลีและบทสนทนาตัวอย่าง ฝึก แล้วทดสอบให้ถูกครบทุกวลี แล้วรับตราสถานีไปสะสม — ฟรี ไม่ต้องสมัครสมาชิก',
+    todo: (left) => `อ่านการ์ดวลีและบทสนทนา ฝึก แล้วทำแบบทดสอบให้ตอบถูกครบทุกวลี (เหลือ ${left} วลี)`,
   },
 ];
 

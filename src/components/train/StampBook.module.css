@@ -47,6 +47,18 @@
   white-space: nowrap;
 }
 
+/* ชื่อยาวมาก (บทวลี เช่น まいにちの あいさつ · チェックアウト) ตัดเป็น 2 บรรทัดได้ ไม่ล้นวง */
+.kana.longer {
+  max-width: 82%;
+  font-size: 0.7rem;
+  line-height: 1.15;
+  text-align: center;
+  white-space: normal;
+  word-break: keep-all;
+  /* คำเดียวที่ยาวเกินวง (チェックアウト) ค่อยตัดกลางคำ */
+  overflow-wrap: anywhere;
+}
+
 .code {
   font-size: 0.66rem;
   font-weight: 700;
@@ -65,5 +77,9 @@
 
   .kana.long {
     font-size: 0.78rem;
+  }
+
+  .kana.longer {
+    font-size: 0.6rem;
   }
 }

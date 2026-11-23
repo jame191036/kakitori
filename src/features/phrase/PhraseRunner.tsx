@@ -1,33 +1,33 @@
 import { Check, Volume2, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SpeakButton } from '../../components/SpeakButton';
-import type { TravelDeck, TravelPhrase } from '../../data/travel/types';
+import type { PhraseDeck, Phrase } from '../../data/phrase/types';
 import { cx } from '../../lib/cx';
 import { GrammarArrange } from '../grammar/GrammarArrange';
 import quiz from '../quiz/quiz.module.css';
 import { speak } from '../speech/useSpeech';
-import { PhraseFace } from './PhraseFace';
-import type { TravelQType, TravelQuestion } from './travelLogic';
-import styles from './travel.module.css';
+import { PhraseFace, RomajiToggle } from './PhraseFace';
+import type { PhraseQType, PhraseQuestion } from './phraseLogic';
+import styles from './phrase.module.css';
 
 export interface PhraseResult {
-  phrase: TravelPhrase;
+  phrase: Phrase;
   /** ผลครั้งแรกของวลีนี้ในรอบนี้ */
   correct: boolean;
 }
 
-interface TravelRunnerProps {
-  deck: TravelDeck;
-  questions: readonly TravelQuestion[];
+interface PhraseRunnerProps {
+  deck: PhraseDeck;
+  questions: readonly PhraseQuestion[];
   /** practice = ตอบผิดได้ลองอีกรอบท้ายชุด · test = ข้อละครั้ง */
   mode: 'practice' | 'test';
   /** เรียกครั้งแรกที่ตอบแต่ละวลี (แบบทดสอบใช้บันทึกผล) */
-  onAnswer?: (phrase: TravelPhrase, correct: boolean) => void;
+  onAnswer?: (phrase: Phrase, correct: boolean) => void;
   onFinish: (results: PhraseResult[]) => void;
   onQuit: () => void;
 }
 
-const TYPE_LABEL: Record<TravelQType, string> = {
+const TYPE_LABEL: Record<PhraseQType, string> = {
   say: 'สถานการณ์นี้ ควรพูดว่าอะไร',
   meaning: 'วลีนี้แปลว่าอะไร',
   listen: 'ฟังแล้วเลือกความหมาย',
@@ -35,14 +35,14 @@ const TYPE_LABEL: Record<TravelQType, string> = {
 };
 
 /** ป้าย: อ่านอย่างเดียว */
-const SIGN_LABEL: Partial<Record<TravelQType, string>> = {
+const SIGN_LABEL: Partial<Record<PhraseQType, string>> = {
   say: 'ป้ายไหนมีความหมายนี้',
   meaning: 'ป้ายนี้แปลว่าอะไร',
 };
 
 /** ตัวทำแบบฝึก/แบบทดสอบของสายท่องเที่ยว (หน้าตาเดียวกับสายคำศัพท์และไวยากรณ์) */
-export function TravelRunner({ deck, questions, mode, onAnswer, onFinish, onQuit }: TravelRunnerProps) {
-  const [queue, setQueue] = useState<TravelQuestion[]>(() => [...questions]);
+export function PhraseRunner({ deck, questions, mode, onAnswer, onFinish, onQuit }: PhraseRunnerProps) {
+  const [queue, setQueue] = useState<PhraseQuestion[]>(() => [...questions]);
   const [index, setIndex] = useState(0);
   const [answered, setAnswered] = useState<{ correct: boolean; chosen?: string } | null>(null);
   const results = useRef(new Map<string, boolean>());
@@ -132,7 +132,10 @@ export function TravelRunner({ deck, questions, mode, onAnswer, onFinish, onQuit
       </div>
 
       <section className={cx('card', quiz.question)} aria-live="polite">
-        <p className="small muted">{(phrase.kind === 'sign' && SIGN_LABEL[q.type]) || TYPE_LABEL[q.type]}</p>
+        <div className={styles.qTop}>
+          <p className="small muted">{(phrase.kind === 'sign' && SIGN_LABEL[q.type]) || TYPE_LABEL[q.type]}</p>
+          <RomajiToggle />
+        </div>
 
         {(q.type === 'say' || q.type === 'arrange') && <p className={styles.promptThai}>{phrase.thai}</p>}
         {q.type === 'meaning' && <PhraseFace phrase={phrase} speak hideReading={phrase.kind === 'sign'} />}
