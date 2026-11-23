@@ -1,35 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { KANJI_N5, KANJI_N5_ALL } from '../kanji/n5';
+import { KANJI_N5_ALL } from '../kanji/n5';
 import { lessonCode } from '../line';
-import { N5_DECK } from '../vocab/n5';
+import { readingOk } from '../testing/n5Readings';
 import { GRAMMAR_N5 } from './n5';
-import { parseInline, parseSentence, plainOf, type Seg } from './sentence';
+import { parseInline, parseSentence, plainOf } from './sentence';
 
 const deck = GRAMMAR_N5;
 const points = Object.values(deck.words);
 const examples = points.flatMap((p) => p.examples.map((ex) => ({ p, ex })));
-
-/**
- * คำอ่านที่ไม่ได้มาจากคลังคำศัพท์/คันจิโดยตรง (ผู้พัฒนายืนยันเอง — เพิ่มทีละคำ พร้อมเหตุผล)
- */
-const EXTRA_READINGS: Record<string, readonly string[]> = {
-  日本: ['にほん'], // ชื่อประเทศ ไม่อยู่ในรายการคำศัพท์ N5
-  日本語: ['にほんご'],
-  何: ['なん'], // なに → なん เมื่อตามด้วย です / の / ลักษณนาม
-  人: ['にん'], // ลักษณนามนับคน (さんにん)
-  分: ['ふん', 'ぷん'], // นับนาที
-  来: ['き', 'こ'], // くる เป็นคำกริยากลุ่ม 3: 来ます/来て = き · 来ない = こ
-};
-
-const kanjiForms = (char: string) =>
-  (KANJI_N5.words[char]?.readings ?? []).flatMap((r) => r.kana.split('・').map((f) => f.replace(/\(.*\)/, '')));
-
-function readingOk({ text, ruby }: Seg): boolean {
-  if (!ruby) return true;
-  if (EXTRA_READINGS[text]?.includes(ruby)) return true;
-  if ([...text].length === 1 && kanjiForms(text).includes(ruby)) return true;
-  return Object.values(N5_DECK.words).some((w) => (w.kanji ?? '').includes(text) && w.kana.includes(ruby));
-}
 
 const HAN = /\p{Script=Han}/gu;
 

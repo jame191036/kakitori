@@ -23,3 +23,5 @@ export const KanjiReviewPage = lazy(() => import('../pages/KanjiReviewPage'));
 export const GrammarLinePage = lazy(() => import('../pages/GrammarLinePage'));
 export const GrammarLessonPage = lazy(() => import('../pages/GrammarLessonPage'));
 export const GrammarReviewPage = lazy(() => import('../pages/GrammarReviewPage'));
+export const ExamHubPage = lazy(() => import('../pages/ExamHubPage'));
+export const ExamPage = lazy(() => import('../pages/ExamPage'));

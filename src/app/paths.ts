@@ -14,6 +14,8 @@
  *   /n5/kanji                 สายคันจิ N5 · /n5/kanji/:lesson บทเรียน: เรียน → ฝึกเขียน → ทดสอบ
  *   /n5/kanji/review          ทบทวนคันจิ (ตัวที่ถึงรอบ · ตัวที่ผิดบ่อย)
  *   /n5/grammar               สายไวยากรณ์ N5 · /n5/grammar/:lesson บทเรียน · /n5/grammar/review ทบทวน
+ *   /n5/exam                  ข้อสอบจำลอง N5 — เลือกชุด + ประวัติผลสอบ
+ *   /n5/exam/:set             ทำข้อสอบชุดนั้น · ?result=<id> ดูผลสอบครั้งนั้น
  * URL เดิม (/hiragana/…) ส่งต่อมาที่ /kana/hiragana/… ให้อัตโนมัติ
  */
 
@@ -49,6 +51,11 @@ export function grammarPath(lessonId?: string): string {
 /** หน้าทบทวนไวยากรณ์ N5 — start = เริ่มทบทวนชุดนั้นทันที (ใช้จากการ์ด "วันนี้") */
 export function grammarReviewPath(start?: 'due' | 'weak'): string {
   return `${grammarPath()}/review${start ? `?start=${start}` : ''}`;
+}
+
+/** ข้อสอบจำลอง N5 / ชุด / ผลสอบ เช่น examPath('1', '1795…') → /n5/exam/1?result=1795… */
+export function examPath(setId?: string, resultId?: string): string {
+  return `${N5_ROOT}/exam${setId ? `/${setId}` : ''}${setId && resultId ? `?result=${resultId}` : ''}`;
 }
 
 /** หน้าในชุดตัวอักษร เช่น scriptPath('hiragana', 'practice/ka') → /kana/hiragana/practice/ka */

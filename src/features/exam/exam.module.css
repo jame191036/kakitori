@@ -1,0 +1,1029 @@
+/* ───────── หน้า ───────── */
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  padding-block: 28px 48px;
+}
+
+.narrow,
+.intro,
+.runner,
+.result {
+  width: 100%;
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+.narrow {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+
+.h1 {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.h2 {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.good {
+  color: var(--good);
+}
+
+.warn {
+  color: var(--warn);
+}
+
+.bad {
+  color: var(--bad);
+}
+
+/* ───────── ข้อความญี่ปุ่นในข้อสอบ ───────── */
+.ja {
+  line-height: 1.9;
+  /* ขึ้นบรรทัดใหม่ตรงช่องเว้นวรรคระหว่างคำ (แบบข้อสอบ N5) ไม่ตัดกลางคำ — คำยาวเกินบรรทัดค่อยตัดได้ */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  /* บทสนทนา A「…」 B「…」 ขึ้นบรรทัดใหม่ตาม \n */
+  white-space: pre-line;
+}
+
+.withFuri {
+  line-height: 2.2;
+}
+
+.ja rt {
+  font-size: 0.5em;
+  color: var(--text-2);
+  user-select: none;
+}
+
+.under {
+  text-decoration: underline 1.5px;
+  text-underline-offset: 0.22em;
+}
+
+/* ส่วนที่เติมคำตอบในเฉลย */
+.hl {
+  color: var(--good);
+  font-weight: 700;
+  text-decoration: underline 2px color-mix(in srgb, var(--good) 45%, transparent);
+  text-underline-offset: 0.22em;
+}
+
+.blank {
+  white-space: nowrap;
+}
+
+.blankIn {
+  display: inline-block;
+  width: 2.6em;
+}
+
+.slot {
+  display: inline-block;
+  width: 3.4em;
+  height: 1.3em;
+  margin-inline: 0.15em;
+  vertical-align: -0.2em;
+  border-bottom: 2px solid var(--text);
+}
+
+.star {
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1.5em;
+  color: var(--c-text, var(--primary));
+  border-bottom-color: var(--c, var(--primary));
+}
+
+.ref {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2em;
+  height: 1.5em;
+  margin-inline: 0.2em;
+  padding-inline: 0.3em;
+  border: 1.5px solid var(--text);
+  font-family: var(--font-ui, inherit);
+  font-size: 0.85em;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: 0.05em;
+}
+
+.refOn {
+  border-color: var(--c, var(--primary));
+  background: var(--c-soft, var(--accent-soft));
+  color: var(--c-text, var(--text));
+}
+
+/* ───────── บทความ / ประกาศ ───────── */
+.passage {
+  display: grid;
+  gap: 6px;
+}
+
+.passageTitle {
+  font-weight: 700;
+  text-align: center;
+}
+
+.passageTitle .ja {
+  font-size: 1.15rem;
+}
+
+.passageLine .ja {
+  font-size: 1.1rem;
+}
+
+.right {
+  text-align: right;
+}
+
+.space {
+  height: 6px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  border-collapse: collapse;
+  min-width: 100%;
+}
+
+.table td {
+  padding: 4px 8px;
+  border: 1px solid var(--border-strong);
+  vertical-align: top;
+}
+
+/* ในตารางขึ้นบรรทัดได้แค่ตรงช่องเว้นวรรค (ごご / 7時〜9時) — ถ้าจอแคบเกินจริงๆ เลื่อนตารางด้านข้างได้ */
+.table .ja {
+  font-size: 1rem;
+  line-height: 1.6;
+  overflow-wrap: normal;
+}
+
+.table tr:first-child td {
+  background: var(--surface-2);
+}
+
+/* ───────── หน้าก่อนเริ่ม / พักระหว่างส่วน / หน้ารวม ───────── */
+.intro {
+  display: grid;
+  gap: 16px;
+}
+
+.introJa {
+  color: var(--c-text, var(--text-2));
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.sectionList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sectionList li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 14px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--c-soft, var(--surface-2));
+}
+
+.sectionOff {
+  opacity: 0.6;
+}
+
+.sectionNo {
+  font-weight: 700;
+  color: var(--c-text, var(--text));
+  white-space: nowrap;
+}
+
+.sectionName {
+  display: grid;
+  min-width: 0;
+}
+
+.sectionMeta {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.rules {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 1.2em;
+  color: var(--text-2);
+}
+
+.timedToggle {
+  justify-self: start;
+  min-height: 44px;
+  white-space: normal;
+}
+
+.hubHead {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  background: var(--c-soft);
+  border: 1px solid color-mix(in srgb, var(--c) 18%, var(--border));
+  border-top: 8px solid var(--c);
+  border-radius: var(--radius-lg);
+}
+
+.hubBadge {
+  display: grid;
+  place-items: center;
+  width: clamp(72px, 9vw, 96px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 6px solid var(--c);
+  background: var(--surface);
+  font-size: clamp(2rem, 3.4vw, 2.6rem);
+}
+
+.format {
+  display: grid;
+  gap: 12px;
+}
+
+.sets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.setCard {
+  display: grid;
+  gap: 12px;
+  align-content: space-between;
+}
+
+.setInfo {
+  display: grid;
+  gap: 4px;
+}
+
+.setTitle {
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.inProgress {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--warn);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.setActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.history {
+  display: grid;
+  gap: 8px;
+}
+
+.historyList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.historyRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--border);
+  color: inherit;
+  text-decoration: none;
+}
+
+.historyList li:last-child .historyRow {
+  border-bottom: 0;
+}
+
+.historyScore {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pill {
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .historyRow:hover {
+    background: var(--surface-2);
+  }
+}
+
+/* ───────── ตัวทำข้อสอบ ───────── */
+.runner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+/* แถบสถานะติดใต้หัวเว็บ — เห็นเวลาตลอดแม้เลื่อนอ่านบทความยาว */
+.bar {
+  position: sticky;
+  top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px 12px;
+  margin-inline: -4px;
+  padding: 8px 8px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.barSection {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  font-size: 0.92rem;
+  line-height: 1.3;
+}
+
+.barCount {
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--text-2);
+}
+
+.timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.timerWarn {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+.timerBad {
+  background: var(--bad-soft);
+  color: var(--bad);
+}
+
+/* จุดเลื่อนกลับ: เว้นที่ให้หัวเว็บ + แถบสถานะ */
+.anchor {
+  scroll-margin-top: calc(var(--header-h) + env(safe-area-inset-top, 0px) + 64px);
+}
+
+.mondaiHead {
+  display: grid;
+  gap: 6px;
+  padding-block: 12px;
+}
+
+.mondaiNo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font-weight: 800;
+}
+
+.mondaiNo :global(.kana) {
+  color: var(--c-text, var(--text));
+}
+
+.mondaiTh {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.instruction .ja {
+  font-size: 0.98rem;
+  line-height: 1.8;
+}
+
+.passageCard {
+  padding-block: 16px;
+}
+
+.question {
+  display: grid;
+  gap: 16px;
+}
+
+.stemRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.qNo {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  min-width: 2em;
+  height: 2em;
+  padding-inline: 0.3em;
+  border: 1.5px solid var(--text);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.stem {
+  font-size: clamp(1.2rem, 3.6vw, 1.45rem);
+  padding-top: 0.05em;
+}
+
+.stemHint {
+  align-self: center;
+  color: var(--text-2);
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.choicesShort {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  background: var(--pad, var(--surface));
+  text-align: start;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    transform var(--press);
+}
+
+.choice:active {
+  transform: scale(0.98);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .choice:hover {
+    border-color: var(--text);
+  }
+}
+
+.chosen {
+  border-color: var(--c, var(--primary));
+  background: var(--c-soft, var(--accent-soft));
+  box-shadow: inset 0 0 0 1px var(--c, var(--primary));
+}
+
+.choiceKey {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 1.7em;
+  height: 1.7em;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+.chosen .choiceKey {
+  border-color: var(--c, var(--primary));
+  background: var(--c, var(--primary));
+  color: var(--surface);
+}
+
+.choiceText {
+  font-size: 1.2rem;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.navPos {
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.palette {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.palette summary {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.paletteBody {
+  display: grid;
+  gap: 10px;
+  padding: 4px 14px 14px;
+}
+
+.paletteGroup {
+  display: grid;
+  gap: 4px;
+}
+
+.paletteLabel {
+  font-size: 0.85rem;
+  color: var(--text-2);
+}
+
+.paletteGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.paletteBtn {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.paletteDone {
+  background: var(--c-soft, var(--accent-soft));
+  border-color: color-mix(in srgb, var(--c, var(--primary)) 50%, var(--border));
+}
+
+.paletteNow {
+  border-color: var(--c, var(--primary));
+  box-shadow: inset 0 0 0 1px var(--c, var(--primary));
+}
+
+/* ───────── หน้าต่างยืนยัน ───────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(0 0 0 / 0.4);
+  animation: overlay-in 160ms var(--ease-out);
+}
+
+.dialog {
+  display: grid;
+  gap: 10px;
+  width: min(440px, 100%);
+  box-shadow: var(--shadow-lg);
+  animation: dialog-in 200ms var(--ease-out);
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .dialog {
+    animation-duration: 1ms;
+  }
+}
+
+.dialogTitle {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.dialogWarn {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+.dialogActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* ───────── ผลสอบ ───────── */
+.result {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.scoreCard {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  text-align: center;
+}
+
+.bigScore {
+  font-size: clamp(3rem, 10vw, 4rem);
+  font-weight: 600;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.bigMax {
+  font-size: 0.4em;
+  color: var(--text-2);
+}
+
+.verdict {
+  padding: 2px 14px;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+  font-weight: 800;
+}
+
+.verdictText {
+  max-width: 34em;
+}
+
+.meter {
+  width: min(320px, 100%);
+  height: 6px;
+  border-radius: 3px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+/* หน้าผลสอบ (เห็นไม่บ่อย): แถบค่อยๆ เติมจาก 0 */
+.meter span,
+.partBar span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--c, var(--good));
+  animation: meter-fill 700ms var(--ease-out) 150ms both;
+}
+
+@keyframes meter-fill {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meter span,
+  .partBar span {
+    animation: none;
+  }
+}
+
+.facts {
+  display: grid;
+  gap: 4px;
+  margin: 4px 0 0;
+  padding: 10px 14px;
+  list-style: none;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  text-align: start;
+  font-size: 0.92rem;
+}
+
+.disclaimer {
+  max-width: 36em;
+}
+
+.scoreCard .actions {
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.parts {
+  display: grid;
+  gap: 12px;
+}
+
+.partList {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.partRow {
+  display: grid;
+  grid-template-columns: minmax(0, 12em) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 12px;
+}
+
+.partName {
+  display: grid;
+}
+
+.partBar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.partNum {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.partStudy {
+  grid-column: 1 / -1;
+  font-size: 0.85rem;
+  color: var(--text-2);
+}
+
+/* ───────── เฉลย ───────── */
+.review {
+  display: grid;
+  gap: 12px;
+}
+
+.reviewHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.reviewSection {
+  display: grid;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.reviewSectionTitle {
+  font-size: 1.05rem;
+  font-weight: 800;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--c, var(--border));
+}
+
+.reviewMondai {
+  display: grid;
+  gap: 10px;
+}
+
+.reviewMondaiTitle {
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+.reviewPassage {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 1px dashed var(--border-strong);
+  background: var(--surface);
+}
+
+.reviewPassage summary {
+  cursor: pointer;
+  font-weight: 600;
+  min-height: 32px;
+}
+
+.reviewPassage .passage {
+  margin-top: 10px;
+}
+
+.passageThai {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  color: var(--text-2);
+}
+
+.reviewItem {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  background: var(--surface);
+}
+
+.itemRight {
+  border-left-color: var(--good);
+}
+
+.itemWrong {
+  border-left-color: var(--bad);
+}
+
+.itemHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.itemStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.itemStem {
+  font-size: 1.2rem;
+}
+
+.itemChoices {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.itemChoice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+}
+
+.itemChoice .ja {
+  font-size: 1.05rem;
+}
+
+.choiceRight {
+  background: var(--good-soft);
+  color: var(--good);
+  font-weight: 700;
+}
+
+.choiceWrong {
+  background: var(--bad-soft);
+  color: var(--bad);
+}
+
+.itemChoice .choiceKey {
+  width: 1.5em;
+  height: 1.5em;
+  font-size: 0.75rem;
+  border-color: currentColor;
+  color: inherit;
+}
+
+.itemThai {
+  font-weight: 600;
+}
+
+.itemExplain {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 0.95rem;
+}
+
+.nav :global(.btn),
+.navPos,
+.barSection,
+.timer {
+  white-space: nowrap;
+}
+
+/* ───────── จอเล็ก ───────── */
+/* จอแคบมาก (320–360 px): ปุ่มออก/ข้อก่อนเหลือแค่ไอคอน · ซ่อนจำนวนข้อที่ตอบบนแถบ (ดูได้ใน "ข้อทั้งหมด") · ตัวเลือกคอลัมน์เดียว */
+@media (max-width: 380px) {
+  .wideOnly,
+  .barCount {
+    display: none;
+  }
+
+  .choicesShort {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .hubHead {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .hubBadge {
+    width: 64px;
+    border-width: 5px;
+    font-size: 1.8rem;
+  }
+
+  .sectionList li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .sectionList .sectionName {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .partRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .partBar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .choiceText {
+    font-size: 1.1rem;
+  }
+}

@@ -52,12 +52,17 @@ function updateChar(scriptId: string, charId: string, fn: (s: CharStat | undefin
   });
 }
 
-/** นับกิจกรรม 1 ครั้ง (ตอบ 1 ข้อ / เขียนเสร็จ 1 ตัว) */
-function countActivity(now: number) {
+/** นับกิจกรรม (ตอบ 1 ข้อ / เขียนเสร็จ 1 ตัว = 1 ครั้ง) */
+function countActivity(now: number, amount = 1) {
   const goal = settingsStore.get().dailyGoal;
-  const { data, reachedGoal } = addActivity(activityStore.get(), now, goal);
+  const { data, reachedGoal } = addActivity(activityStore.get(), now, goal, amount);
   activityStore.set(data);
   if (reachedGoal) goalReachedSignal.set(streakInfo(data, now, goal).current);
+}
+
+/** นับกิจกรรมที่ไม่ผูกกับตัวอักษร/คำใด เช่น ทำข้อสอบจำลองเสร็จ (amount = จำนวนข้อที่ตอบ) */
+export function recordActivity(amount: number): void {
+  if (amount > 0) countActivity(Date.now(), amount);
 }
 
 /** เปลี่ยนเป้ารายวัน — ถ้าวันนี้ฝึกถึงเป้าใหม่แล้ว ให้นับวันนี้เลย (ไม่อย่างนั้นพรุ่งนี้ streak จะหลุด) */

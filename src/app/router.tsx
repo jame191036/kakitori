@@ -5,6 +5,8 @@ import { AppLayout } from './AppLayout';
 import { LegacyScriptRedirect } from './LegacyScriptRedirect';
 import {
   AboutPage,
+  ExamHubPage,
+  ExamPage,
   GrammarLessonPage,
   GrammarLinePage,
   GrammarReviewPage,
@@ -68,6 +70,8 @@ export const router = createBrowserRouter([
           { path: 'n5/grammar/review', element: <GrammarReviewPage /> },
           { path: 'n5/grammar/:lessonId', element: <GrammarLessonPage /> },
           { path: 'n5/kanji/:lessonId', element: <KanjiLessonPage /> },
+          { path: 'n5/exam', element: <ExamHubPage /> },
+          { path: 'n5/exam/:setId', element: <ExamPage /> },
           { path: ':script/*', element: <LegacyScriptRedirect /> },
           { path: '*', element: <NotFoundPage /> },
         ],

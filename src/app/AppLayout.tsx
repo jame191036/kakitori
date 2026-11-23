@@ -19,7 +19,7 @@ import { SITE_NAME } from './config';
 import { GoalToast } from './GoalToast';
 import { getLesson } from '../data/line';
 import { useLineDecks, type LineDecks } from '../data/lineDecks';
-import { grammarPath, KANA_ROOT, kanjiPath, N5_ROOT, REVIEW_ROOT, scriptPath, vocabPath } from './paths';
+import { examPath, grammarPath, KANA_ROOT, kanjiPath, N5_ROOT, REVIEW_ROOT, scriptPath, vocabPath } from './paths';
 import { UpdatePrompt } from './UpdatePrompt';
 import { useApplyTheme } from './useTheme';
 import styles from './AppLayout.module.css';
@@ -72,6 +72,14 @@ function crumbsFor(pathname: string, decks: LineDecks | null): Crumb[] {
       : [home, kana, { label: pack.name }];
   }
   if (pathname === N5_ROOT) return [home, { label: 'JLPT N5' }];
+  const exam = matchPath(`${N5_ROOT}/exam/*`, pathname);
+  if (exam) {
+    const n5: Crumb = { label: 'JLPT N5', to: N5_ROOT };
+    const setId = exam.params['*'];
+    return setId
+      ? [home, n5, { label: 'ข้อสอบจำลอง', to: examPath() }, { label: `ชุดที่ ${setId}` }]
+      : [home, n5, { label: 'ข้อสอบจำลอง' }];
+  }
   for (const line of N5_LINES) {
     const m = matchPath(`${N5_ROOT}/${line.seg}/*`, pathname);
     if (!m) continue;

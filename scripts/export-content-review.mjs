@@ -17,7 +17,13 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ExcelJS from 'exceljs';
 import { createServer } from 'vite';
-import { GRAMMAR_PRIORITY, KANA_PRIORITY, KANJI_PRIORITY, VOCAB_PRIORITY } from './content-review-priority.mjs';
+import {
+  EXAM_PRIORITY,
+  GRAMMAR_PRIORITY,
+  KANA_PRIORITY,
+  KANJI_PRIORITY,
+  VOCAB_PRIORITY,
+} from './content-review-priority.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT_DIR = join(ROOT, 'docs');
@@ -39,11 +45,21 @@ const { N5_DECK } = await server.ssrLoadModule('/src/data/vocab/n5/index.ts');
 const { KANJI_N5 } = await server.ssrLoadModule('/src/data/kanji/n5/index.ts');
 const { GRAMMAR_N5 } = await server.ssrLoadModule('/src/data/grammar/n5/index.ts');
 const { parseInline, plainOf } = await server.ssrLoadModule('/src/data/grammar/sentence.ts');
+const { EXAM_SETS } = await server.ssrLoadModule('/src/data/exam/n5/index.ts');
+const { KIND_INFO } = await server.ssrLoadModule('/src/data/exam/build.ts');
+const { examPlain, examWithReading, passageSegs } = await server.ssrLoadModule('/src/data/exam/text.ts');
+const { answerSentence } = await server.ssrLoadModule('/src/features/exam/examLogic.ts');
 await server.close();
 
 // จุดที่ควรให้ผู้ตรวจดูก่อน — ตรวจว่า id ในรายการมีอยู่จริง (กันพิมพ์ผิดแล้วหายเงียบ)
 const usedPriority = new Set();
-const PRIORITY_TABLES = { kana: KANA_PRIORITY, vocab: VOCAB_PRIORITY, kanji: KANJI_PRIORITY, grammar: GRAMMAR_PRIORITY };
+const PRIORITY_TABLES = {
+  kana: KANA_PRIORITY,
+  vocab: VOCAB_PRIORITY,
+  kanji: KANJI_PRIORITY,
+  grammar: GRAMMAR_PRIORITY,
+  exam: EXAM_PRIORITY,
+};
 const priorityOf = (tag, key) => {
   const reason = PRIORITY_TABLES[tag][key];
   if (reason) usedPriority.add(`${tag}:${key}`);
@@ -227,6 +243,56 @@ for (const segment of GRAMMAR_N5.segments) {
   }
 }
 
+// ข้อสอบจำลอง: 1 แถวต่อบทความ + 1 แถวต่อข้อ
+// แถวข้อ: "คำตัวอย่าง" = โจทย์（คำอ่าน）— ข้อเติมคำ/เรียงประโยคแสดงประโยคที่เติมคำตอบแล้ว · "หมายเหตุ" = ตัวเลือก (✓ = ข้อที่ถูก) + เหตุผล
+const EXAM_NAME = 'ข้อสอบจำลอง N5';
+const oneLine = (s) => s.replaceAll('\n', ' / ');
+for (const set of EXAM_SETS) {
+  set.sections.forEach((section, si) => {
+    for (const m of section.mondai) {
+      m.groups.forEach((g, gi) => {
+        const where = `ส่วนที่ ${si + 1} もんだい${m.no} · ${KIND_INFO[m.kind].th}`;
+        if (g.passage) {
+          rows.push(tag([
+            `${EXAM_NAME} · ${set.title}`,
+            where,
+            '',
+            '',
+            '',
+            `บทความของข้อ ${g.questions.map((q) => q.no).join(', ')}`,
+            oneLine(examWithReading(passageSegs(g.passage))),
+            '',
+            g.passageThai,
+            '',
+            '',
+            '',
+            '',
+          ], `exam-n5:n5-${set.id}:${section.id}${m.no}-p${gi + 1}`, EXAM_NAME));
+        }
+        for (const q of g.questions) {
+          const filled = ['context', 'grammar-form', 'composition'].includes(q.kind);
+          const choices = q.choices.map((c, i) => `${i + 1} ${examPlain(c)}${i === q.answer ? ' ✓' : ''}`).join(' · ');
+          rows.push(tag([
+            `${EXAM_NAME} · ${set.title}`,
+            `${where} ข้อ ${q.no}`,
+            '',
+            '',
+            '',
+            `ตัวเลือก: ${choices} — เหตุผล: ${q.explain}`,
+            q.stem ? oneLine(examWithReading(filled ? answerSentence(q) : q.stem)) : `(ช่อง ${q.no} ในบทความ)`,
+            '',
+            q.thai,
+            '',
+            priorityOf('exam', q.id),
+            '',
+            '',
+          ], `exam-n5:${q.id}`, EXAM_NAME));
+        }
+      });
+    }
+  });
+}
+
 const missing = Object.entries(PRIORITY_TABLES)
   .flatMap(([tag, table]) => Object.keys(table).map((k) => `${tag}:${k}`))
   .filter((k) => !usedPriority.has(k));
@@ -266,6 +332,14 @@ const GRAMMAR_NOTES = [
   'ข้อเติมคำ: ผู้เรียนเห็นประโยคที่เว้น "ส่วนไวยากรณ์" ไว้ พร้อมคำแปลไทยเป็นคำใบ้ แล้วเลือกจาก 4 ตัวเลือก — ช่วยดูว่าตัวเลือกผิดผิดจริงทุกตัว (ไม่มีตัวไหนถูกได้อีก)',
   'ประโยคที่เขียนว่า "ใช้ทำข้อเรียงประโยค" ผู้เรียนต้องเรียงชิ้นประโยคตามคำแปล — ช่วยดูว่าเรียงได้แบบเดียวจริง',
   'คันจิในประโยคใช้เฉพาะคันจิ N5 พร้อมคำอ่านตัวเล็กด้านบน คำที่มีคันจินอก N5 เขียนเป็นคานะ (แบบข้อสอบ N5)',
+];
+const EXAM_INTRO =
+  'ข้อสอบจำลองแบบเดียวกับ JLPT N5 จริง (ส่วนคำศัพท์ และส่วนไวยากรณ์ + การอ่าน ยังไม่มีการฟัง) 2 ชุด ชุดละ 43 ข้อ · **โจทย์ บทความ ตัวเลือก คำแปล และเหตุผล ผู้พัฒนาแต่งเอง ยังไม่มีใครตรวจ**';
+const EXAM_NOTES = [
+  'แต่ละข้อมี 4 ตัวเลือก (✓ = ข้อที่ถูก) — ช่วยดูว่ามีคำตอบถูกข้อเดียวจริง ตัวเลือกผิดผิดชัด และโจทย์เป็นภาษาญี่ปุ่นที่เป็นธรรมชาติ',
+  'ข้อเติมคำและข้อเรียงประโยค แสดงประโยคที่เติมคำตอบแล้ว (ระหว่างสอบผู้เรียนเห็นเป็นช่องว่าง) — ข้อเรียงประโยคต้องเรียงได้แบบเดียว',
+  'ระหว่างสอบไม่มีคำอ่านเหนือคันจิ (เหมือนสอบจริง) และใช้เฉพาะคันจิ N5 ยกเว้นตัวเลือกผิดในข้อเขียนคันจิที่ตั้งใจใช้ตัวที่หน้าคล้ายกัน',
+  'บทความ/ประกาศอยู่แถวแรกของแต่ละกลุ่ม คำแปลไทยแสดงตอนดูเฉลย',
 ];
 const KANJI_NOTES = [
   'คำอ่านเขียนเป็นฮิรางานะ (อง = เสียงจีน · คุง = เสียงญี่ปุ่น) แสดงเฉพาะคำอ่านที่ใช้ในคำศัพท์ N5 ของเว็บ — คำอ่านที่เสียงเปลี่ยนในคำเขียนคู่กัน เช่น ひ・び',
@@ -308,7 +382,8 @@ const md = [
   '# ตารางตรวจเนื้อหาภาษาญี่ปุ่น',
   '',
   '> ไฟล์นี้สร้างอัตโนมัติด้วย `npm run content:review` — อย่าแก้ไฟล์นี้โดยตรง ให้แก้ที่ `src/data/scripts/*.ts`',
-  '> (ตัวอักษร), `src/data/vocab/n5/*.ts` (คำศัพท์) หรือ `src/data/kanji/n5/*.ts` (คันจิ) แล้วรันใหม่',
+  '> (ตัวอักษร), `src/data/vocab/n5/*.ts` (คำศัพท์), `src/data/kanji/n5/*.ts` (คันจิ), `src/data/grammar/n5/*.ts` (ไวยากรณ์)',
+  '> หรือ `src/data/exam/n5/*.ts` (ข้อสอบจำลอง) แล้วรันใหม่',
   '> · รายการ "ควรดูก่อน" อยู่ที่ `scripts/content-review-priority.mjs`',
   '',
   '## สำหรับผู้ช่วยตรวจ',
@@ -361,6 +436,17 @@ const md = [
   ...GRAMMAR_N5.segments
     .filter((s) => s.lessons.length)
     .flatMap((s) => [`### ${s.title} (${s.name})`, '', mdTable(rows.filter((r) => r[0] === grammarSet(s))), '']),
+  `## ${EXAM_NAME} — ${EXAM_SETS.length} ชุด (ชุดละ ${EXAM_SETS[0].questions.length} ข้อ)`,
+  '',
+  EXAM_INTRO,
+  ...EXAM_NOTES.map((n) => `- ${n}`),
+  '',
+  ...EXAM_SETS.flatMap((set) => [
+    `### ${set.title}`,
+    '',
+    mdTable(rows.filter((r) => r[0] === `${EXAM_NAME} · ${set.title}`)),
+    '',
+  ]),
 ].join('\n');
 
 // ── Excel สำหรับส่งให้ผู้ตรวจ ──
@@ -444,6 +530,17 @@ const SHEETS = [
       ['คำอธิบาย / ส่วนไวยากรณ์และตัวเลือกผิด', at(5), 56],
     ],
   },
+  {
+    name: EXAM_NAME,
+    match: (r) => r.sheet === EXAM_NAME,
+    cols: [
+      ['ชุด', segmentOfSet, 10],
+      ['ข้อ', at(1), 26],
+      ['โจทย์ / บทความ（คำอ่าน）', at(6), 50],
+      ['คำแปล', at(8), 34],
+      ['ตัวเลือก (✓ = ข้อที่ถูก) · เหตุผล', at(5), 56],
+    ],
+  },
 ];
 // ทุกแท็บหมวดมีคอลัมน์ "ควรดูก่อน" (เหตุผลเต็ม) ยกเว้นคู่คำซึ่งไม่มีจุดที่ทำเครื่องหมาย
 for (const s of SHEETS) if (s.name !== PAIRS_SET) s.cols.push(['ควรดูก่อน', at(PRIORITY_COL), 30]);
@@ -512,7 +609,7 @@ wb.creator = 'kakitori';
   gap();
   line(
     'ขอบคุณที่ช่วยตรวจครับ kakitori เป็นเว็บฟรีสอนคนไทยที่ไม่รู้ภาษาญี่ปุ่นเลย ให้อ่านเขียนฮิรางานะ คาตาคานะ คำศัพท์ คันจิ และไวยากรณ์ JLPT N5 ' +
-      'เนื้อหาภาษาไทยทั้งหมด (คำอ่าน ความหมาย หมายเหตุ) และประโยคตัวอย่างไวยากรณ์ ผู้พัฒนาเขียนเอง ยังไม่เคยมีผู้รู้ภาษาญี่ปุ่นตรวจ',
+      'เนื้อหาภาษาไทยทั้งหมด (คำอ่าน ความหมาย หมายเหตุ) ประโยคตัวอย่างไวยากรณ์ และข้อสอบจำลอง ผู้พัฒนาเขียนเอง ยังไม่เคยมีผู้รู้ภาษาญี่ปุ่นตรวจ',
   );
   gap();
   line('วิธีกรอก', { size: 13, bold: true });
@@ -571,6 +668,10 @@ wb.creator = 'kakitori';
   line('ไวยากรณ์ N5', { bold: true });
   line(GRAMMAR_INTRO);
   for (const note of GRAMMAR_NOTES) line(`• ${note}`);
+  gap();
+  line(EXAM_NAME, { bold: true });
+  line(EXAM_INTRO);
+  for (const note of EXAM_NOTES) line(`• ${note}`);
   gap();
   line('คู่คำฝึกฟัง', { bold: true });
   line(PAIRS_NOTE);

@@ -1,11 +1,14 @@
 import { ArrowRight, Lightbulb } from 'lucide-react';
 import { Link } from 'react-router';
-import { grammarPath, kanjiPath, scriptPath, vocabPath } from '../app/paths';
+import { examPath, grammarPath, kanjiPath, scriptPath, vocabPath } from '../app/paths';
+import { EXAM_SETS } from '../data/exam/n5';
 import { GRAMMAR_N5 } from '../data/grammar/n5';
 import { KANJI_N5 } from '../data/kanji/n5';
 import type { LineDeck } from '../data/line';
 import { scripts } from '../data/scripts';
 import { N5_DECK } from '../data/vocab/n5';
+import { scoreExam, SECTION_MAX } from '../features/exam/examLogic';
+import { examStore } from '../features/exam/examStore';
 import { deckProgress, lessonStates, nextLesson, wordsPassed } from '../features/line/lineLogic';
 import type { ProgressData } from '../features/progress/progressLogic';
 import { progressStore } from '../features/progress/progressStore';
@@ -16,7 +19,7 @@ import { tone } from '../lib/tone';
 import styles from './N5HubPage.module.css';
 
 /**
- * หมวด JLPT N5 — สายคำศัพท์ สายคันจิ และสายไวยากรณ์ (ไวยากรณ์ทยอยเปิดทีละช่วง)
+ * หมวด JLPT N5 — สายคำศัพท์ สายคันจิ สายไวยากรณ์ และข้อสอบจำลอง
  * (ไม่มีรายการเนื้อหา N5 อย่างเป็นทางการ จำนวนคำ/คันจิเป็นตัวเลขโดยประมาณที่ใช้กันทั่วไป)
  */
 export default function N5HubPage() {
@@ -73,8 +76,39 @@ export default function N5HubPage() {
           unit="รูป"
           href={grammarPath()}
         />
+        <ExamLine />
       </ul>
     </div>
+  );
+}
+
+/** ข้อสอบจำลอง: จำนวนชุด + ผลครั้งล่าสุด */
+function ExamLine() {
+  const exam = useStore(examStore);
+  const last = exam.attempts[exam.attempts.length - 1];
+  const lastSet = last && EXAM_SETS.find((s) => s.id === last.setId);
+  const status = exam.session
+    ? 'มีข้อสอบทำค้างอยู่'
+    : last && lastSet
+      ? `ครั้งล่าสุด ${scoreExam(lastSet, last.answers).scaled}/${SECTION_MAX}`
+      : 'ยังไม่เคยทำ';
+  return (
+    <li className="tone" style={tone('n5')}>
+      <Link to={examPath()} className={cx(styles.line, styles.live)}>
+        <span className={cx('kana', styles.badge)} lang="ja">
+          試
+        </span>
+        <span className={styles.info}>
+          <span className={styles.name}>ข้อสอบจำลอง N5</span>
+          <span className={styles.desc}>
+            จับเวลาเหมือนสอบจริง พร้อมเฉลย · {EXAM_SETS.length} ชุด · {status}
+          </span>
+        </span>
+        <span className={styles.go}>
+          {exam.session ? 'ทำต่อ' : 'ไปทำข้อสอบ'} <ArrowRight size={16} strokeWidth={2} aria-hidden />
+        </span>
+      </Link>
+    </li>
   );
 }
 
