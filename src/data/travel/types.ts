@@ -25,6 +25,8 @@ export interface TravelPhrase {
   note?: string;
   /** ใช้ทำข้อเรียงประโยคได้ (เรียงได้แบบเดียว) */
   arrange: boolean;
+  /** id ของวลีที่ใช้แทนกันได้ในบางสถานการณ์ — ห้ามเป็นตัวหลอกของกันและกัน */
+  avoid?: readonly string[];
 }
 
 export type TravelDeck = LineDeck<TravelPhrase>;

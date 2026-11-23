@@ -70,6 +70,8 @@ export function p(
     arrange?: boolean;
     /** โรมาจิเอง (เมื่อแปลงอัตโนมัติไม่ได้ เช่น こんにちは = konnichiwa) */
     romaji?: string;
+    /** id ของวลีที่ใช้แทนกันได้ในบางสถานการณ์ (ห้ามเป็นตัวหลอกของกันและกัน) */
+    avoid?: readonly string[];
   } = {},
 ): TravelPhrase {
   const markup = ja.replaceAll('/', '');
@@ -92,6 +94,7 @@ export function p(
     thai,
     ...(opts.note ? { note: opts.note } : {}),
     arrange: !!opts.arrange,
+    ...(opts.avoid ? { avoid: opts.avoid } : {}),
   };
 }
 

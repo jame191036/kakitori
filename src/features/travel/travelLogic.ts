@@ -33,8 +33,12 @@ interface Opts {
 
 const bare = (x: TravelPhrase) => x.kana.replace(/[\s、。？！]/g, '');
 
-/** วลีหนึ่งอยู่ในอีกวลี (いくらですか กับ しんじゅくまで いくらですか) — ไม่ใช้เป็นตัวหลอกของกันและกัน */
-export const phrasesOverlap = (a: TravelPhrase, b: TravelPhrase) => bare(a).includes(bare(b)) || bare(b).includes(bare(a));
+/**
+ * ไม่ใช้เป็นตัวหลอกของกันและกัน: วลีหนึ่งอยู่ในอีกวลี (いくらですか กับ しんじゅくまで いくらですか)
+ * หรือข้อมูลระบุว่าใช้แทนกันได้ (avoid — เช่น 袋はいりません กับ だいじょうぶです)
+ */
+export const phrasesOverlap = (a: TravelPhrase, b: TravelPhrase) =>
+  bare(a).includes(bare(b)) || bare(b).includes(bare(a)) || !!a.avoid?.includes(b.id) || !!b.avoid?.includes(a.id);
 
 /** ตัวหลอก 3 ตัว: บทเดียวกันก่อน แล้วจึงทั้งสาย */
 function pickOthers(
@@ -83,7 +87,7 @@ function make(
     q.tiles = shuffledTiles(x.kanaSentence.chunks.length, rng);
     q.answer = x.kanaSentence.plain;
   } else {
-    const others = pickOthers(x, pool.near, pool.all, (o) => o.thai !== x.thai, rng);
+    const others = pickOthers(x, pool.near, pool.all, (o) => o.thai !== x.thai && !phrasesOverlap(o, x), rng);
     q.choices = shuffle([x, ...others], rng).map((o) => o.thai);
     q.answer = x.thai;
   }

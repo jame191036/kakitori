@@ -1,5 +1,8 @@
 import { buildDeck, segment } from './build';
+import { HOTERU } from './hoteru';
+import { KAIMONO } from './kaimono';
 import { KIHON } from './kihon';
+import { MICHI } from './michi';
 import { NORIMONO } from './norimono';
 import { RESTAURANT } from './restaurant';
 import type { TravelPhrase } from './types';
@@ -16,9 +19,9 @@ export const TRAVEL_DECK = buildDeck<TravelPhrase>({ id: 'travel', progressKey: 
   KIHON,
   NORIMONO,
   RESTAURANT,
-  segment('kaimono', 'かいもの', 'ซื้อของ'),
-  segment('michi', 'みち', 'ถามทาง'),
-  segment('hoteru', 'ホテル', 'โรงแรม'),
+  KAIMONO,
+  MICHI,
+  HOTERU,
   segment('kuukou', 'くうこう', 'สนามบิน ตรวจคนเข้าเมือง'),
   segment('kankou', 'かんこう', 'เที่ยวชม'),
   segment('komatta', 'こまったとき', 'เหตุฉุกเฉิน'),

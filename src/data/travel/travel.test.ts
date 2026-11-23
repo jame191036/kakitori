@@ -51,6 +51,10 @@ describe('travel deck', () => {
     expect(thai.filter((t, i) => thai.indexOf(t) !== i)).toEqual([]);
   });
 
+  it('only lists phrases that exist as interchangeable (avoid)', () => {
+    for (const x of phrases) for (const id of x.avoid ?? []) expect(deck.words[id], `${x.id} → ${id}`).toBeTruthy();
+  });
+
   it('writes kanji with readings, kana without kanji, and romaji in plain letters', () => {
     for (const x of phrases) {
       for (const seg of x.sentence.segs) if (HAN.test(seg.text)) expect(seg.ruby, `${x.id}: ${seg.text}`).toBeTruthy();
