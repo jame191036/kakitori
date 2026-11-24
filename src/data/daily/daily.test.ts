@@ -39,6 +39,8 @@ describe('daily phrase text', () => {
   it('writes the greetings konnichiwa / konbanwa as one word (dialogue lines have no romaji override)', () => {
     expect(phraseText('こんにちは。').romaji).toBe('konnichiwa');
     expect(phraseText('はい、こんばんは。').romaji).toBe('hai, konbanwa');
+    // 今晩は (คืนนี้ + คำช่วย) ไม่ใช่คำทักทาย
+    expect(phraseText('でも、{今晩|こんばん}は ちょっと…').romaji).toBe('demo, konban wa chotto...');
   });
 });
 
