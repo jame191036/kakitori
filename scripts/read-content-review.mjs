@@ -16,7 +16,18 @@ import ExcelJS from 'exceljs';
 const OK = 'ถูกต้อง? (✓/✗)';
 const COMMENT = 'ความเห็นผู้ตรวจ';
 const KEY = 'รหัส (ห้ามแก้)';
-const LABEL_COLS = ['ตัวอักษร / คำ', 'ตัวอักษร', 'คันจิ', 'คำ'];
+const LABEL_COLS = [
+  'ตัวอักษร / คำ',
+  'ตัวอักษร',
+  'คันจิ',
+  'คำ',
+  'ประโยคตัวอย่าง（คำอ่าน）',
+  'รูปไวยากรณ์',
+  'โจทย์ / บทความ（คำอ่าน）',
+  'วลี（คานะ）',
+  'วลี / บทสนทนา（คานะ）',
+  'วลี / ฉาก（คานะ）',
+];
 
 const file = process.argv[2];
 const showAll = process.argv.includes('--all');
@@ -34,6 +45,8 @@ function text(v) {
   if ('text' in v) return text(v.text);
   return String(v).trim();
 }
+
+const short = (s) => (s.length > 60 ? `${s.slice(0, 60)}…` : s);
 
 /** ✓ / ✗ แบบที่ผู้ตรวจอาจพิมพ์เอง */
 function verdict(v) {
@@ -55,7 +68,7 @@ if (/\.xlsx$/i.test(file)) {
     const col = {};
     head.eachCell((c, i) => (col[text(c.value)] = i));
     if (!col[OK] || !col[KEY]) return; // แท็บวิธีตรวจ
-    const labelCol = LABEL_COLS.map((t) => col[t]).find(Boolean);
+    const labelCols = LABEL_COLS.map((t) => col[t]).filter(Boolean);
     ws.eachRow((row, n) => {
       if (n === 1) return;
       const ok = verdict(text(row.getCell(col[OK]).value));
@@ -64,7 +77,8 @@ if (/\.xlsx$/i.test(file)) {
       entries.push({
         key: text(row.getCell(col[KEY]).value),
         sheet: ws.name,
-        label: labelCol ? text(row.getCell(labelCol).value) : '',
+        // ช่องแรกที่มีข้อความ (แถวอธิบายไวยากรณ์ไม่มีประโยค ใช้ชื่อรูปแทน) ตัดให้สั้นพออ่านในตาราง
+        label: short(labelCols.map((i) => text(row.getCell(i).value)).find(Boolean) ?? ''),
         ok,
         comment,
       });
