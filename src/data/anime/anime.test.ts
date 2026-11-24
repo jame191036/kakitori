@@ -67,7 +67,10 @@ describe('anime deck', () => {
 
   it('marks rough words and anime-only speech as things to hear, with a caution', () => {
     // คำด่า / คำห้วนที่ห้ามพูดจริง ต้องเป็นชนิด "ได้ยิน" และมีคำเตือน
-    for (const id of ['urusai', 'baka', 'fuzakeru-na', 'omae', 'anta', 'temee', 'kisama', 'mukatsuku']) {
+    const rough = ['urusai', 'baka', 'fuzakeru-na', 'omae', 'anta', 'temee', 'kisama', 'mukatsuku'];
+    // รอบ 2: คำท้าตี คำห้วน ประโยคตัวร้าย
+    rough.push('okureru-na', 'baka-da-na', 'kao-mo', 'hen-na-yatsu', 'kakatte-koi', 'jama-suru-na', 'oboetero');
+    for (const id of rough) {
       expect(deck.words[id]?.kind, id).toBe('hear');
       expect(deck.words[id]?.caution, id).toBeTruthy();
     }
