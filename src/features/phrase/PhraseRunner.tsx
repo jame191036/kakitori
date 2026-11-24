@@ -6,8 +6,8 @@ import { cx } from '../../lib/cx';
 import { GrammarArrange } from '../grammar/GrammarArrange';
 import quiz from '../quiz/quiz.module.css';
 import { speak } from '../speech/useSpeech';
-import { PhraseFace, RomajiToggle } from './PhraseFace';
-import type { PhraseQType, PhraseQuestion } from './phraseLogic';
+import { PhraseFace, RomajiToggle, TextLines } from './PhraseFace';
+import { arrangeSentence, type PhraseQType, type PhraseQuestion } from './phraseLogic';
 import styles from './phrase.module.css';
 
 export interface PhraseResult {
@@ -32,6 +32,7 @@ const TYPE_LABEL: Record<PhraseQType, string> = {
   meaning: 'วลีนี้แปลว่าอะไร',
   listen: 'ฟังแล้วเลือกความหมาย',
   arrange: 'เรียงวลีให้ตรงกับความหมาย',
+  arrangePolite: 'เรียงเป็นแบบสุภาพ',
 };
 
 /** ป้าย: อ่านอย่างเดียว */
@@ -49,11 +50,14 @@ export function PhraseRunner({ deck, questions, mode, onAnswer, onFinish, onQuit
   const retried = useRef(new Set<string>());
   const q = queue[index]!;
   const { phrase } = q;
+  const order = arrangeSentence(q);
+  // ข้อเรียงแบบสุภาพ: เฉลยและเสียงเป็นแบบสุภาพ
+  const polite = q.type === 'arrangePolite' ? phrase.polite : undefined;
   const isLast = index === queue.length - 1;
 
   const goNext = useCallback(() => {
     if (isLast) {
-      // ผลของแต่ละวลี = ครั้งแรกที่ตอบ (แบบฝึกมี 2 ข้อต่อวลี — นับข้อแรก)
+      // ผลของแต่ละวลี = ครั้งแรกที่ตอบ (แบบฝึกมีหลายข้อต่อวลี — นับข้อแรก)
       const seen = new Set<string>();
       onFinish(
         questions
@@ -137,7 +141,15 @@ export function PhraseRunner({ deck, questions, mode, onAnswer, onFinish, onQuit
           <RomajiToggle />
         </div>
 
-        {(q.type === 'say' || q.type === 'arrange') && <p className={styles.promptThai}>{phrase.thai}</p>}
+        {(q.type === 'say' || order) && <p className={styles.promptThai}>{phrase.thai}</p>}
+        {polite && (
+          <p className={styles.promptFrom}>
+            ในการ์ตูนพูดว่า{' '}
+            <span className="kana" lang="ja">
+              {phrase.kana}
+            </span>
+          </p>
+        )}
         {q.type === 'meaning' && <PhraseFace phrase={phrase} speak hideReading={phrase.kind === 'sign'} />}
         {q.type === 'listen' && (
           <button type="button" className={cx('btn', quiz.audioBtn)} onClick={() => speak(phrase.written)}>
@@ -145,10 +157,10 @@ export function PhraseRunner({ deck, questions, mode, onAnswer, onFinish, onQuit
             ฟังอีกครั้ง
           </button>
         )}
-        {q.type === 'arrange' && (
+        {order && (
           <GrammarArrange
             key={q.id}
-            example={{ sentence: phrase.kanaSentence, thai: phrase.thai, wrong: [], arrange: true }}
+            example={{ sentence: order, thai: phrase.thai, wrong: [], arrange: true }}
             tiles={q.tiles}
             disabled={!!answered}
             onAnswer={(ok) => answer(ok)}
@@ -195,13 +207,19 @@ export function PhraseRunner({ deck, questions, mode, onAnswer, onFinish, onQuit
         <div className={cx('notice', quiz.feedback, answered.correct ? 'notice-good' : 'notice-bad')}>
           <div className={styles.feedbackBody}>
             <span>
-              {answered.correct ? 'ถูกต้อง!' : 'ยังไม่ถูก — วลีที่ถูกคือ'}
+              {answered.correct ? 'ถูกต้อง!' : polite ? 'ยังไม่ถูก — แบบสุภาพที่ถูกคือ' : 'ยังไม่ถูก — วลีที่ถูกคือ'}
               {!answered.correct && mode === 'practice' && ' (เดี๋ยวจะถามข้อนี้อีกครั้ง)'}
             </span>
-            <PhraseFace phrase={phrase} size="sm" thai />
+            {polite ? (
+              <div className={cx(styles.face, styles.faceSm)}>
+                <TextLines text={polite} />
+              </div>
+            ) : (
+              <PhraseFace phrase={phrase} size="sm" thai />
+            )}
           </div>
           <div className="row">
-            <SpeakButton text={phrase.written} size="sm" label="ฟังวลีนี้" />
+            <SpeakButton text={(polite ?? phrase).written} size="sm" label={polite ? 'ฟังแบบสุภาพ' : 'ฟังวลีนี้'} />
             {!answered.correct && (
               <button type="button" className="btn btn-primary btn-sm" onClick={goNext} autoFocus>
                 {isLast ? 'ดูผล' : 'ข้อถัดไป'} →

@@ -301,6 +301,22 @@
   text-align: center;
 }
 
+/* ข้อเรียงแบบสุภาพ: วลีแบบกันเองที่ต้องเปลี่ยน */
+.promptFrom {
+  text-align: center;
+  color: var(--text-2);
+  font-size: 0.95rem;
+}
+
+/* ตัวญี่ปุ่นอยู่บรรทัดของตัวเอง ตัดบรรทัดเฉพาะตรงช่องว่างระหว่างชิ้น */
+.promptFrom :global(.kana) {
+  display: block;
+  font-size: 1.15rem;
+  color: var(--text);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
 /* ตัวเลือกเป็นวลี (ยาว): คอลัมน์เดียวบนมือถือ · 2 คอลัมน์บนจอกว้าง (div. = ชนะกฎ 4 คอลัมน์ของ quiz.module.css) */
 div.choicesPhrase {
   grid-template-columns: minmax(0, 1fr);

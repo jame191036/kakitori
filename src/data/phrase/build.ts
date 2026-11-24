@@ -125,12 +125,16 @@ export function p(
     casual?: string;
     /** แบบสุภาพ (markup เดียวกัน) — สายการ์ตูนที่วลีหลักเป็นแบบกันเอง */
     polite?: string;
+    /** ใช้แบบสุภาพทำข้อเรียง — ใส่เฉพาะที่แบ่งได้ 3 ชิ้นขึ้นไปและเรียงได้แบบเดียว */
+    arrangePolite?: boolean;
     /** คำเตือน (คำหยาบ · ภาษาการ์ตูน) */
     caution?: string;
   } = {},
 ): Phrase {
   const text = phraseText(ja, opts.romaji);
   const kind: PhraseKind = opts.sign ? 'sign' : opts.hear ? 'hear' : 'say';
+  const polite = opts.polite ? phraseText(opts.polite) : undefined;
+  if (opts.arrangePolite && !polite) throw new Error(`arrangePolite ต้องมี polite: ${id}`);
   return {
     id,
     kind,
@@ -138,7 +142,8 @@ export function p(
     thai,
     ...(opts.note ? { note: opts.note } : {}),
     ...(opts.casual ? { casual: textOnly(phraseText(opts.casual)) } : {}),
-    ...(opts.polite ? { polite: textOnly(phraseText(opts.polite)) } : {}),
+    ...(polite ? { polite: textOnly(polite) } : {}),
+    ...(opts.arrangePolite && polite ? { politeArrange: polite.kanaSentence } : {}),
     ...(opts.caution ? { caution: opts.caution } : {}),
     arrange: !!opts.arrange,
     ...(opts.avoid ? { avoid: opts.avoid } : {}),
@@ -166,10 +171,10 @@ export function dialogLesson(
 
 /** ประกอบสายวลี + เก็บบทสนทนาของแต่ละบทไว้กับชุด */
 export function buildPhraseDeck(
-  meta: Pick<LineDeck, 'id' | 'progressKey' | 'name' | 'letter'> & Pick<PhraseDeck, 'dialogueLabel'>,
+  meta: Pick<LineDeck, 'id' | 'progressKey' | 'name' | 'letter'> & Pick<PhraseDeck, 'dialogueLabel' | 'arrangeExtra'>,
   input: readonly SegmentInput<Phrase>[],
 ): PhraseDeck {
-  const { dialogueLabel, ...lineMeta } = meta;
+  const { dialogueLabel, arrangeExtra, ...lineMeta } = meta;
   const dialogues: Record<string, Dialogue> = {};
   for (const s of input) {
     for (const l of s.lessons) {
@@ -177,7 +182,12 @@ export function buildPhraseDeck(
       if (dialogue) dialogues[l.id] = dialogue;
     }
   }
-  return { ...buildLineDeck<Phrase>(lineMeta, input), dialogues, ...(dialogueLabel ? { dialogueLabel } : {}) };
+  return {
+    ...buildLineDeck<Phrase>(lineMeta, input),
+    dialogues,
+    ...(dialogueLabel ? { dialogueLabel } : {}),
+    ...(arrangeExtra ? { arrangeExtra } : {}),
+  };
 }
 
 /** ข้อความหลักของวลี: ป้าย = ตัวหนังสือบนป้าย · วลีอื่น = คานะ */

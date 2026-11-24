@@ -62,10 +62,27 @@ describe('anime deck', () => {
       expect(x.sentence.end || x.kana.endsWith('…'), `${x.id} ต้องมีเครื่องหมายท้าย`).toBeTruthy();
       checkText(x, x.id);
       if (x.polite) checkText(x.polite, `${x.id} (สุภาพ)`);
-      if (x.arrange) expect(x.kanaSentence.chunks.length, x.id).toBeGreaterThanOrEqual(3);
       // สายนี้วลีหลักเป็นแบบกันเองอยู่แล้ว — ไม่มีช่องแบบกันเองซ้อน
       expect(x.casual, x.id).toBeUndefined();
     }
+  });
+
+  it('has word-order puzzles with 3+ pieces, one form per phrase', () => {
+    const casual = phrases.filter((x) => x.arrange);
+    const polite = phrases.filter((x) => x.politeArrange);
+    for (const x of casual) {
+      expect(x.kind, x.id).toBe('say');
+      expect(x.kanaSentence.chunks.length, x.id).toBeGreaterThanOrEqual(3);
+      expect(x.politeArrange, `${x.id} มีข้อเรียงได้แบบเดียว`).toBeUndefined();
+    }
+    for (const x of polite) {
+      expect(x.politeArrange!.chunks.length, x.id).toBeGreaterThanOrEqual(3);
+      // ชิ้นที่เรียงต้องตรงกับแบบสุภาพที่แสดงในการ์ด
+      expect(x.polite!.kana.replaceAll(' ', ''), x.id).toBe(x.politeArrange!.plain + x.politeArrange!.end);
+    }
+    expect(casual.length).toBe(9);
+    expect(polite.length).toBe(14);
+    expect(deck.arrangeExtra).toBe(true);
   });
 
   it('marks rough words and anime-only speech as things to hear, with a caution', () => {

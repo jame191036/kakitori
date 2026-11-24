@@ -8,7 +8,10 @@ export const FANTASY = segment('fantasy', 'ファンタジー', 'แฟนตา
     'เวทมนตร์',
     [
       p('mahou-tsukaeru', '{魔法|まほう}/が {使|つか}える/の？', 'ใช้เวทมนตร์ได้เหรอ?', { polite: '{魔法|まほう}/が {使|つか}える/んですか？' }),
-      p('mahou-oshiete', '{魔法|まほう}/を {教|おし}えて！', 'สอนเวทมนตร์หน่อย!', { polite: '{魔法|まほう}/を {教|おし}えて ください。' }),
+      p('mahou-oshiete', '{魔法|まほう}/を {教|おし}えて！', 'สอนเวทมนตร์หน่อย!', {
+        polite: '{魔法|まほう}/を {教|おし}えて ください。',
+        arrangePolite: true,
+      }),
       p('yatte-miru', 'やって みる。', 'จะลองดู', { polite: 'やって みます。', note: '〜て みる = ลองทำ…ดู' }),
       p('dekita', 'できた！', 'สำเร็จแล้ว!', { polite: 'できました！', avoid: ['yatta'] }),
       p('kieta', '{消|き}えた！', 'หายวับไปแล้ว!', { polite: '{消|き}えました！' }),
@@ -49,11 +52,13 @@ export const FANTASY = segment('fantasy', 'ファンタジー', 'แฟนตา
       p('kono-saki', 'この {先|さき}は {危険|きけん}/だ。', 'ทางข้างหน้าอันตราย', {
         hear: true,
         polite: 'この {先|さき}は {危険|きけん}です。',
+        arrangePolite: true,
         avoid: ['abunai'],
       }),
       p('ki-o-tsukero', '{気|き}/を つけろ！', 'ระวังตัวให้ดี! (ผู้ชาย ห้วนๆ)', {
         hear: true,
         polite: '{気|き}/を つけて ください。',
+        arrangePolite: true,
         caution: 'รูปสั่งแบบห้วนของ きを つけて ฟังแรง',
         avoid: ['abunai', 'ki-o-tsukete'],
       }),

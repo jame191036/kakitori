@@ -1,4 +1,5 @@
 import { lessonWords, type LineLesson } from '../../data/line';
+import type { Sentence } from '../../data/grammar/sentence';
 import type { PhraseDeck, Phrase } from '../../data/phrase/types';
 import { shuffle, type Rng } from '../../lib/shuffle';
 import { lessonOfWord } from '../line/lineLogic';
@@ -9,9 +10,10 @@ import { lessonOfWord } from '../line/lineLogic';
  * - meaning: ดูวลี (คานะ + โรมาจิ) หรือป้าย → เลือกความหมาย
  * - listen:  ฟังเสียงอย่างเดียว → เลือกความหมาย (ต้องมีเสียงภาษาญี่ปุ่นในเครื่อง ไม่มีก็ใช้ meaning แทน)
  * - arrange: ความหมาย → เรียงชิ้นวลี (เฉพาะวลีที่ทำเครื่องหมาย · แบบฝึกเท่านั้น)
+ * - arrangePolite: ความหมาย + วลีแบบกันเอง → เรียงชิ้นของแบบสุภาพ (เฉพาะวลีที่ทำเครื่องหมาย · แบบฝึกเท่านั้น)
  */
 
-export type PhraseQType = 'say' | 'meaning' | 'listen' | 'arrange';
+export type PhraseQType = 'say' | 'meaning' | 'listen' | 'arrange' | 'arrangePolite';
 
 export interface PhraseQuestion {
   id: string;
@@ -19,11 +21,15 @@ export interface PhraseQuestion {
   phrase: Phrase;
   /** say: id ของวลี · meaning/listen: ความหมายไทย (รวมคำตอบทั้งคู่) */
   choices: string[];
-  /** say: id ของวลี · meaning/listen: ความหมายไทย · arrange: คานะของวลี */
+  /** say: id ของวลี · meaning/listen: ความหมายไทย · arrange/arrangePolite: คานะของวลี/แบบสุภาพ */
   answer: string;
-  /** arrange: ลำดับชิ้นที่สลับแล้ว (index ของ phrase.kanaSentence.chunks) */
+  /** arrange/arrangePolite: ลำดับชิ้นที่สลับแล้ว (index ของ arrangeSentence(q).chunks) */
   tiles: number[];
 }
+
+/** ประโยคที่ใช้เรียง (คานะแบ่งชิ้น) — ข้อที่ไม่ใช่ข้อเรียงได้ null */
+export const arrangeSentence = ({ type, phrase }: Pick<PhraseQuestion, 'type' | 'phrase'>): Sentence | null =>
+  type === 'arrange' ? phrase.kanaSentence : type === 'arrangePolite' ? (phrase.politeArrange ?? null) : null;
 
 interface Opts {
   /** เครื่องนี้มีเสียงภาษาญี่ปุ่น (ไม่มี = ไม่ใช้ข้อฟังอย่างเดียว) */
@@ -80,13 +86,14 @@ function make(
   if (t === 'say' && x.kind === 'hear') t = 'listen';
   if (t === 'listen' && (!audio || x.kind === 'sign')) t = 'meaning';
   const q: PhraseQuestion = { id: `${t}:${x.id}:${key}`, type: t, phrase: x, choices: [], answer: '', tiles: [] };
-  if (t === 'say') {
+  const order = arrangeSentence(q);
+  if (order) {
+    q.tiles = shuffledTiles(order.chunks.length, rng);
+    q.answer = order.plain;
+  } else if (t === 'say') {
     const others = pickOthers(x, pool.near, pool.all, (o) => o.kind === x.kind && !phrasesOverlap(o, x), rng);
     q.choices = shuffle([x, ...others], rng).map((o) => o.id);
     q.answer = x.id;
-  } else if (t === 'arrange') {
-    q.tiles = shuffledTiles(x.kanaSentence.chunks.length, rng);
-    q.answer = x.kanaSentence.plain;
   } else {
     const others = pickOthers(x, pool.near, pool.all, (o) => o.thai !== x.thai && !phrasesOverlap(o, x), rng);
     q.choices = shuffle([x, ...others], rng).map((o) => o.thai);
@@ -95,12 +102,24 @@ function make(
   return q;
 }
 
-/** แบบข้อของแบบฝึก (วลีละ 2 ข้อ) */
-const PRACTICE: Record<Phrase['kind'], (x: Phrase) => [PhraseQType, PhraseQType]> = {
-  say: (x) => ['say', x.arrange ? 'arrange' : 'listen'],
-  hear: () => ['listen', 'meaning'],
-  sign: () => ['meaning', 'say'],
-};
+/** แบบข้อของแบบฝึก: วลีละ 2 ข้อ (+ ข้อเรียง ถ้าสายนั้นให้ข้อเรียงเป็นข้อเพิ่ม · + ข้อเรียงแบบสุภาพ) */
+function practiceTypes(deck: PhraseDeck, x: Phrase): PhraseQType[] {
+  const swap = x.arrange && !deck.arrangeExtra;
+  const base: Record<Phrase['kind'], PhraseQType[]> = {
+    say: ['say', swap ? 'arrange' : 'listen'],
+    hear: ['listen', 'meaning'],
+    sign: ['meaning', 'say'],
+  };
+  return [
+    ...base[x.kind],
+    ...(x.arrange && !swap ? (['arrange'] as const) : []),
+    ...(x.politeArrange ? (['arrangePolite'] as const) : []),
+  ];
+}
+
+/** จำนวนข้อเรียงในแบบฝึกของบท (ใช้บอกก่อนเริ่มฝึก) */
+export const arrangeCount = (items: readonly Phrase[]) =>
+  items.reduce((n, x) => n + (x.arrange ? 1 : 0) + (x.politeArrange ? 1 : 0), 0);
 
 /** แบบข้อของแบบทดสอบ/ทบทวน (วลีละ 1 ข้อ) */
 const TEST: Record<Phrase['kind'], PhraseQType> = { say: 'say', hear: 'listen', sign: 'meaning' };
@@ -108,11 +127,12 @@ const TEST: Record<Phrase['kind'], PhraseQType> = { say: 'say', hear: 'listen', 
 /**
  * แบบฝึก: วลีละ 2 ข้อ — วลีที่พูด: เลือกวลีที่ควรพูด + เรียงวลี (หรือฟัง) · วลีที่ได้ยิน: ฟัง + อ่านความหมาย ·
  * ป้าย: ดูป้ายเลือกความหมาย + ดูความหมายเลือกป้าย — ไม่นับเป็นผลสอบ
+ * (สายที่ตั้ง arrangeExtra: ข้อเรียงเป็นข้อที่ 3 ข้อฟังยังอยู่ · วลีที่มี politeArrange มีข้อเรียงแบบสุภาพเพิ่ม)
  */
 export function practiceQuestions(deck: PhraseDeck, lesson: LineLesson, opts: Opts): PhraseQuestion[] {
   const items = lessonWords(deck, lesson);
   const pool = { near: items, all: Object.values(deck.words) };
-  const qs = items.flatMap((x) => PRACTICE[x.kind](x).map((t, i) => make(t, x, pool, opts, String(i + 1))));
+  const qs = items.flatMap((x) => practiceTypes(deck, x).map((t, i) => make(t, x, pool, opts, String(i + 1))));
   return shuffle(qs, opts.rng);
 }
 

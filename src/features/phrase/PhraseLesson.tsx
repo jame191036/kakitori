@@ -21,7 +21,7 @@ import { recordAnswer, recordPractice, progressStore } from '../progress/progres
 import { useSpeech } from '../speech/useSpeech';
 import { DialogueCard } from './DialogueCard';
 import { PhraseCards } from './PhraseCards';
-import { practiceQuestions, testQuestions, type PhraseQuestion } from './phraseLogic';
+import { arrangeCount, practiceQuestions, testQuestions, type PhraseQuestion } from './phraseLogic';
 import { PhraseRunner, type PhraseResult } from './PhraseRunner';
 
 interface Session {
@@ -62,6 +62,14 @@ export function PhraseLesson({ deck, lesson, lineTone, pathOf }: PhraseLessonPro
     : hasHear && count('say') > 0
       ? `${items.length} วลี (พูด ${count('say')} · ได้ยิน ${count('hear')})`
       : `${items.length} วลี`;
+
+  // คำอธิบายก่อนฝึก: บอกข้อเรียงเฉพาะบทที่มี · สายที่ข้อเรียงเป็นข้อเพิ่มบอกจำนวนแยก
+  const arranges = arrangeCount(items);
+  const pick = audio ? 'ฟังแล้วเลือกความหมาย' : 'อ่านแล้วเลือกความหมาย (เครื่องนี้ไม่มีเสียงภาษาญี่ปุ่น จึงไม่มีข้อฟัง)';
+  const practiceText =
+    `วลีละ 2 ข้อ: เลือกวลีที่ควรพูดตามสถานการณ์ ${arranges && !deck.arrangeExtra ? 'เรียงวลี ' : ''}และ${pick}` +
+    (arranges && deck.arrangeExtra ? ` · มีข้อเรียงประโยคเพิ่ม ${arranges} ข้อ` : '') +
+    (audio ? ' — ข้อที่ผิดจะได้ลองอีกครั้งท้ายชุด (ไม่นับเป็นผลสอบ)' : ' — ไม่นับเป็นผลสอบ');
 
   const [session, setSession] = useState<Session | null>(null);
   const [result, setResult] = useState<{ kind: Session['kind']; results: PhraseResult[]; passedBefore: boolean } | null>(
@@ -130,9 +138,7 @@ export function PhraseLesson({ deck, lesson, lineTone, pathOf }: PhraseLessonPro
           text={
             signsOnly
               ? 'ป้ายละ 2 ข้อ: ดูป้ายแล้วเลือกความหมาย และดูความหมายแล้วเลือกป้าย — ข้อที่ผิดจะได้ลองอีกครั้งท้ายชุด (ไม่นับเป็นผลสอบ)'
-              : audio
-                ? 'วลีละ 2 ข้อ: เลือกวลีที่ควรพูดตามสถานการณ์ เรียงวลี และฟังแล้วเลือกความหมาย — ข้อที่ผิดจะได้ลองอีกครั้งท้ายชุด (ไม่นับเป็นผลสอบ)'
-                : 'วลีละ 2 ข้อ: เลือกวลีที่ควรพูดตามสถานการณ์ เรียงวลี และอ่านแล้วเลือกความหมาย (เครื่องนี้ไม่มีเสียงภาษาญี่ปุ่น จึงไม่มีข้อฟัง) — ไม่นับเป็นผลสอบ'
+              : practiceText
           }
           action="เริ่มฝึก"
           onStart={() => start('practice')}

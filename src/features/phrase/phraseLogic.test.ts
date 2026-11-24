@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { lessonWords } from '../../data/line';
+import { ANIME_DECK } from '../../data/anime';
 import { TRAVEL_DECK } from '../../data/travel';
-import { phrasesOverlap, practiceQuestions, reviewQuestions, testQuestions, type PhraseQuestion } from './phraseLogic';
+import {
+  arrangeCount,
+  arrangeSentence,
+  phrasesOverlap,
+  practiceQuestions,
+  reviewQuestions,
+  testQuestions,
+  type PhraseQuestion,
+} from './phraseLogic';
 
 const deck = TRAVEL_DECK;
 const seeded = (seed: number) => () => {
@@ -9,9 +18,12 @@ const seeded = (seed: number) => () => {
   return seed / 2147483647;
 };
 
-function checkChoices(q: PhraseQuestion) {
-  if (q.type === 'arrange') {
-    expect([...q.tiles].sort()).toEqual(q.phrase.kanaSentence.chunks.map((_, i) => i));
+function checkChoices(q: PhraseQuestion, words = deck.words) {
+  const order = arrangeSentence(q);
+  if (order) {
+    expect([...q.tiles].sort()).toEqual(order.chunks.map((_, i) => i));
+    expect(q.answer).toBe(order.plain);
+    expect(q.choices).toEqual([]);
     return;
   }
   expect(q.choices.length, q.id).toBe(4);
@@ -20,7 +32,7 @@ function checkChoices(q: PhraseQuestion) {
   if (q.type === 'say') {
     expect(q.phrase.kind, q.id).not.toBe('hear');
     for (const id of q.choices) {
-      const o = deck.words[id]!;
+      const o = words[id]!;
       // เลือกวลีจากวลีที่พูดด้วยกัน · เลือกป้ายจากป้ายด้วยกัน
       expect(o.kind, q.id).toBe(q.phrase.kind);
       if (id !== q.phrase.id) expect(phrasesOverlap(o, q.phrase), `${q.id} ↔ ${id}`).toBe(false);
@@ -60,7 +72,7 @@ describe('travel questions', () => {
     const items = deck.lessons.map((l) => deck.words[l.words[0]!]!);
     const qs = reviewQuestions(deck, items, { audio: true, rng: seeded(11) });
     expect(qs.length).toBe(items.length);
-    qs.forEach(checkChoices);
+    qs.forEach((q) => checkChoices(q));
   });
 
   it('signs: read the sign or pick the sign, never listening or arranging', () => {
@@ -69,7 +81,7 @@ describe('travel questions', () => {
     expect(new Set(practice.map((q) => q.type))).toEqual(new Set(['meaning', 'say']));
     const test = testQuestions(deck, lesson, { audio: true, rng: seeded(5) });
     expect(test.every((q) => q.type === 'meaning')).toBe(true);
-    [...practice, ...test].forEach(checkChoices);
+    [...practice, ...test].forEach((q) => checkChoices(q));
   });
 
   it('never offers a phrase that contains the answer as a wrong "say" choice', () => {
@@ -77,5 +89,28 @@ describe('travel questions', () => {
     const made = deck.words['made-ikura']!;
     expect(phrasesOverlap(ikura, made)).toBe(true);
     expect(phrasesOverlap(ikura, deck.words['toire-doko']!)).toBe(false);
+  });
+});
+
+describe('anime questions (arranging is an extra question)', () => {
+  it('practice: 2 questions per phrase + one per puzzle, and every say phrase keeps its listening question', () => {
+    let polite = 0;
+    for (const lesson of ANIME_DECK.lessons) {
+      const items = lessonWords(ANIME_DECK, lesson);
+      const qs = practiceQuestions(ANIME_DECK, lesson, { audio: true, rng: seeded(9) });
+      expect(qs.length, lesson.id).toBe(items.length * 2 + arrangeCount(items));
+      expect(new Set(qs.map((q) => q.id)).size, lesson.id).toBe(qs.length);
+      for (const q of qs) checkChoices(q, ANIME_DECK.words);
+      for (const x of items) expect(qs.some((q) => q.phrase === x && q.type === 'listen'), x.id).toBe(true);
+      polite += qs.filter((q) => q.type === 'arrangePolite').length;
+    }
+    expect(polite).toBe(14);
+  });
+
+  it('test and review never arrange', () => {
+    for (const lesson of ANIME_DECK.lessons) {
+      const qs = testQuestions(ANIME_DECK, lesson, { audio: true, rng: seeded(4) });
+      expect(qs.every((q) => !arrangeSentence(q)), lesson.id).toBe(true);
+    }
   });
 });

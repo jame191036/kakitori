@@ -13,7 +13,7 @@ interface PhraseCardsProps {
   onDone: () => void;
 }
 
-/** อีกรูปหนึ่งของวลี (แบบกันเอง / แบบสุภาพ) ในกรอบเส้นประ — ดูและฟังได้ ไม่ได้ถาม */
+/** อีกรูปหนึ่งของวลี (แบบกันเอง / แบบสุภาพ) ในกรอบเส้นประ — ดูและฟังได้ (แบบสุภาพบางวลีมีข้อเรียงในขั้นฝึก) */
 function AltForm({ label, speakLabel, text }: { label: string; speakLabel: string; text: PhraseText }) {
   return (
     <div className={styles.casual}>
