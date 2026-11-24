@@ -1,8 +1,11 @@
 import { buildPhraseDeck, segment } from '../phrase/build';
 import type { Phrase } from '../phrase/types';
+import { DENWA } from './denwa';
 import { JIKOSHOUKAI } from './jikoshoukai';
 import { MANAA } from './manaa';
 import { SASOU } from './sasou';
+import { SHIGOTO } from './shigoto';
+import { ZATSUDAN } from './zatsudan';
 
 /**
  * สายชีวิตประจำวัน — วลีคุยกับคนญี่ปุ่นและใช้ชีวิตในญี่ปุ่น 9 ช่วง (แผน: docs/daily-plan.md)
@@ -16,9 +19,9 @@ export const DAILY_DECK = buildPhraseDeck({ id: 'daily', progressKey: 'daily', n
   MANAA,
   JIKOSHOUKAI,
   SASOU,
-  segment<Phrase>('zatsudan', 'ざつだん', 'คุยเล่น'),
-  segment<Phrase>('shigoto', 'しごと', 'ที่ทำงาน'),
-  segment<Phrase>('denwa', 'でんわ', 'โทรศัพท์ ข้อความ'),
+  ZATSUDAN,
+  SHIGOTO,
+  DENWA,
   segment<Phrase>('sumai', 'すまい', 'ที่พัก เพื่อนบ้าน ทิ้งขยะ'),
   segment<Phrase>('tetsuzuki', 'てつづき', 'ธนาคาร ไปรษณีย์ ที่ว่าการเขต'),
   segment<Phrase>('kimochi', 'きもち', 'บอกความรู้สึก ความเห็น'),

@@ -7,5 +7,5 @@ export const LINE_LESSON_COUNT = {
   'kanji-n5': 18,
   'grammar-n5': 30,
   travel: 26,
-  daily: 9,
+  daily: 18,
 } as const;
