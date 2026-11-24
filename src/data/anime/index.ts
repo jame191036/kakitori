@@ -1,8 +1,10 @@
-import { buildPhraseDeck, segment } from '../phrase/build';
-import type { Phrase } from '../phrase/types';
+import { buildPhraseDeck } from '../phrase/build';
+import { FANTASY } from './fantasy';
 import { GAKKOU } from './gakkou';
 import { HANASHIKATA } from './hanashikata';
+import { OYAKUSOKU } from './oyakusoku';
 import { REACTION } from './reaction';
+import { RENAI } from './renai';
 import { TATAKAI } from './tatakai';
 import { TOMODACHI } from './tomodachi';
 import { YOBIKATA } from './yobikata';
@@ -25,8 +27,8 @@ export const ANIME_DECK = buildPhraseDeck(
     GAKKOU,
     TOMODACHI,
     TATAKAI,
-    segment<Phrase>('renai', 'れんあい', 'ความรัก'),
-    segment<Phrase>('fantasy', 'ファンタジー', 'แฟนตาซี เวทมนตร์'),
-    segment<Phrase>('oyakusoku', 'おやくそく', 'ประโยคเด็ดประจำการ์ตูน'),
+    RENAI,
+    FANTASY,
+    OYAKUSOKU,
   ],
 );

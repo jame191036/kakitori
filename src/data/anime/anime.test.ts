@@ -28,6 +28,9 @@ describe('anime phrase text', () => {
     expect(phraseText('そう/っす！').romaji).toBe('sou ssu!');
     expect(phraseText('いい/わ/よ。').romaji).toBe('ii wa yo');
     expect(phraseText('ハルト/{様|さま}！').romaji).toBe('haruto sama!');
+    expect(phraseText('{話|はなし}/が ある/ん/だ。').romaji).toBe('hanashi ga aru n da');
+    expect(phraseText('{使|つか}える/んですか？').romaji).toBe('tsukaeru n desu ka?');
+    expect(phraseText('{間|ま}に{合|あ}った…').romaji).toBe('maniatta...');
   });
 });
 
@@ -70,6 +73,8 @@ describe('anime deck', () => {
     const rough = ['urusai', 'baka', 'fuzakeru-na', 'omae', 'anta', 'temee', 'kisama', 'mukatsuku'];
     // รอบ 2: คำท้าตี คำห้วน ประโยคตัวร้าย
     rough.push('okureru-na', 'baka-da-na', 'kao-mo', 'hen-na-yatsu', 'kakatte-koi', 'jama-suru-na', 'oboetero');
+    // รอบ 3: ปากแข็ง คำห้วน ประโยคตัวร้าย และคำบอกรักที่ชีวิตจริงไม่พูด
+    rough.push('betsu-ni', 'kanchigai-shinaide', 'aishiteru', 'ki-o-tsukero', 'yoku-kita', 'yurusanai', 'soko-made-da', 'nanimono');
     for (const id of rough) {
       expect(deck.words[id]?.kind, id).toBe('hear');
       expect(deck.words[id]?.caution, id).toBeTruthy();

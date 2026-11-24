@@ -8,5 +8,5 @@ export const LINE_LESSON_COUNT = {
   'grammar-n5': 30,
   travel: 26,
   daily: 27,
-  anime: 18,
+  anime: 27,
 } as const;
