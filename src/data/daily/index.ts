@@ -1,10 +1,12 @@
-import { buildPhraseDeck, segment } from '../phrase/build';
-import type { Phrase } from '../phrase/types';
+import { buildPhraseDeck } from '../phrase/build';
 import { DENWA } from './denwa';
 import { JIKOSHOUKAI } from './jikoshoukai';
+import { KIMOCHI } from './kimochi';
 import { MANAA } from './manaa';
 import { SASOU } from './sasou';
 import { SHIGOTO } from './shigoto';
+import { SUMAI } from './sumai';
+import { TETSUZUKI } from './tetsuzuki';
 import { ZATSUDAN } from './zatsudan';
 
 /**
@@ -22,7 +24,7 @@ export const DAILY_DECK = buildPhraseDeck({ id: 'daily', progressKey: 'daily', n
   ZATSUDAN,
   SHIGOTO,
   DENWA,
-  segment<Phrase>('sumai', 'すまい', 'ที่พัก เพื่อนบ้าน ทิ้งขยะ'),
-  segment<Phrase>('tetsuzuki', 'てつづき', 'ธนาคาร ไปรษณีย์ ที่ว่าการเขต'),
-  segment<Phrase>('kimochi', 'きもち', 'บอกความรู้สึก ความเห็น'),
+  SUMAI,
+  TETSUZUKI,
+  KIMOCHI,
 ]);

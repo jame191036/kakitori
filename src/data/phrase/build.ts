@@ -26,8 +26,13 @@ function wordRomaji(kana: string): string {
 /** ท้ายคำอ่านของคันจิ ({母|はは}) — は/へ ตรงนี้เป็นส่วนของคำ ไม่ใช่คำช่วย */
 const RUBY_END = '​';
 
+/** คำทักทายที่ は ท้ายคำอ่านว่า wa แต่เขียนติดกันเป็นคำเดียว */
+const GREETINGS: Record<string, string> = { こんにちは: 'konnichiwa', こんばんは: 'konbanwa' };
+
 /** คำช่วยท้ายส่วนอ่านตามเสียง (は = wa · へ = e · を = o) — ยกเว้นตัวที่เป็นท้ายคำอ่านของคันจิ */
 function partRomaji(part: string): string {
+  const greeting = GREETINGS[part.replaceAll(RUBY_END, '')];
+  if (greeting) return greeting;
   const last = part.at(-1);
   const particle = last === 'は' ? 'wa' : last === 'へ' ? 'e' : last === 'を' ? 'o' : null;
   if (!particle) return wordRomaji(part.replaceAll(RUBY_END, ''));

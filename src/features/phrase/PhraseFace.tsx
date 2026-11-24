@@ -40,6 +40,21 @@ export function RomajiToggle() {
   );
 }
 
+/**
+ * ตัวสุดท้าย + เครื่องหมายท้าย (。？！…) ติดกันเสมอ — ชิ้นที่ยาวเกินจอแคบจะถูกตัดตรงที่ล้น
+ * (overflow-wrap) ซึ่งอาจเหลือ 。 ตัวเดียวขึ้นบรรทัดใหม่ ภาษาญี่ปุ่นไม่ขึ้นบรรทัดด้วยเครื่องหมายแบบนี้
+ */
+function GlueEnd({ text }: { text: string }) {
+  const m = /.[。？！…]+$/u.exec(text);
+  if (!m) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, m.index)}
+      <span className={styles.nobr}>{m[0]}</span>
+    </>
+  );
+}
+
 interface TextLinesProps {
   text: PhraseText;
   /** แบบเขียนจริงตัวเล็ก (ถ้ามีคันจิ) */
@@ -52,11 +67,11 @@ export function TextLines({ text, written = true }: TextLinesProps) {
   return (
     <>
       <p className={cx('kana', styles.kana)} lang="ja">
-        {text.kana}
+        <GlueEnd text={text.kana} />
       </p>
       {written && hasWrittenForm(text) && (
         <p className={cx('kana', styles.written)} lang="ja">
-          {text.written}
+          <GlueEnd text={text.written} />
         </p>
       )}
       {romaji && (

@@ -35,6 +35,11 @@ describe('daily phrase text', () => {
     expect(phraseText('{父|ちち}/と {母|はは}/が います。').romaji).toBe('chichi to haha ga imasu');
     expect(phraseText('{母|はは}は {元気|げんき}です。').romaji).toBe('haha wa genki desu');
   });
+
+  it('writes the greetings konnichiwa / konbanwa as one word (dialogue lines have no romaji override)', () => {
+    expect(phraseText('こんにちは。').romaji).toBe('konnichiwa');
+    expect(phraseText('はい、こんばんは。').romaji).toBe('hai, konbanwa');
+  });
 });
 
 describe('daily deck', () => {
