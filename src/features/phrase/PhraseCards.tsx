@@ -1,8 +1,8 @@
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { SpeakButton } from '../../components/SpeakButton';
 import { faceText } from '../../data/phrase/build';
-import type { Phrase } from '../../data/phrase/types';
+import type { Phrase, PhraseText } from '../../data/phrase/types';
 import { cx } from '../../lib/cx';
 import { KindTag, PhraseFace, RomajiToggle, TextLines } from './PhraseFace';
 import styles from './phrase.module.css';
@@ -13,7 +13,20 @@ interface PhraseCardsProps {
   onDone: () => void;
 }
 
-/** ขั้น "เรียน" ของบทท่องเที่ยว: การ์ดทีละวลี — คานะ แบบเขียนจริง โรมาจิ ความหมาย วิธีใช้ และเสียง */
+/** อีกรูปหนึ่งของวลี (แบบกันเอง / แบบสุภาพ) ในกรอบเส้นประ — ดูและฟังได้ ไม่ได้ถาม */
+function AltForm({ label, speakLabel, text }: { label: string; speakLabel: string; text: PhraseText }) {
+  return (
+    <div className={styles.casual}>
+      <span className={styles.casualLabel}>{label}</span>
+      <div className={styles.casualText}>
+        <TextLines text={text} />
+      </div>
+      <SpeakButton text={text.written} size="sm" label={speakLabel} />
+    </div>
+  );
+}
+
+/** ขั้น "เรียน" ของบทสายวลี: การ์ดทีละวลี — คานะ แบบเขียนจริง โรมาจิ ความหมาย คำเตือน รูปอื่น วิธีใช้ และเสียง */
 export function PhraseCards({ items, onDone }: PhraseCardsProps) {
   const [index, setIndex] = useState(0);
   const phrase = items[index]!;
@@ -45,15 +58,14 @@ export function PhraseCards({ items, onDone }: PhraseCardsProps) {
         <div key={phrase.id} className={styles.cardBody}>
           <PhraseFace phrase={phrase} speak />
           <p className={styles.cardThai}>{phrase.thai}</p>
-          {phrase.casual && (
-            <div className={styles.casual}>
-              <span className={styles.casualLabel}>แบบกันเอง (เพื่อน · คนสนิท)</span>
-              <div className={styles.casualText}>
-                <TextLines text={phrase.casual} />
-              </div>
-              <SpeakButton text={phrase.casual.written} size="sm" label="ฟังแบบกันเอง" />
-            </div>
+          {phrase.caution && (
+            <p className={styles.caution}>
+              <TriangleAlert size={16} strokeWidth={2} aria-hidden />
+              <span>{phrase.caution}</span>
+            </p>
           )}
+          {phrase.casual && <AltForm label="แบบกันเอง (เพื่อน · คนสนิท)" speakLabel="ฟังแบบกันเอง" text={phrase.casual} />}
+          {phrase.polite && <AltForm label="แบบสุภาพ (คนไม่สนิท · ผู้ใหญ่)" speakLabel="ฟังแบบสุภาพ" text={phrase.polite} />}
           {phrase.note && <p className={styles.note}>{phrase.note}</p>}
         </div>
 

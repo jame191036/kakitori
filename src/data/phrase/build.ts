@@ -61,6 +61,7 @@ export function chunkRomaji(kana: string): string {
 }
 
 const END = /[。？！]+$/u;
+const END_MARK: Record<string, string> = { '？': '?', '！': '!', '…': '...' };
 
 /**
  * แปลง markup 1 ประโยคเป็นข้อความที่แสดง (คานะใหญ่ · แบบเขียนจริง · โรมาจิ)
@@ -81,7 +82,8 @@ export function phraseText(ja: string, romaji?: string): PhraseText & { sentence
     .replace(END, '')
     .split(' ')
     .filter(Boolean);
-  const mark = end.includes('？') ? '?' : end.includes('！') ? '!' : trailing ? '...' : '';
+  // เครื่องหมายท้ายทีละตัว (！？ → !? · … → ...) · 。 ไม่ใส่
+  const mark = [...end].map((c) => END_MARK[c] ?? '').join('');
   return {
     sentence,
     kanaSentence,
@@ -121,6 +123,10 @@ export function p(
     avoid?: readonly string[];
     /** แบบกันเอง (markup เดียวกัน) — แสดงคู่กันในการ์ดเรียน */
     casual?: string;
+    /** แบบสุภาพ (markup เดียวกัน) — สายการ์ตูนที่วลีหลักเป็นแบบกันเอง */
+    polite?: string;
+    /** คำเตือน (คำหยาบ · ภาษาการ์ตูน) */
+    caution?: string;
   } = {},
 ): Phrase {
   const text = phraseText(ja, opts.romaji);
@@ -132,6 +138,8 @@ export function p(
     thai,
     ...(opts.note ? { note: opts.note } : {}),
     ...(opts.casual ? { casual: textOnly(phraseText(opts.casual)) } : {}),
+    ...(opts.polite ? { polite: textOnly(phraseText(opts.polite)) } : {}),
+    ...(opts.caution ? { caution: opts.caution } : {}),
     arrange: !!opts.arrange,
     ...(opts.avoid ? { avoid: opts.avoid } : {}),
   };
@@ -158,9 +166,10 @@ export function dialogLesson(
 
 /** ประกอบสายวลี + เก็บบทสนทนาของแต่ละบทไว้กับชุด */
 export function buildPhraseDeck(
-  meta: Pick<LineDeck, 'id' | 'progressKey' | 'name' | 'letter'>,
+  meta: Pick<LineDeck, 'id' | 'progressKey' | 'name' | 'letter'> & Pick<PhraseDeck, 'dialogueLabel'>,
   input: readonly SegmentInput<Phrase>[],
 ): PhraseDeck {
+  const { dialogueLabel, ...lineMeta } = meta;
   const dialogues: Record<string, Dialogue> = {};
   for (const s of input) {
     for (const l of s.lessons) {
@@ -168,7 +177,7 @@ export function buildPhraseDeck(
       if (dialogue) dialogues[l.id] = dialogue;
     }
   }
-  return { ...buildLineDeck<Phrase>(meta, input), dialogues };
+  return { ...buildLineDeck<Phrase>(lineMeta, input), dialogues, ...(dialogueLabel ? { dialogueLabel } : {}) };
 }
 
 /** ข้อความหลักของวลี: ป้าย = ตัวหนังสือบนป้าย · วลีอื่น = คานะ */

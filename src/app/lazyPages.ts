@@ -30,4 +30,8 @@ export const TravelReviewPage = lazy(() => import('../pages/TravelReviewPage'));
 export const DailyLinePage = lazy(() => import('../pages/DailyLinePage'));
 export const DailyLessonPage = lazy(() => import('../pages/DailyLessonPage'));
 export const DailyReviewPage = lazy(() => import('../pages/DailyReviewPage'));
+export const AnimeLinePage = lazy(() => import('../pages/AnimeLinePage'));
+export const AnimeLessonPage = lazy(() => import('../pages/AnimeLessonPage'));
+export const AnimeReviewPage = lazy(() => import('../pages/AnimeReviewPage'));
+export const TalkHubPage = lazy(() => import('../pages/TalkHubPage'));
 export const ExamPage = lazy(() => import('../pages/ExamPage'));

@@ -2,6 +2,8 @@ import { ArrowRight, RotateCcw } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { Link } from 'react-router';
 import {
+  ANIME_ROOT,
+  animeReviewPath,
   DAILY_ROOT,
   dailyReviewPath,
   grammarReviewPath,
@@ -14,6 +16,7 @@ import {
   vocabReviewPath,
 } from '../app/paths';
 import { TodayCard, type TodayLine } from '../components/TodayCard';
+import { ANIME_DECK } from '../data/anime';
 import { DAILY_DECK } from '../data/daily';
 import { GRAMMAR_N5 } from '../data/grammar/n5';
 import { KANJI_N5 } from '../data/kanji/n5';
@@ -30,7 +33,7 @@ import { packTone, tone, type Tone } from '../lib/tone';
 import { useNow } from '../lib/useNow';
 import styles from './ReviewHubPage.module.css';
 
-/** การ์ดทบทวนของสายบทเรียน (N5 · ท่องเที่ยว · ชีวิตประจำวัน) */
+/** การ์ดทบทวนของสายบทเรียน (N5 · ท่องเที่ยว · ชีวิตประจำวัน · การ์ตูน) */
 interface LineCard {
   deck: LineDeck;
   tone: Tone;
@@ -88,6 +91,15 @@ const LINE_CARDS: readonly LineCard[] = [
     title: 'ทบทวนวลีชีวิตประจำวัน',
     desc: 'วลีที่ถึงรอบ วลีที่ผิดบ่อย และความคืบหน้าทั้งสาย',
   },
+  {
+    deck: ANIME_DECK,
+    tone: 'anime',
+    href: animeReviewPath(),
+    glyph: '漫',
+    lineJa: 'アニメ線',
+    title: 'ทบทวนวลีการ์ตูน',
+    desc: 'วลีที่ถึงรอบ วลีที่ผิดบ่อย และความคืบหน้าทั้งสาย',
+  },
 ];
 
 const TODAY_LINES: readonly TodayLine[] = [
@@ -96,6 +108,7 @@ const TODAY_LINES: readonly TodayLine[] = [
   { deck: GRAMMAR_N5, unit: 'รูป', dueHref: grammarReviewPath('due') },
   { deck: TRAVEL_DECK, unit: 'วลี', dueHref: travelReviewPath('due') },
   { deck: DAILY_DECK, unit: 'วลี', dueHref: dailyReviewPath('due') },
+  { deck: ANIME_DECK, unit: 'วลี', dueHref: animeReviewPath('due') },
 ];
 
 /** ทบทวน (เมนูหลัก): วันนี้ (เป้า + รอบทบทวน) แล้วการ์ดทบทวนของแต่ละสาย */
@@ -155,8 +168,8 @@ export default function ReviewHubPage() {
       {!started && (
         <p className={cx(styles.muted, styles.note)}>
           ยังไม่มีรายการที่ต้องทบทวน — ฝึกเขียนหรือทำแบบทดสอบใน <Link to={KANA_ROOT}>หมวดตัวอักษร</Link> หรือ
-          ทำแบบทดสอบในบทเรียน <Link to={N5_ROOT}>JLPT N5</Link> <Link to={TRAVEL_ROOT}>ท่องเที่ยว</Link> หรือ{' '}
-          <Link to={DAILY_ROOT}>ชีวิตประจำวัน</Link> ก่อน แล้วระบบจะนัดวันทบทวนให้
+          ทำแบบทดสอบในบทเรียน <Link to={N5_ROOT}>JLPT N5</Link> <Link to={TRAVEL_ROOT}>ท่องเที่ยว</Link>{' '}
+          <Link to={DAILY_ROOT}>ชีวิตประจำวัน</Link> หรือ <Link to={ANIME_ROOT}>การ์ตูน</Link> ก่อน แล้วระบบจะนัดวันทบทวนให้
         </p>
       )}
     </div>

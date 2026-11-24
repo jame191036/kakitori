@@ -30,7 +30,7 @@ export default defineConfig([
         {
           patterns: [
             {
-              regex: '/data/(vocab|kanji|grammar|exam)/n5(/|$)|/data/vocab$|/data/(travel|daily)(/index)?$',
+              regex: '/data/(vocab|kanji|grammar|exam)/n5(/|$)|/data/vocab$|/data/(travel|daily|anime)(/index)?$',
               allowTypeImports: true,
               message: 'ข้อมูลสายบทเรียนต้องโหลดแยก — ใช้ useLineDecks / loadLineDecks จาก src/data/lineDecks.ts',
             },

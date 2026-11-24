@@ -1,4 +1,4 @@
-import { DAILY_ROOT, KANA_ROOT, N5_ROOT, TRAVEL_ROOT } from './paths';
+import { ANIME_ROOT, DAILY_ROOT, KANA_ROOT, N5_ROOT, TRAVEL_ROOT } from './paths';
 
 /**
  * หมวดหลักของเว็บ = "สายรถไฟ" บนหน้าแรก — หมวดที่ยังไม่มี to แสดงเป็น 工事中 (กำลังสร้าง กดไม่ได้)
@@ -40,7 +40,14 @@ export const SECTIONS: readonly Section[] = [
     tone: 'daily',
     to: DAILY_ROOT,
   },
-  { id: 'anime', name: 'ดูการ์ตูน / ซีรีส์', desc: 'ภาษาพูดแบบกันเอง และฝึกฟัง', glyph: '漫', tone: 'anime' },
+  {
+    id: 'anime',
+    name: 'ดูการ์ตูน / ซีรีส์',
+    desc: 'คำอุทาน วิธีเรียกชื่อ คำลงท้าย ภาษากันเองที่ได้ยินในการ์ตูน — มีฉากตัวอย่างทุกบท',
+    glyph: '漫',
+    tone: 'anime',
+    to: ANIME_ROOT,
+  },
   {
     id: 'jlpt-n5',
     name: 'สอบ JLPT N5',

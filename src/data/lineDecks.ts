@@ -5,9 +5,10 @@ import type { PhraseDeck } from './phrase/types';
 import type { VocabDeck } from './vocab';
 
 /**
- * ข้อมูลสายบทเรียน (N5: คำศัพท์ · คันจิ · ไวยากรณ์ + ท่องเที่ยว) โหลดแยกจากก้อนหลักของเว็บ — หน้าแรกจะได้เปิดเร็ว
+ * ข้อมูลสายบทเรียน (N5: คำศัพท์ · คันจิ · ไวยากรณ์ + สายวลี: ท่องเที่ยว · ชีวิตประจำวัน · การ์ตูน) โหลดแยกจากก้อนหลักของเว็บ
  * หน้าของแต่ละสาย import ข้อมูลตรงๆ ได้ตามเดิม (หน้าพวกนั้นโหลดแยกอยู่แล้ว)
- * ส่วนที่อยู่ในก้อนหลัก (หน้าแรก · หัวเว็บ) ต้องใช้ตัวนี้แทน — ห้าม import data/(vocab|kanji|grammar)/n5 · data/travel ตรงๆ
+ * — หน้าแรกจะได้เปิดเร็ว · ส่วนที่อยู่ในก้อนหลัก (หน้าแรก · หัวเว็บ) ต้องใช้ตัวนี้แทน
+ * ห้าม import data/(vocab|kanji|grammar)/n5 · data/(travel|daily|anime) ตรงๆ
  */
 export interface LineDecks {
   vocab: VocabDeck;
@@ -15,16 +16,31 @@ export interface LineDecks {
   grammar: GrammarDeck;
   travel: PhraseDeck;
   daily: PhraseDeck;
+  anime: PhraseDeck;
 }
 
 let loaded: LineDecks | null = null;
 let loading: Promise<LineDecks> | null = null;
 
 export function loadLineDecks(): Promise<LineDecks> {
-  loading ??= Promise.all([import('./vocab/n5'), import('./kanji/n5'), import('./grammar/n5'), import('./travel'), import('./daily')])
+  loading ??= Promise.all([
+    import('./vocab/n5'),
+    import('./kanji/n5'),
+    import('./grammar/n5'),
+    import('./travel'),
+    import('./daily'),
+    import('./anime'),
+  ])
     .then(
-      ([v, k, g, t, d]) =>
-        (loaded = { vocab: v.N5_DECK, kanji: k.KANJI_N5, grammar: g.GRAMMAR_N5, travel: t.TRAVEL_DECK, daily: d.DAILY_DECK }),
+      ([v, k, g, t, d, a]) =>
+        (loaded = {
+          vocab: v.N5_DECK,
+          kanji: k.KANJI_N5,
+          grammar: g.GRAMMAR_N5,
+          travel: t.TRAVEL_DECK,
+          daily: d.DAILY_DECK,
+          anime: a.ANIME_DECK,
+        }),
     )
     .catch((err: unknown) => {
       // โหลดไม่สำเร็จ (เช่น ออฟไลน์ก่อนแคชเสร็จ) — ครั้งหน้าลองใหม่

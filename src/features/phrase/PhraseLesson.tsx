@@ -103,7 +103,7 @@ export function PhraseLesson({ deck, lesson, lineTone, pathOf }: PhraseLessonPro
       <LessonSteps step={step} onStep={go} />
 
       {step === 'learn' && <PhraseCards items={items} onDone={() => go('practice')} />}
-      {step === 'learn' && dialogue && <DialogueCard dialogue={dialogue} />}
+      {step === 'learn' && dialogue && <DialogueCard dialogue={dialogue} title={deck.dialogueLabel} />}
 
       {step !== 'learn' && session && (
         <PhraseRunner

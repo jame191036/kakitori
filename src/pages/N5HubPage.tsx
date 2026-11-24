@@ -4,19 +4,17 @@ import { examPath, grammarPath, kanjiPath, scriptPath, vocabPath } from '../app/
 import { EXAM_SETS } from '../data/exam/n5';
 import { GRAMMAR_N5 } from '../data/grammar/n5';
 import { KANJI_N5 } from '../data/kanji/n5';
-import type { LineDeck } from '../data/line';
 import { scripts } from '../data/scripts';
 import { N5_DECK } from '../data/vocab/n5';
 import { scoreExam, SECTION_MAX } from '../features/exam/examLogic';
 import { examStore } from '../features/exam/examStore';
-import { deckProgress, lessonStates, nextLesson, wordsPassed } from '../features/line/lineLogic';
-import type { ProgressData } from '../features/progress/progressLogic';
 import { progressStore } from '../features/progress/progressStore';
 import { packStations, stationDone } from '../features/progress/stations';
 import { cx } from '../lib/cx';
 import { useStore } from '../lib/persistentStore';
 import { tone } from '../lib/tone';
-import styles from './N5HubPage.module.css';
+import { HubLine } from '../components/line/HubLine';
+import styles from '../components/line/HubPage.module.css';
 
 /**
  * หมวด JLPT N5 — สายคำศัพท์ สายคันจิ สายไวยากรณ์ และข้อสอบจำลอง
@@ -49,7 +47,8 @@ export default function N5HubPage() {
       )}
 
       <ul className={styles.lines}>
-        <LiveLine
+        <HubLine
+          lineTone="n5"
           deck={N5_DECK}
           data={data}
           glyph="語"
@@ -58,7 +57,8 @@ export default function N5HubPage() {
           unit="คำ"
           href={vocabPath()}
         />
-        <LiveLine
+        <HubLine
+          lineTone="n5"
           deck={KANJI_N5}
           data={data}
           glyph="漢"
@@ -67,7 +67,8 @@ export default function N5HubPage() {
           unit="ตัว"
           href={kanjiPath()}
         />
-        <LiveLine
+        <HubLine
+          lineTone="n5"
           deck={GRAMMAR_N5}
           data={data}
           glyph="文"
@@ -106,44 +107,6 @@ function ExamLine() {
         </span>
         <span className={styles.go}>
           {exam.session ? 'ทำต่อ' : 'ไปทำข้อสอบ'} <ArrowRight size={16} strokeWidth={2} aria-hidden />
-        </span>
-      </Link>
-    </li>
-  );
-}
-
-interface LiveLineProps {
-  deck: LineDeck;
-  data: ProgressData;
-  glyph: string;
-  name: string;
-  desc: string;
-  unit: string;
-  href: string;
-}
-
-/** สายที่เปิดแล้ว: ความคืบหน้า + ปุ่มไปบทถัดไป */
-function LiveLine({ deck, data, glyph, name, desc, unit, href }: LiveLineProps) {
-  const progress = deckProgress(deck, data);
-  const passed = lessonStates(deck, progress).filter((s) => s === 'done').length;
-  const next = nextLesson(deck, progress);
-  return (
-    <li className="tone" style={tone('n5')}>
-      <Link to={href} className={cx(styles.line, styles.live)}>
-        <span className={cx('kana', styles.badge)} lang="ja">
-          {glyph}
-        </span>
-        <span className={styles.info}>
-          <span className={styles.name}>{name}</span>
-          <span className={styles.desc}>
-            {desc} · ผ่านแล้ว {passed}/{deck.lessons.length} บท · ตอบถูก {wordsPassed(deck, progress)} {unit}
-          </span>
-          <span className={styles.track} aria-hidden>
-            <span style={{ width: `${(passed / Math.max(1, deck.lessons.length)) * 100}%` }} />
-          </span>
-        </span>
-        <span className={styles.go}>
-          {next ? `ต่อ: ${next.title}` : 'ดูแผนที่สาย'} <ArrowRight size={16} strokeWidth={2} aria-hidden />
         </span>
       </Link>
     </li>

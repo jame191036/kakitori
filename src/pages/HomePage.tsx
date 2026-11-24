@@ -1,7 +1,7 @@
 import { ArrowRight, TrainFront } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router';
-import { dailyPath, grammarPath, kanjiPath, REVIEW_ROOT, travelPath, vocabPath } from '../app/paths';
+import { animePath, dailyPath, grammarPath, kanjiPath, REVIEW_ROOT, travelPath, vocabPath } from '../app/paths';
 import { SECTIONS } from '../app/sections';
 import { LessonSign, StationSign, type LessonSignStop } from '../components/train/StationSign';
 import { groupLabel, scriptList } from '../data/scripts';
@@ -199,7 +199,7 @@ export default function HomePage() {
               <span className={styles.trackWrap}>
                 {sec.id === 'kana' ? (
                   <KanaTrack path={path} reached={step ? step.index - 1 : path.length} />
-                ) : sec.id === 'jlpt-n5' || sec.id === 'travel' || sec.id === 'daily' ? (
+                ) : sec.id === 'jlpt-n5' || sec.id === 'travel' || sec.id === 'daily' || sec.id === 'anime' ? (
                   <LessonTrack passed={passedIn(sec.id) ?? 0} total={totalIn(sec.id)} />
                 ) : (
                   <>
@@ -283,7 +283,7 @@ interface HeroLine {
   id: keyof LineDecks;
   progressKey: keyof typeof LINE_LESSON_COUNT;
   /** หมวดบนหน้าแรกที่สายนี้อยู่ (นับรางย่อของหมวด) */
-  section: 'jlpt-n5' | 'travel' | 'daily';
+  section: 'jlpt-n5' | 'travel' | 'daily' | 'anime';
   /** สีสายบนป้าย */
   tone: Tone;
   /** ชื่อสายภาษาญี่ปุ่นบนป้าย */
@@ -389,6 +389,24 @@ const HERO_LINES: readonly HeroLine[] = [
     wideChips: true,
     lead: 'แต่ละบทคือหนึ่งสถานี ฟังวลีและบทสนทนาตัวอย่าง ฝึก แล้วทดสอบให้ถูกครบทุกวลี แล้วรับตราสถานีไปสะสม — ฟรี ไม่ต้องสมัครสมาชิก',
     todo: (left) => `อ่านการ์ดวลีและบทสนทนา ฝึก แล้วทำแบบทดสอบให้ตอบถูกครบทุกวลี (เหลือ ${left} วลี)`,
+  },
+  {
+    // アニメ線 = สายการ์ตูน
+    id: 'anime',
+    progressKey: 'anime',
+    section: 'anime',
+    tone: 'anime',
+    lineJa: 'アニメ線',
+    lineName: 'สายการ์ตูน',
+    shortName: 'สายการ์ตูน',
+    lessonHref: animePath,
+    chip: (decks, id) => {
+      const x = decks.anime.words[id]!;
+      return { main: x.kana, small: x.thai };
+    },
+    wideChips: true,
+    lead: 'แต่ละบทคือหนึ่งสถานี ฟังวลีและฉากตัวอย่างแบบการ์ตูน ฝึก แล้วทดสอบให้ถูกครบทุกวลี แล้วรับตราสถานีไปสะสม — ฟรี ไม่ต้องสมัครสมาชิก',
+    todo: (left) => `อ่านการ์ดวลีและฉากตัวอย่าง ฝึก แล้วทำแบบทดสอบให้ตอบถูกครบทุกวลี (เหลือ ${left} วลี)`,
   },
 ];
 

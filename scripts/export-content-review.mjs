@@ -24,6 +24,7 @@ import {
   KANJI_PRIORITY,
   TRAVEL_PRIORITY,
   DAILY_PRIORITY,
+  ANIME_PRIORITY,
   VOCAB_PRIORITY,
 } from './content-review-priority.mjs';
 
@@ -53,6 +54,7 @@ const { examPlain, examWithReading, passageSegs } = await server.ssrLoadModule('
 const { answerSentence } = await server.ssrLoadModule('/src/features/exam/examLogic.ts');
 const { TRAVEL_DECK } = await server.ssrLoadModule('/src/data/travel/index.ts');
 const { DAILY_DECK } = await server.ssrLoadModule('/src/data/daily/index.ts');
+const { ANIME_DECK } = await server.ssrLoadModule('/src/data/anime/index.ts');
 await server.close();
 
 // จุดที่ควรให้ผู้ตรวจดูก่อน — ตรวจว่า id ในรายการมีอยู่จริง (กันพิมพ์ผิดแล้วหายเงียบ)
@@ -65,6 +67,7 @@ const PRIORITY_TABLES = {
   exam: EXAM_PRIORITY,
   travel: TRAVEL_PRIORITY,
   daily: DAILY_PRIORITY,
+  anime: ANIME_PRIORITY,
 };
 const priorityOf = (tag, key) => {
   const reason = PRIORITY_TABLES[tag][key];
@@ -299,11 +302,14 @@ for (const set of EXAM_SETS) {
   });
 }
 
-// สายวลี (ท่องเที่ยว · ชีวิตประจำวัน): 1 แถวต่อวลี + 1 แถวต่อบทสนทนาตัวอย่าง
-// แถววลี: "คำตัวอย่าง" = แบบเขียนจริง（คานะ）· "หมายเหตุ" = พูด/ได้ยิน/ป้าย + แบบกันเอง + วิธีใช้
+// สายวลี (ท่องเที่ยว · ชีวิตประจำวัน · การ์ตูน): 1 แถวต่อวลี + 1 แถวต่อบทสนทนา/ฉากตัวอย่าง
+// แถววลี: "คำตัวอย่าง" = แบบเขียนจริง（คานะ）· "หมายเหตุ" = พูด/ได้ยิน/ป้าย + คำเตือน + แบบกันเอง/สุภาพ + วิธีใช้
 const phraseSet = (deck, segment) => `${deck.name} · ${segment.title}`;
 const writtenWithKana = (t) => (t.written === t.kana.replaceAll(' ', '') ? t.kana : `${t.written}（${t.kana}）`);
 const KIND_NOTE = { say: 'ประโยคที่พูด', hear: 'ประโยคที่จะได้ยิน (พนักงาน / ประกาศ)', sign: 'ป้าย (อ่านให้ออก)' };
+// สายการ์ตูน: "ได้ยิน" = ได้ยินในการ์ตูน ฟังให้เข้าใจพอ (คำหยาบ / ภาษาการ์ตูนที่ไม่ควรพูดจริง)
+const kindNote = (deck, kind) =>
+  deck.id === 'anime' && kind === 'hear' ? 'ได้ยินในการ์ตูน (ฟังให้เข้าใจ ไม่ต้องพูด)' : KIND_NOTE[kind];
 function addPhraseRows(deck, priorityTag) {
   for (const segment of deck.segments) {
     for (const lesson of segment.lessons) {
@@ -311,8 +317,10 @@ function addPhraseRows(deck, priorityTag) {
       for (const id of lesson.words) {
         const x = deck.words[id];
         const note = [
-          KIND_NOTE[x.kind],
+          kindNote(deck, x.kind),
+          x.caution ? `คำเตือน: ${x.caution}` : '',
           x.casual ? `แบบกันเอง: ${writtenWithKana(x.casual)}` : '',
+          x.polite ? `แบบสุภาพ: ${writtenWithKana(x.polite)}` : '',
           x.note,
           x.arrange ? 'ใช้ทำข้อเรียงวลี' : '',
         ]
@@ -342,7 +350,7 @@ function addPhraseRows(deck, priorityTag) {
           '',
           '',
           '',
-          `บทสนทนาตัวอย่าง: ${dlg.scene}`,
+          `${deck.dialogueLabel ?? 'บทสนทนาตัวอย่าง'}: ${dlg.scene}`,
           dlg.lines.map((l) => `${l.speaker}: ${writtenWithKana(l)}`).join(' / '),
           dlg.lines.map((l) => l.romaji).join(' / '),
           dlg.lines.map((l) => `${l.speaker}: ${l.thai}`).join(' / '),
@@ -357,6 +365,7 @@ function addPhraseRows(deck, priorityTag) {
 }
 addPhraseRows(TRAVEL_DECK, 'travel');
 addPhraseRows(DAILY_DECK, 'daily');
+addPhraseRows(ANIME_DECK, 'anime');
 const travelSet = (segment) => phraseSet(TRAVEL_DECK, segment);
 
 const missing = Object.entries(PRIORITY_TABLES)
@@ -405,6 +414,14 @@ const DAILY_NOTES = [
   'ภาษาสุภาพ (です/ます) เป็นหลัก · "แบบกันเอง" ในหมายเหตุคือรูปที่ใช้กับเพื่อนหรือคนสนิท — ช่วยดูว่าเป็นธรรมชาติไหม',
   'แถว "บทสนทนาตัวอย่าง" มีทุกบรรทัดของบทสนทนาในแถวเดียว (คั่นด้วย /) — ช่วยดูว่าคุยต่อกันเป็นธรรมชาติ ระดับความสุภาพเหมาะกับสถานการณ์',
   'โรมาจิสร้างอัตโนมัติจากคานะเหมือนสายท่องเที่ยว',
+];
+const ANIME_INTRO =
+  'สำนวนที่ได้ยินบ่อยในการ์ตูนและซีรีส์ญี่ปุ่น (ทยอยเปิดทีละ 3 ช่วง) ทุกบทมีฉากตัวอย่างสั้นๆ · **ตัวละคร ฉาก วลี คำแปล และคำเตือน ผู้พัฒนาแต่งเอง ไม่ได้ยกมาจากการ์ตูนเรื่องใด ยังไม่มีใครตรวจ**';
+const ANIME_NOTES = [
+  'วลีหลักเป็นแบบกันเอง (แบบที่ตัวละครพูด) · "แบบสุภาพ" ในหมายเหตุคือรูปที่ใช้กับคนไม่สนิทหรือผู้ใหญ่ — ช่วยดูว่าสองแบบความหมายตรงกัน',
+  '"ได้ยินในการ์ตูน" = คำหยาบ คำห้วน หรือภาษาการ์ตูนที่ชีวิตจริงไม่ใช้ ผู้เรียนแค่ฟังให้เข้าใจ · "คำเตือน" แสดงเป็นกล่องเตือนบนเว็บ — ช่วยดูว่าระดับความหยาบและคำเตือนถูกต้อง',
+  'คำอธิบายเรื่องพูดแบบผู้ชาย/ผู้หญิง (ぞ ぜ わ かしら ฯลฯ) และคำแทนตัว (俺 僕 あたし うち わし) — ช่วยดูว่าไม่เหมารวมเกินจริง',
+  'แถว "ฉากตัวอย่าง" มีทุกบรรทัดของฉากในแถวเดียว (คั่นด้วย /) — ช่วยดูว่าเป็นภาษาการ์ตูนที่เป็นธรรมชาติ',
 ];
 const TRAVEL_INTRO =
   'วลีที่ใช้ตอนเที่ยวญี่ปุ่น แบ่งตามสถานการณ์ (ทยอยเปิดทีละ 3 ช่วง) · **วลี คำแปล และวิธีใช้ ผู้พัฒนาเขียนเอง ยังไม่มีใครตรวจ**';
@@ -544,6 +561,14 @@ const md = [
   ...DAILY_DECK.segments
     .filter((s) => s.lessons.length)
     .flatMap((s) => [`### ${s.title} (${s.name})`, '', mdTable(rows.filter((r) => r[0] === phraseSet(DAILY_DECK, s))), '']),
+  `## ${ANIME_DECK.name} — ${Object.keys(ANIME_DECK.words).length} วลี (${ANIME_DECK.lessons.length} บท · เปิดแล้ว ${ANIME_DECK.segments.filter((s) => s.lessons.length).length} จาก ${ANIME_DECK.segments.length} ช่วง)`,
+  '',
+  ANIME_INTRO,
+  ...ANIME_NOTES.map((n) => `- ${n}`),
+  '',
+  ...ANIME_DECK.segments
+    .filter((s) => s.lessons.length)
+    .flatMap((s) => [`### ${s.title} (${s.name})`, '', mdTable(rows.filter((r) => r[0] === phraseSet(ANIME_DECK, s))), '']),
 ].join('\n');
 
 // ── Excel สำหรับส่งให้ผู้ตรวจ ──
@@ -660,6 +685,18 @@ const SHEETS = [
       ['โรมาจิ', at(7), 30],
       ['ความหมาย', at(8), 34],
       ['พูด/ได้ยิน · แบบกันเอง · วิธีใช้', at(5), 46],
+    ],
+  },
+  {
+    name: ANIME_DECK.name,
+    match: (r) => r.sheet === ANIME_DECK.name,
+    cols: [
+      ['ช่วง', segmentOfSet, 18],
+      ['บท', at(1), 24],
+      ['วลี / ฉาก（คานะ）', at(6), 48],
+      ['โรมาจิ', at(7), 30],
+      ['ความหมาย', at(8), 34],
+      ['พูด/ได้ยิน · คำเตือน · แบบสุภาพ · วิธีใช้', at(5), 50],
     ],
   },
 ];
@@ -801,6 +838,10 @@ wb.creator = 'kakitori';
   line(DAILY_DECK.name, { bold: true });
   line(DAILY_INTRO);
   for (const note of DAILY_NOTES) line(`• ${note}`);
+  gap();
+  line(ANIME_DECK.name, { bold: true });
+  line(ANIME_INTRO);
+  for (const note of ANIME_NOTES) line(`• ${note}`);
   gap();
   line('คู่คำฝึกฟัง', { bold: true });
   line(PAIRS_NOTE);

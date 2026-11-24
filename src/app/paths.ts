@@ -19,14 +19,28 @@
  *   /travel                   หมวดท่องเที่ยว = สายวลีท่องเที่ยว (แผนที่บท + ตรา)
  *   /travel/:lesson           บทเรียน: เรียน → ฝึก → ทดสอบ · /travel/review ทบทวนวลี
  *   /daily                    หมวดชีวิตประจำวัน = สายวลี + บทสนทนา · /daily/:lesson · /daily/review
+ *   /anime                    หมวดการ์ตูน/ซีรีส์ = สายวลี + ฉากตัวอย่าง · /anime/:lesson · /anime/review
+ *   /talk                     บทสนทนา (เมนูหลัก) — รวมสายวลี 3 สาย: ท่องเที่ยว · ชีวิตประจำวัน · การ์ตูน
  * URL เดิม (/hiragana/…) ส่งต่อมาที่ /kana/hiragana/… ให้อัตโนมัติ
  */
 
 export const KANA_ROOT = '/kana';
 export const REVIEW_ROOT = '/review';
 export const N5_ROOT = '/n5';
+export const TALK_ROOT = '/talk';
 export const TRAVEL_ROOT = '/travel';
 export const DAILY_ROOT = '/daily';
+export const ANIME_ROOT = '/anime';
+
+/** สายการ์ตูน / บทเรียน เช่น animePath('odoroki') → /anime/odoroki */
+export function animePath(lessonId?: string): string {
+  return `${ANIME_ROOT}${lessonId ? `/${lessonId}` : ''}`;
+}
+
+/** หน้าทบทวนวลีการ์ตูน — start = เริ่มทบทวนชุดนั้นทันที (ใช้จากการ์ด "วันนี้") */
+export function animeReviewPath(start?: 'due' | 'weak'): string {
+  return `${ANIME_ROOT}/review${start ? `?start=${start}` : ''}`;
+}
 
 /** สายชีวิตประจำวัน / บทเรียน เช่น dailyPath('sasou') → /daily/sasou */
 export function dailyPath(lessonId?: string): string {

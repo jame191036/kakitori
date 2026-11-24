@@ -5,6 +5,9 @@ import { AppLayout } from './AppLayout';
 import { LegacyScriptRedirect } from './LegacyScriptRedirect';
 import {
   AboutPage,
+  AnimeLessonPage,
+  AnimeLinePage,
+  AnimeReviewPage,
   DailyLessonPage,
   DailyLinePage,
   DailyReviewPage,
@@ -25,6 +28,7 @@ import {
   ReviewPage,
   ScriptHomePage,
   StartPage,
+  TalkHubPage,
   TravelLessonPage,
   TravelLinePage,
   TravelReviewPage,
@@ -84,6 +88,10 @@ export const router = createBrowserRouter([
           { path: 'daily', element: <DailyLinePage /> },
           { path: 'daily/review', element: <DailyReviewPage /> },
           { path: 'daily/:lessonId', element: <DailyLessonPage /> },
+          { path: 'anime', element: <AnimeLinePage /> },
+          { path: 'anime/review', element: <AnimeReviewPage /> },
+          { path: 'anime/:lessonId', element: <AnimeLessonPage /> },
+          { path: 'talk', element: <TalkHubPage /> },
           { path: ':script/*', element: <LegacyScriptRedirect /> },
           { path: '*', element: <NotFoundPage /> },
         ],

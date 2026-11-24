@@ -6,14 +6,14 @@ import { speakSequence, useSpeech } from '../speech/useSpeech';
 import { TextLines } from './PhraseFace';
 import styles from './phrase.module.css';
 
-/** บทสนทนาตัวอย่างของบท: ฟองคำพูดซ้าย-ขวา · ฟังทีละบรรทัดหรือทั้งบท */
-export function DialogueCard({ dialogue }: { dialogue: Dialogue }) {
+/** บทสนทนาตัวอย่างของบท: ฟองคำพูดซ้าย-ขวา · ฟังทีละบรรทัดหรือทั้งบท (title: สายการ์ตูนเรียกว่า "ฉากตัวอย่าง") */
+export function DialogueCard({ dialogue, title = 'บทสนทนาตัวอย่าง' }: { dialogue: Dialogue; title?: string }) {
   const { available } = useSpeech();
   return (
     <section className={cx('card', styles.dialogue)} aria-labelledby="dialogue-title">
       <div className={styles.dialogueHead}>
         <h2 id="dialogue-title" className={styles.dialogueTitle}>
-          <MessagesSquare size={18} strokeWidth={1.8} aria-hidden /> บทสนทนาตัวอย่าง
+          <MessagesSquare size={18} strokeWidth={1.8} aria-hidden /> {title}
         </h2>
         {available && (
           <button
