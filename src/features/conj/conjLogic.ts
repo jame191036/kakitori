@@ -247,6 +247,15 @@ export function topicWords(topic: FreeTopic, groups: readonly VerbGroup[]): Conj
   );
 }
 
+/** วิธีตอบที่ใช้กับคำนี้ได้ จากที่เลือกไว้ (บางคำถามย้อนกลับไม่ได้) */
+const typesFor = (word: ConjWord, types: readonly FreeType[]) => types.filter((t) => t !== 'back' || canBack(word));
+
+/** คำในหัวข้อนี้ที่ถามด้วยวิธีตอบที่เลือกไว้ได้ (ข้อแยกกลุ่มไม่ใช้วิธีตอบ) */
+export function freeWords(topic: FreeTopic, { groups, types }: Pick<FreePrefs, 'groups' | 'types'>): ConjWord[] {
+  const words = topicWords(topic, groups);
+  return topic === 'group' ? words : words.filter((v) => typesFor(v, types).length > 0);
+}
+
 /** สร้างข้อฝึกอิสระ n ข้อ — สุ่มหัวข้อก่อนแล้วจึงสุ่มคำ ไม่ใช้คู่คำ+หัวข้อที่เพิ่งออก (recent) ถ้าเลี่ยงได้ */
 export function freeQuestions(
   prefs: Pick<FreePrefs, 'topics' | 'groups' | 'types'>,
@@ -254,7 +263,7 @@ export function freeQuestions(
   { rng = Math.random, recent = [] }: { rng?: Rng; recent?: readonly string[] } = {},
 ): ConjQuestion[] {
   const pools = prefs.topics
-    .map((topic) => ({ topic, words: topicWords(topic, prefs.groups) }))
+    .map((topic) => ({ topic, words: freeWords(topic, prefs) }))
     .filter((p) => p.words.length > 0);
   if (!pools.length || !prefs.types.length) return [];
   const used = [...recent];
@@ -268,8 +277,8 @@ export function freeQuestions(
     }
     used.push(`${topic}:${word.id}`);
     const form = topic === 'group' ? null : topic;
-    const type = form ? prefs.types[Math.floor(rng() * prefs.types.length)]! : 'group';
-    return make(type, ruleFor(word, form)!, word, rng, String(i));
+    const ways = typesFor(word, prefs.types);
+    return make(form ? ways[Math.floor(rng() * ways.length)]! : 'group', ruleFor(word, form)!, word, rng, String(i));
   });
 }
 
@@ -278,9 +287,10 @@ export const freeKey = (q: ConjQuestion) => `${q.form ?? 'group'}:${q.word.id}`;
 
 /** ฝึกซ้ำเฉพาะข้อที่ผิด: คำและหัวข้อเดิม สุ่มวิธีถามใหม่ */
 export function retryQuestions(wrong: readonly ConjQuestion[], types: readonly FreeType[], rng: Rng = Math.random): ConjQuestion[] {
-  return shuffle(unique(wrong, freeKey), rng).map((q, i) =>
-    make(q.form ? types[Math.floor(rng() * types.length)]! : 'group', q.rule, q.word, rng, `r${i}`),
-  );
+  return shuffle(unique(wrong, freeKey), rng).map((q, i) => {
+    const ways = typesFor(q.word, types);
+    return make(q.form ? (ways[Math.floor(rng() * ways.length)] ?? 'form') : 'group', q.rule, q.word, rng, `r${i}`);
+  });
 }
 
 /** ตัดค่าที่ไม่รู้จักออกจากค่าที่จำไว้ในเครื่อง (ค่าเก่า/ไฟล์สำรอง) */

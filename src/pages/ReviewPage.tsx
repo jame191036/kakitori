@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router';
 import { useScriptPack } from '../app/ScriptContext';
 import { KanaTable, MasteryLegend } from '../components/KanaTable';
 import { romajiLabel } from '../data/scripts';
-import { backupFileName, makeBackup, parseBackup } from '../features/progress/backup';
+import { backupFileName, importSummary, makeBackup, parseBackup } from '../features/progress/backup';
 import {
   dueChars,
   hasAnswered,
@@ -41,7 +41,7 @@ function relativeTime(ts: number | null, now: number): string {
   return rtf.format(Math.round(hours / 24), 'day');
 }
 
-/** ดาวน์โหลดไฟล์สำรองความคืบหน้า (ทุกชุดตัวอักษร) */
+/** ดาวน์โหลดไฟล์สำรองความคืบหน้า (ทุกสาย) */
 function downloadBackup() {
   const now = Date.now();
   const backup = makeBackup(progressStore.get(), activityStore.get(), now);
@@ -72,14 +72,7 @@ function DataSection({ packName, canReset, onReset }: { packName: string; canRes
       setMessage({ kind: 'bad', text: 'ไฟล์นี้ไม่ใช่ไฟล์สำรองของ kakitori หรือไฟล์เสีย' });
       return;
     }
-    const { chars, days } = importData(data);
-    setMessage({
-      kind: 'good',
-      text:
-        chars || days
-          ? `นำเข้าแล้ว ✓ อัปเดตความคืบหน้า ${chars} ตัวอักษร และวันที่ฝึก ${days} วัน`
-          : 'นำเข้าแล้ว ✓ ข้อมูลในเครื่องนี้ใหม่กว่าหรือตรงกับไฟล์อยู่แล้ว จึงไม่มีอะไรเปลี่ยน',
-    });
+    setMessage({ kind: 'good', text: importSummary(importData(data)) });
   };
 
   return (
@@ -89,7 +82,7 @@ function DataSection({ packName, canReset, onReset }: { packName: string; canRes
       </h2>
       <p className="small muted">
         ความคืบหน้าเก็บอยู่ในเบราว์เซอร์นี้เท่านั้น ถ้าล้างประวัติเบราว์เซอร์ข้อมูลจะหายไปด้วย —
-        บันทึกไฟล์สำรองเก็บไว้ หรือนำไฟล์ไปเปิดในเครื่องอื่นเพื่อฝึกต่อได้ (ไฟล์เดียวรวมทุกชุดตัวอักษร)
+        บันทึกไฟล์สำรองเก็บไว้ หรือนำไฟล์ไปเปิดในเครื่องอื่นเพื่อฝึกต่อได้ (ไฟล์เดียวรวมทุกสาย)
       </p>
       <div className="row">
         <button type="button" className="btn" onClick={downloadBackup}>

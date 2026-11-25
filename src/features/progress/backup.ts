@@ -34,6 +34,12 @@ export function makeBackup(progress: ProgressData, activity: ActivityData, now: 
 
 export const backupFileName = (now: number) => `kakitori-backup-${dayKey(now)}.json`;
 
+/** ข้อความหลังนำเข้า — ไฟล์รวมทุกสาย (ตัวอักษร คำ กฎ วลี) จึงนับเป็น "รายการ" */
+export const importSummary = ({ items, days }: { items: number; days: number }) =>
+  items || days
+    ? `นำเข้าแล้ว ✓ อัปเดตความคืบหน้า ${items} รายการ และวันที่ฝึก ${days} วัน`
+    : 'นำเข้าแล้ว ✓ ข้อมูลในเครื่องนี้ใหม่กว่าหรือตรงกับไฟล์อยู่แล้ว จึงไม่มีอะไรเปลี่ยน';
+
 /** อ่านไฟล์สำรอง — คืน null ถ้าไม่ใช่ไฟล์สำรองของเว็บนี้หรือไฟล์เสีย */
 export function parseBackup(text: string): { progress: ProgressData; activity: ActivityData } | null {
   let raw: unknown;

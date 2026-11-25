@@ -105,14 +105,14 @@ export function resetProgress(scriptId: string): void {
   });
 }
 
-/** รวมข้อมูลจากไฟล์สำรองเข้ากับข้อมูลในเครื่อง — คืนจำนวนตัวอักษรและจำนวนวันที่อัปเดต */
+/** รวมข้อมูลจากไฟล์สำรองเข้ากับข้อมูลในเครื่อง — คืนจำนวนรายการ (ตัวอักษร คำ กฎ วลี) และจำนวนวันที่อัปเดต */
 export function importData(incoming: { progress: ProgressData; activity: ActivityData }): {
-  chars: number;
+  items: number;
   days: number;
 } {
   const p = mergeProgress(progressStore.get(), incoming.progress);
   const a = mergeActivity(activityStore.get(), incoming.activity);
   if (p.changed) progressStore.set(p.data);
   if (a.changed) activityStore.set(a.data);
-  return { chars: p.changed, days: a.changed };
+  return { items: p.changed, days: a.changed };
 }

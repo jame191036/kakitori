@@ -11,6 +11,7 @@ import {
   FREE_TYPES,
   freeKey,
   freeQuestions,
+  freeWords,
   retryQuestions,
   topicWords,
   usesGroups,
@@ -83,14 +84,19 @@ export default function ConjFreePage() {
 
   const onlyGroup = prefs.topics.length > 0 && prefs.topics.every((t) => t === 'group');
   const needsGroups = prefs.topics.some(usesGroups);
-  const total = prefs.topics.reduce((n, t) => n + topicWords(t, prefs.groups).length, 0);
+  const total = prefs.topics.reduce((n, t) => n + freeWords(t, prefs).length, 0);
+  // คำที่ถามย้อนกลับไม่ได้ (ข้ามเมื่อเลือกวิธีตอบนี้อย่างเดียว)
+  const skipped =
+    prefs.types.length > 0 && prefs.topics.reduce((n, t) => n + topicWords(t, prefs.groups).length, 0) > total;
   const missing = !prefs.topics.length
     ? 'เลือกอย่างน้อย 1 รูป'
     : needsGroups && !prefs.groups.length
       ? 'เลือกอย่างน้อย 1 กลุ่มคำกริยา'
       : !onlyGroup && !prefs.types.length
         ? 'เลือกอย่างน้อย 1 วิธีตอบ'
-        : null;
+        : total === 0
+          ? 'รูปที่เลือกย้อนหาคำเดิมไม่ได้ เลือกวิธีตอบอื่นเพิ่ม'
+          : null;
 
   const run = (questions: ConjQuestion[], endless: boolean) => {
     answers.current = [];
@@ -209,6 +215,11 @@ export default function ConjFreePage() {
                 </label>
               ))}
             </div>
+            {skipped && (
+              <p className="small muted" role="status">
+                คุณศัพท์ な และคำนาม + する ถามย้อนไม่ได้ (โจทย์มีคำเดิมอยู่แล้ว) จึงข้ามให้
+              </p>
+            )}
           </section>
 
           <section className="card stack">

@@ -11,6 +11,7 @@ import {
   FREE_TOPICS,
   freeKey,
   freeQuestions,
+  freeWords,
   practiceQuestions,
   retryQuestions,
   reviewQuestions,
@@ -19,6 +20,7 @@ import {
   testQuestions,
   topicWords,
   type ConjQuestion,
+  type FreeType,
 } from './conjLogic';
 
 const deck = CONJ_N5;
@@ -151,6 +153,40 @@ describe('free practice', () => {
         if (topic === 'group') expect(qs.every((q) => q.type === 'group')).toBe(true);
       }
     }
+  });
+
+  it('never asks in a way that was not chosen', () => {
+    const ways: FreeType[][] = [['form'], ['build'], ['back'], ['form', 'back'], ['build', 'back'], ['form', 'build']];
+    for (const types of ways) {
+      for (const topic of FREE_TOPICS) {
+        if (topic === 'group') continue;
+        const qs = freeQuestions({ topics: [topic], groups: [1, 2, 3], types }, 80, { rng: rng(11) });
+        for (const q of qs) {
+          expect(types, `${topic} ${q.id}`).toContain(q.type);
+          expectSound(q);
+        }
+        for (const q of retryQuestions(qs, types, rng(2))) expect(types, `${topic} ${q.id}`).toContain(q.type);
+      }
+    }
+  });
+
+  it('leaves out words that cannot be asked backwards, and only then', () => {
+    const groups = [1 as const, 2 as const, 3 as const];
+    for (const f of ALL_FORMS) {
+      const all = topicWords(f, groups);
+      const back = freeWords(f, { groups, types: ['back'] });
+      expect(back, f).toEqual(all.filter((v) => v.kind !== 'na' && !v.prefix));
+      expect(freeWords(f, { groups, types: ['build', 'back'] }), f).toEqual(all);
+      expect(freeWords(f, { groups, types: ['form'] }), f).toEqual(all);
+      // ทุกกลุ่มมีคำให้ถามทุกรูป (ข้อความ "ย้อนหาไม่ได้" จึงขึ้นเฉพาะตอนถามย้อนไม่ได้จริง)
+      for (const g of groups) expect(topicWords(f, [g]).length, `${f} ${g}`).toBeGreaterThan(0);
+    }
+    expect(freeWords('group', { groups: [], types: ['back'] })).toEqual(topicWords('group', []));
+    expect(freeQuestions({ topics: ['na'], groups, types: ['back'] }, 5)).toEqual([]);
+    // เลือกหลายรูป: รูปที่ถามย้อนไม่ได้ถูกข้าม ไม่ทำให้ทั้งรอบว่าง
+    const mixed = freeQuestions({ topics: ['na', 'kunai'], groups, types: ['back'] }, 20, { rng: rng(5) });
+    expect(mixed).toHaveLength(20);
+    expect(mixed.every((q) => q.form === 'kunai' && q.type === 'back')).toBe(true);
   });
 
   it('filters verbs by group but not adjectives', () => {

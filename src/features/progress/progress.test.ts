@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { hiragana } from '../../data/scripts/hiragana';
 import { dayKey, dayNumber } from '../../lib/day';
 import { addActivity, EMPTY_ACTIVITY, mergeActivity, sanitizeActivity, streakInfo } from './activity';
-import { makeBackup, parseBackup } from './backup';
+import { importSummary, makeBackup, parseBackup } from './backup';
 import {
   applyAnswer,
   dueChars,
@@ -169,6 +169,21 @@ describe('backup file', () => {
     // นำเข้าซ้ำ → ไม่มีอะไรเปลี่ยน
     expect(mergeProgress(data, incoming).changed).toBe(0);
     expect(mergeProgress(EMPTY_PROGRESS, EMPTY_PROGRESS).changed).toBe(0);
+  });
+
+  it('sums up an import in words that fit every line, not only letters', () => {
+    const incoming: ProgressData = {
+      version: 1,
+      scripts: { hiragana: { a: stat(day(1), 1) }, 'conj-n5': { 'masu-suru': stat(day(1), 1), 'g-1': stat(day(1), 1) } },
+    };
+    const items = mergeProgress(EMPTY_PROGRESS, incoming).changed;
+    expect(items).toBe(3);
+    const text = importSummary({ items, days: 2 });
+    expect(text).toContain('3 รายการ');
+    expect(text).toContain('2 วัน');
+    expect(text).not.toContain('ตัวอักษร');
+    expect(importSummary({ items: 0, days: 2 })).toContain('0 รายการ');
+    expect(importSummary({ items: 0, days: 0 })).toContain('ไม่มีอะไรเปลี่ยน');
   });
 
   it('merges daily activity without double counting', () => {
