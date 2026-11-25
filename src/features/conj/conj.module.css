@@ -1,4 +1,4 @@
-/* ── คำกริยา / รูปผัน ── */
+/* ── คำ / รูปผัน ── */
 .form {
   word-break: keep-all;
   overflow-wrap: anywhere;
@@ -247,6 +247,12 @@
   .tile:hover:not(:disabled) {
     border-color: var(--c, var(--primary));
   }
+}
+
+.subhead {
+  color: var(--text-2);
+  font-size: 0.85rem;
+  font-weight: 700;
 }
 
 /* ── ฝึกอิสระ ── */

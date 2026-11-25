@@ -1,9 +1,10 @@
 import { N5_DECK } from '../vocab/n5';
-import { NOT_VOLITIONAL, SKIP_FORMS, TRICKY_GROUP1 } from './lists';
-import type { ConjVerb, VerbForm, VerbGroup } from './types';
+import type { VocabWord } from '../vocab';
+import { CAN_NAIDE, NA_LEFT_OUT, NOT_VOLITIONAL, SKIP_FORMS, TRICKY_GROUP1, WILL_FORMS } from './lists';
+import type { ConjKind, ConjWord, Form, VerbGroup } from './types';
 
 /**
- * คำกริยาที่ใช้ฝึกผัน = คำกริยาทุกคำในสายคำศัพท์ N5 + คำนาม + する
+ * คำที่ใช้ฝึกผัน = คำกริยาและคำคุณศัพท์ทุกคำในสายคำศัพท์ N5 + คำนาม + する
  * กลุ่มของคำกริยาคิดจากกฎ (ตัวท้าย る และเสียงหน้า る) แล้วแก้ด้วยรายการคำหลอก — มีเทสต์ตรวจทุกคำ
  */
 
@@ -36,27 +37,30 @@ export const SURU_NOUNS: Readonly<Record<string, string>> = {
   kopii: 'ถ่ายเอกสาร',
 };
 
-function skipOf(id: string): VerbForm[] {
-  return [...(NOT_VOLITIONAL.includes(id) ? (['masenka', 'mashou', 'tai'] as const) : []), ...(SKIP_FORMS[id] ?? [])];
+function skipOf(id: string): Form[] {
+  const will = NOT_VOLITIONAL.includes(id) ? WILL_FORMS.filter((f) => f !== 'naide' || !CAN_NAIDE.includes(id)) : [];
+  return [...will, ...(SKIP_FORMS[id] ?? [])];
 }
 
-const own: ConjVerb[] = Object.values(N5_DECK.words)
-  .filter((w) => w.kind === 'verb')
-  .map((w) => ({
-    id: w.id,
-    prefix: '',
-    kana: w.kana,
-    ...(w.kanji ? { kanji: w.kanji } : {}),
-    thai: w.thai,
-    group: groupOf(w.id, w.kana),
-    skip: skipOf(w.id),
-  }));
+const fromVocab = (w: VocabWord, kind: ConjKind): ConjWord => ({
+  id: w.id,
+  kind,
+  prefix: '',
+  kana: w.kana,
+  ...(w.kanji ? { kanji: w.kanji } : {}),
+  thai: w.thai,
+  group: kind === 'verb' ? groupOf(w.id, w.kana) : null,
+  skip: skipOf(w.id),
+});
 
-const suru: ConjVerb[] = Object.entries(SURU_NOUNS).map(([id, thai]) => {
+const vocab = Object.values(N5_DECK.words);
+
+const suru: ConjWord[] = Object.entries(SURU_NOUNS).map(([id, thai]) => {
   const noun = N5_DECK.words[id];
   if (!noun) throw new Error(`ไม่มีคำนามนี้ในสายคำศัพท์: ${id}`);
   return {
     id: `${id}-suru`,
+    kind: 'verb',
     prefix: noun.kana,
     kana: `${noun.kana}する`,
     ...(noun.kanji ? { kanji: `${noun.kanji}する` } : {}),
@@ -66,16 +70,24 @@ const suru: ConjVerb[] = Object.entries(SURU_NOUNS).map(([id, thai]) => {
   };
 });
 
-export const CONJ_VERBS: readonly ConjVerb[] = [...own, ...suru];
+export const CONJ_VERBS: readonly ConjWord[] = [
+  ...vocab.filter((w) => w.kind === 'verb').map((w) => fromVocab(w, 'verb')),
+  ...suru,
+];
+export const CONJ_I: readonly ConjWord[] = vocab.filter((w) => w.kind === 'adj-i').map((w) => fromVocab(w, 'i'));
+export const CONJ_NA: readonly ConjWord[] = vocab
+  .filter((w) => w.kind === 'adj-na' && !NA_LEFT_OUT.includes(w.id))
+  .map((w) => fromVocab(w, 'na'));
+export const CONJ_WORDS: readonly ConjWord[] = [...CONJ_VERBS, ...CONJ_I, ...CONJ_NA];
 
-const byId = new Map(CONJ_VERBS.map((v) => [v.id, v]));
+const byId = new Map(CONJ_WORDS.map((v) => [v.id, v]));
 
-export function verbById(id: string): ConjVerb {
+export function wordById(id: string): ConjWord {
   const v = byId.get(id);
-  if (!v) throw new Error(`ไม่มีคำกริยานี้: ${id}`);
+  if (!v) throw new Error(`ไม่มีคำนี้ในสายผันคำ: ${id}`);
   return v;
 }
 
 /** ตัวท้ายของรูปพจนานุกรม (กลุ่ม 1 ใช้เลือกกฎ) */
-export const endingOf = (v: ConjVerb) => v.kana.at(-1)!;
-export const canUse = (v: ConjVerb, form: VerbForm) => !v.skip.includes(form);
+export const endingOf = (v: ConjWord) => v.kana.at(-1)!;
+export const canUse = (v: ConjWord, form: Form) => !v.skip.includes(form);

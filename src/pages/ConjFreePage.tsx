@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { conjPath } from '../app/paths';
 import { conjugate } from '../data/conj/conjugate';
 import { CONJ_N5 } from '../data/conj/n5';
-import { FORM_INFO, type VerbGroup } from '../data/conj/types';
+import { FORM_INFO, type ConjKind, type VerbGroup } from '../data/conj/types';
 import {
   cleanPrefs,
   FREE_COUNTS,
@@ -13,6 +13,7 @@ import {
   freeQuestions,
   retryQuestions,
   topicWords,
+  usesGroups,
   type ConjQuestion,
   type FreePrefs,
   type FreeTopic,
@@ -31,6 +32,17 @@ import page from '../components/line/LessonPage.module.css';
 const BATCH = 10;
 
 const GROUP_LABEL: Record<VerbGroup, string> = { 1: 'กลุ่ม 1', 2: 'กลุ่ม 2', 3: 'กลุ่ม 3 (する・くる)' };
+/** หัวข้อแยกตามชนิดคำ */
+const SECTIONS: { title: string; topics: FreeTopic[] }[] = [
+  { title: 'คำกริยา', topics: topicsOf('verb') },
+  { title: 'คุณศัพท์ い', topics: topicsOf('i') },
+  { title: 'คุณศัพท์ な', topics: topicsOf('na') },
+];
+
+function topicsOf(kind: ConjKind): FreeTopic[] {
+  return FREE_TOPICS.filter((t) => (t === 'group' ? kind === 'verb' : FORM_INFO[t].kind === kind));
+}
+
 const TYPE_LABEL: Record<FreeType, string> = { form: 'เลือก 4 ตัวเลือก', build: 'เรียงคานะ', back: 'ย้อนหาคำเดิม' };
 
 /** ครั้งแรก: รูปของบทที่ผ่านแล้ว (ยังไม่ผ่านบทไหน = รูป ます) · ครั้งต่อไปใช้ตัวเลือกล่าสุด */
@@ -61,6 +73,7 @@ type Phase =
 const toggle = <T,>(list: readonly T[], x: T): T[] => (list.includes(x) ? list.filter((y) => y !== x) : [...list, x]);
 
 const topicLabel = (t: FreeTopic) => (t === 'group' ? 'แยกกลุ่มคำ' : FORM_INFO[t].thai);
+const KIND_LABEL: Record<ConjKind, string> = { verb: '', i: ' · คุณศัพท์ い', na: ' · คุณศัพท์ な' };
 
 /** ฝึกผันคำอิสระ: เลือกรูป กลุ่มคำ วิธีตอบ และจำนวนข้อเอง — นับเป็นการฝึก (เป้ารายวัน) แต่ไม่นับเป็นผลสอบ */
 export default function ConjFreePage() {
@@ -69,11 +82,12 @@ export default function ConjFreePage() {
   const answers = useRef<Answer[]>([]);
 
   const onlyGroup = prefs.topics.length > 0 && prefs.topics.every((t) => t === 'group');
+  const needsGroups = prefs.topics.some(usesGroups);
   const total = prefs.topics.reduce((n, t) => n + topicWords(t, prefs.groups).length, 0);
   const missing = !prefs.topics.length
     ? 'เลือกอย่างน้อย 1 รูป'
-    : !onlyGroup && !prefs.groups.length
-      ? 'เลือกอย่างน้อย 1 กลุ่มคำ'
+    : needsGroups && !prefs.groups.length
+      ? 'เลือกอย่างน้อย 1 กลุ่มคำกริยา'
       : !onlyGroup && !prefs.types.length
         ? 'เลือกอย่างน้อย 1 วิธีตอบ'
         : null;
@@ -122,30 +136,51 @@ export default function ConjFreePage() {
                 {prefs.topics.length === FREE_TOPICS.length ? 'ล้างทั้งหมด' : 'เลือกทั้งหมด'}
               </button>
             </div>
-            <div className={styles.chips} role="group" aria-label="รูปที่จะฝึก">
-              {FREE_TOPICS.map((t) => (
-                <label key={t} className="chip">
-                  <input
-                    type="checkbox"
-                    checked={prefs.topics.includes(t)}
-                    onChange={() => setPrefs((p) => ({ ...p, topics: toggle(p.topics, t) }))}
-                  />
-                  <span>
-                    {t !== 'group' && (
-                      <span className={cx('kana', styles.topicJa)} lang="ja">
-                        {FORM_INFO[t].ja}{' '}
+            {SECTIONS.map(({ title, topics }) => (
+              <div key={title} className="stack">
+                <div className={styles.setupHead}>
+                  <p className={styles.subhead}>{title}</p>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={() =>
+                      setPrefs((p) => ({
+                        ...p,
+                        topics: topics.every((t) => p.topics.includes(t))
+                          ? p.topics.filter((t) => !topics.includes(t))
+                          : [...new Set([...p.topics, ...topics])],
+                      }))
+                    }
+                  >
+                    {topics.every((t) => prefs.topics.includes(t)) ? `ล้าง${title}` : `เลือก${title}ทั้งหมด`}
+                  </button>
+                </div>
+                <div className={styles.chips} role="group" aria-label={`รูปของ${title}`}>
+                  {topics.map((t) => (
+                    <label key={t} className="chip">
+                      <input
+                        type="checkbox"
+                        checked={prefs.topics.includes(t)}
+                        onChange={() => setPrefs((p) => ({ ...p, topics: toggle(p.topics, t) }))}
+                      />
+                      <span>
+                        {t !== 'group' && (
+                          <span className={cx('kana', styles.topicJa)} lang="ja">
+                            {FORM_INFO[t].ja}{' '}
+                          </span>
+                        )}
+                        {topicLabel(t)}
                       </span>
-                    )}
-                    {topicLabel(t)}
-                  </span>
-                </label>
-              ))}
-            </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
           </section>
 
           <section className="card stack">
-            <h2 className={styles.setupTitle}>2. กลุ่มคำ</h2>
-            <div className={styles.chips} role="group" aria-label="กลุ่มคำ">
+            <h2 className={styles.setupTitle}>2. กลุ่มคำกริยา</h2>
+            <div className={styles.chips} role="group" aria-label="กลุ่มคำกริยา">
               {([1, 2, 3] as const).map((g) => (
                 <label key={g} className="chip">
                   <input
@@ -157,7 +192,7 @@ export default function ConjFreePage() {
                 </label>
               ))}
             </div>
-            {prefs.topics.includes('group') && <p className="small muted">ข้อแยกกลุ่มคำใช้คำจากทุกกลุ่มเสมอ</p>}
+            <p className="small muted">ใช้กับรูปของคำกริยาเท่านั้น (ข้อแยกกลุ่มคำใช้คำจากทุกกลุ่มเสมอ)</p>
           </section>
 
           <section className="card stack">
@@ -305,6 +340,7 @@ function FreeResult({
                   </span>
                 )}
                 {topicLabel(t)}
+                {t !== 'group' && KIND_LABEL[FORM_INFO[t].kind]}
               </span>
               <span className={styles.topicScore}>
                 {ok}/{total}

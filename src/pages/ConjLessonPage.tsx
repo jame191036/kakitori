@@ -52,6 +52,7 @@ function Lesson({ deck, lesson }: { deck: ConjDeck; lesson: LineLesson }) {
   const next = deck.lessons[at + 1];
   // บทแยกกลุ่มไม่มีข้อเรียงคานะ
   const groupLesson = items.every((r) => r.form === null);
+  const reverseLesson = items.every((r) => r.reverse);
 
   const [session, setSession] = useState<Session | null>(null);
   const [result, setResult] = useState<{ kind: Session['kind']; results: ConjResult[]; passedBefore: boolean } | null>(null);
@@ -118,7 +119,9 @@ function Lesson({ deck, lesson }: { deck: ConjDeck; lesson: LineLesson }) {
           text={
             groupLesson
               ? 'ดูคำแล้วบอกกลุ่ม หรือเลือกคำที่อยู่ในกลุ่มที่ถาม — ข้อที่ผิดจะได้ลองอีกครั้งท้ายชุด (ไม่นับเป็นผลสอบ)'
-              : 'กฎละไม่เกิน 4 ข้อ ทั้งเลือกรูปที่ถูก เรียงคานะ และย้อนหาคำเดิม — ข้อที่ผิดจะได้ลองอีกครั้งท้ายชุด (ไม่นับเป็นผลสอบ)'
+              : reverseLesson
+                ? 'กฎละไม่เกิน 4 ข้อ ดูรูปที่ผันแล้วเลือกหรือเรียงคำเดิม — ข้อที่ผิดจะได้ลองอีกครั้งท้ายชุด (ไม่นับเป็นผลสอบ)'
+                : 'กฎละไม่เกิน 4 ข้อ ทั้งเลือกรูปที่ถูก เรียงคานะ และย้อนหาคำเดิม — ข้อที่ผิดจะได้ลองอีกครั้งท้ายชุด (ไม่นับเป็นผลสอบ)'
           }
           action="เริ่มฝึก"
           onStart={() => start('practice')}
@@ -127,7 +130,7 @@ function Lesson({ deck, lesson }: { deck: ConjDeck; lesson: LineLesson }) {
       {step === 'test' && !session && !result && (
         <LessonIntro
           title={`ทดสอบสถานี ${code}`}
-          text={`กฎละ ${TEST_PER_RULE} ข้อ (${items.length * TEST_PER_RULE} ข้อ) ${groupLesson ? 'แยกกลุ่มคำ' : 'เลือกรูปที่ถูกและเรียงคานะ'} สุ่มคำใหม่ทุกครั้ง — ต้องถูกทั้ง ${TEST_PER_RULE} ข้อของกฎจึงนับ ถูกครบทุกกฎได้ตราสถานี ผลสอบจะนัดรอบทบทวนให้`}
+          text={`กฎละ ${TEST_PER_RULE} ข้อ (${items.length * TEST_PER_RULE} ข้อ) ${groupLesson ? 'แยกกลุ่มคำ' : reverseLesson ? 'เลือกและเรียงคำเดิม' : 'เลือกรูปที่ถูกและเรียงคานะ'} สุ่มคำใหม่ทุกครั้ง — ต้องถูกทั้ง ${TEST_PER_RULE} ข้อของกฎจึงนับ ถูกครบทุกกฎได้ตราสถานี ผลสอบจะนัดรอบทบทวนให้`}
           action="เริ่มทดสอบ"
           onStart={() => start('test')}
         />

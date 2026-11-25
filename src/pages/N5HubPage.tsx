@@ -85,7 +85,7 @@ export default function N5HubPage() {
           data={data}
           glyph="活"
           name="ผันคำ N5"
-          desc="ฝึกเปลี่ยนรูปคำกริยา เช่น ます · て · た มีฝึกอิสระไม่จำกัดข้อ"
+          desc="ฝึกเปลี่ยนรูปคำกริยาและคำคุณศัพท์ มีฝึกอิสระไม่จำกัดข้อ"
           unit="กฎ"
           href={conjPath()}
         />

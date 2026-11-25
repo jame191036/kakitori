@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { SpeakButton } from '../../components/SpeakButton';
 import { conjugate } from '../../data/conj/conjugate';
 import type { ConjRule } from '../../data/conj/types';
-import { verbById } from '../../data/conj/verbs';
+import { wordById } from '../../data/conj/words';
 import { cx } from '../../lib/cx';
 import g from '../grammar/grammar.module.css';
 import { Change, FormText } from './ConjText';
@@ -20,13 +20,15 @@ const MAX_LIST = 45;
 
 /** แถวตัวอย่าง: คำ → รูปที่ผัน (กฎแยกกลุ่ม = คำ + กลุ่ม) */
 function Example({ rule, id }: { rule: ConjRule; id: string }) {
-  const v = verbById(id);
+  const v = wordById(id);
   const form = rule.form && conjugate(v, rule.form);
+  // กฎย้อนกลับ: รูปที่ผัน → คำเดิม
+  const [from, to] = rule.reverse ? [form!, v.kana] : [v.kana, form ?? ''];
   return (
     <li className={g.example}>
       <span className={styles.exWord}>
         {form ? (
-          <Change from={v.kana} to={form} className={styles.exJa} />
+          <Change from={from} to={to} className={styles.exJa} />
         ) : (
           <>
             <FormText prefix={v.prefix} text={v.kana} className={styles.exJa} />
@@ -42,7 +44,7 @@ function Example({ rule, id }: { rule: ConjRule; id: string }) {
         )}
         {v.thai}
       </span>
-      <SpeakButton text={form ? `${v.kana}、${form}` : v.kana} size="sm" label="ฟังคำนี้" />
+      <SpeakButton text={form ? `${from}、${to}` : v.kana} size="sm" label="ฟังคำนี้" />
     </li>
   );
 }
@@ -80,7 +82,7 @@ export function ConjCards({ items, onDone }: ConjCardsProps) {
 
         <div key={rule.id} className={g.cardBody}>
           <div>
-            <p className={cx('kana', g.pattern)} lang="ja">
+            <p className={cx('kana', g.pattern, styles.form)} lang="ja">
               {rule.pattern}
             </p>
             <p className={g.title}>{rule.title}</p>
@@ -106,12 +108,12 @@ export function ConjCards({ items, onDone }: ConjCardsProps) {
               <summary>คำทั้งหมดที่ใช้กฎนี้ ({rule.words.length} คำ)</summary>
               <ul className={styles.wordList}>
                 {rule.words.map((id) => {
-                  const v = verbById(id);
+                  const v = wordById(id);
+                  const pair = rule.form ? [v.kana, conjugate(v, rule.form)] : [v.kana];
                   return (
                     <li key={id}>
                       <span className={cx('kana', styles.form)} lang="ja">
-                        {v.kana}
-                        {rule.form && ` → ${conjugate(v, rule.form)}`}
+                        {(rule.reverse ? pair.reverse() : pair).join(' → ')}
                       </span>
                       <span className={styles.wordThai}>{v.thai}</span>
                     </li>
@@ -161,7 +163,7 @@ export function ConjCards({ items, onDone }: ConjCardsProps) {
               onClick={() => setIndex(i)}
               aria-current={i === index ? 'true' : undefined}
             >
-              <span className={cx('kana', g.chipPattern)} lang="ja">
+              <span className={cx('kana', g.chipPattern, styles.form)} lang="ja">
                 {x.pattern}
               </span>
               <span className={g.chipThai}>{x.title}</span>

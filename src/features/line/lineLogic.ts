@@ -76,7 +76,8 @@ export function segmentSummaries(deck: LineDeck, progress: ScriptProgress | unde
       states,
       passed: states.filter((s) => s === 'done').length,
       current: states.includes('current'),
-      range: first && last ? `${lessonCode(deck, first)}–${lessonCode(deck, last)}` : '',
+      // ช่วงที่มีบทเดียวแสดงเลขเดียว (C11 ไม่ใช่ C11–C11)
+      range: first && last ? [...new Set([first, last])].map((l) => lessonCode(deck, l)).join('–') : '',
     };
   });
 }

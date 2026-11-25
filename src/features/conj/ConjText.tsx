@@ -1,15 +1,15 @@
-import type { ConjVerb } from '../../data/conj/types';
+import type { ConjWord } from '../../data/conj/types';
 import { cx } from '../../lib/cx';
 import styles from './conj.module.css';
 
-/** คำกริยารูปพจนานุกรม: คานะตัวใหญ่ + คันจิตัวเล็ก */
-export function VerbFace({ verb, size }: { verb: ConjVerb; size: 'xl' | 'md' }) {
+/** คำในรูปพจนานุกรม: คานะตัวใหญ่ + คันจิตัวเล็ก */
+export function WordFace({ word, size }: { word: ConjWord; size: 'xl' | 'md' }) {
   return (
     <span className={cx(styles.face, styles[size])}>
-      <FormText prefix={verb.prefix} text={verb.kana} className={styles.faceKana} />
-      {verb.kanji && (
+      <FormText prefix={word.prefix} text={word.kana} className={styles.faceKana} />
+      {word.kanji && (
         <span className={cx('kana', styles.faceKanji)} lang="ja">
-          {verb.kanji}
+          {word.kanji}
         </span>
       )}
     </span>

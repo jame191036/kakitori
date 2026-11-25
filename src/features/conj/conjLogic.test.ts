@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { conjugate, tilesOf } from '../../data/conj/conjugate';
 import { CONJ_N5 } from '../../data/conj/n5';
-import { VERB_FORMS } from '../../data/conj/types';
-import { canUse, CONJ_VERBS } from '../../data/conj/verbs';
+import { ALL_FORMS, FORM_INFO, FORMS_OF } from '../../data/conj/types';
+import { canUse, CONJ_WORDS } from '../../data/conj/words';
 import { lessonWords } from '../../data/line';
 import { rng } from '../writing/engine/testUtils';
 import {
   cleanPrefs,
+  DECOYS,
   FREE_TOPICS,
   freeKey,
   freeQuestions,
@@ -27,7 +28,7 @@ function expectSound(q: ConjQuestion) {
   expect(q.rule.words, q.id).toContain(q.word.id);
   if (q.type === 'build') {
     expect(q.slots, q.id).toBe(tilesOf(q.word, q.form!).length);
-    expect(q.tiles.length, q.id).toBe(q.slots + 3);
+    expect(q.tiles.length, q.id).toBe(q.slots + DECOYS);
     const left = [...q.tiles];
     for (const t of tilesOf(q.word, q.form!)) {
       expect(left, q.id).toContain(t);
@@ -36,6 +37,15 @@ function expectSound(q: ConjQuestion) {
     expect(q.answer, q.id).toBe(conjugate(q.word, q.form!));
     return;
   }
+  if (q.type === 'rebuild') {
+    expect(q.rule.reverse, q.id).toBe(true);
+    expect(q.answer, q.id).toBe(q.word.kana);
+    expect(q.slots, q.id).toBe([...q.word.kana].length);
+    expect(q.tiles.length, q.id).toBe(q.slots + DECOYS);
+    for (const ch of q.word.kana) expect(q.tiles, q.id).toContain(ch);
+    return;
+  }
+  if (q.rule.reverse) expect(q.type, q.id).toBe('back');
   const keys = q.choices.map((c) => c.key);
   expect(keys, q.id).toHaveLength(q.type === 'group' ? 3 : 4);
   expect(new Set(keys).size, q.id).toBe(keys.length);
@@ -48,6 +58,7 @@ function expectSound(q: ConjQuestion) {
   if (q.type === 'back') {
     const shown = conjugate(q.word, q.form!);
     expect(q.choices.filter((c) => conjugate(c.word!, q.form!) === shown), q.id).toHaveLength(1);
+    expect(new Set(q.choices.map((c) => c.word!.kind)).size, q.id).toBe(1);
   }
   if (q.type === 'back' || q.type === 'pick') {
     // ตัวเลือกที่เขียนคานะเหมือนกันแยกไม่ออก
@@ -73,7 +84,7 @@ describe('conjugation questions', () => {
         }
       }
     }
-    expect([...seen].sort()).toEqual(['back', 'build', 'form', 'group', 'pick']);
+    expect([...seen].sort()).toEqual(['back', 'build', 'form', 'group', 'pick', 'rebuild']);
   });
 
   it('tests every rule twice, never with the same question', () => {
@@ -87,7 +98,7 @@ describe('conjugation questions', () => {
           expect(new Set(own.map((q) => `${q.type}:${q.word.id}`)).size, rule.id).toBe(TEST_PER_RULE);
           // กฎที่มีหลายคำ: 2 ข้อใช้คนละคำ · กฎรูปผัน: เลือกตอบ 1 + เรียงคานะ 1
           if (rule.words.length > 1) expect(new Set(own.map((q) => q.word.id)).size, rule.id).toBe(TEST_PER_RULE);
-          if (rule.form) expect(own.map((q) => q.type).sort(), rule.id).toEqual(['build', 'form']);
+          if (rule.form) expect(own.map((q) => q.type).sort(), rule.id).toEqual(rule.reverse ? ['back', 'rebuild'] : ['build', 'form']);
         }
         for (const q of qs) expectSound(q);
       }
@@ -110,11 +121,12 @@ describe('conjugation questions', () => {
 
 describe('free practice', () => {
   it('finds one rule for every word and form', () => {
-    for (const v of CONJ_VERBS) {
-      expect(ruleFor(v, null), v.id).toBeDefined();
-      for (const f of VERB_FORMS) if (canUse(v, f)) expect(ruleFor(v, f)?.form, `${v.id} ${f}`).toBe(f);
+    for (const v of CONJ_WORDS) {
+      if (v.kind === 'verb') expect(ruleFor(v, null), v.id).toBeDefined();
+      for (const f of FORMS_OF[v.kind]) if (canUse(v, f)) expect(ruleFor(v, f)?.form, `${v.id} ${f}`).toBe(f);
     }
-    expect(FREE_TOPICS).toEqual(['group', ...VERB_FORMS]);
+    expect([...FREE_TOPICS].sort()).toEqual(['group', ...ALL_FORMS].sort());
+    expect(FREE_TOPICS[0]).toBe('group');
   });
 
   it('asks only what was chosen', () => {
@@ -139,6 +151,16 @@ describe('free practice', () => {
         if (topic === 'group') expect(qs.every((q) => q.type === 'group')).toBe(true);
       }
     }
+  });
+
+  it('filters verbs by group but not adjectives', () => {
+    for (const f of ALL_FORMS) {
+      const words = topicWords(f, [2]);
+      expect(words.every((v) => v.kind === FORM_INFO[f].kind), f).toBe(true);
+      if (FORM_INFO[f].kind === 'verb') expect(words.every((v) => v.group === 2), f).toBe(true);
+      else expect(words.length, f).toBeGreaterThan(15);
+    }
+    expect(topicWords('kunai', [])).not.toHaveLength(0);
   });
 
   it('uses words from every group when asking for the group', () => {

@@ -7,7 +7,7 @@ import { cx } from '../../lib/cx';
 import quiz from '../quiz/quiz.module.css';
 import { ConjBuild } from './ConjBuild';
 import { ruleFor, type ConjChoice, type ConjQuestion } from './conjLogic';
-import { FormText, VerbFace } from './ConjText';
+import { FormText, WordFace } from './ConjText';
 import styles from './conj.module.css';
 
 export interface ConjResult {
@@ -34,12 +34,13 @@ function heading(q: ConjQuestion): string {
   if (q.type === 'group') return 'คำนี้อยู่กลุ่มไหน';
   if (q.type === 'pick') return 'เลือกคำที่อยู่ในกลุ่มนี้';
   if (q.type === 'back') return 'มาจากคำไหน (เลือกรูปพจนานุกรม)';
+  if (q.type === 'rebuild') return 'เรียงตัวอักษรเป็นรูปพจนานุกรม';
   if (q.type === 'build') return 'เรียงตัวอักษรเป็นรูปที่ถาม';
   return 'เลือกรูปที่ผันถูก';
 }
 
 function ChoiceLabel({ q, choice }: { q: ConjQuestion; choice: ConjChoice }) {
-  if (choice.word) return <VerbFace verb={choice.word} size="md" />;
+  if (choice.word) return <WordFace word={choice.word} size="md" />;
   if (q.type === 'group') return <span className={styles.choiceGroup}>กลุ่ม {choice.key}</span>;
   return <FormText prefix={q.word.prefix} text={choice.key} className={styles.choiceForm} />;
 }
@@ -122,8 +123,12 @@ export function ConjRunner({ questions, mode, onAnswer, onRule, onFinish, onQuit
 
   const formKana = q.form ? conjugate(q.word, q.form) : null;
   // เหตุผลเวลาตอบผิด: กฎของรูปกลาง (ます / て) ก่อน แล้วจึงกฎของรูปที่ถาม
-  const via = q.form && viaForm(q.form);
-  const why = [...(via ? [ruleFor(q.word, via)] : []), ruleFor(q.word, q.form) ?? q.rule].flatMap((r) => (r ? [r.title] : []));
+  const via = q.form && !q.rule.reverse ? viaForm(q.form) : null;
+  const why = q.rule.reverse
+    ? [q.rule.title]
+    : [...(via ? [ruleFor(q.word, via)] : []), ruleFor(q.word, q.form) ?? q.rule].flatMap((r) => (r ? [r.title] : []));
+  // เฉลย: คำเดิม → รูปที่ผัน · กฎย้อนกลับ: รูปที่ผัน → คำเดิม
+  const solution = !q.form ? [q.word.kana] : q.rule.reverse ? [formKana!, q.word.kana] : stepsTo(q.word, q.form);
 
   return (
     <div className={quiz.runner}>
@@ -166,15 +171,21 @@ export function ConjRunner({ questions, mode, onAnswer, onRule, onFinish, onQuit
             <FormText prefix={q.word.prefix} text={formKana!} className={styles.promptForm} />
             <span className={styles.askChip}>{FORM_INFO[q.form!].ask}</span>
           </div>
+        ) : q.type === 'rebuild' ? (
+          <div className={styles.prompt}>
+            <FormText prefix={q.word.prefix} text={formKana!} className={styles.promptForm} />
+            <p className={styles.promptThai}>{q.word.thai}</p>
+            <span className={styles.askChip}>→ รูปพจนานุกรม</span>
+          </div>
         ) : (
           <div className={styles.prompt}>
-            <VerbFace verb={q.word} size="xl" />
+            <WordFace word={q.word} size="xl" />
             <p className={styles.promptThai}>{q.word.thai}</p>
             {q.form && <span className={styles.askChip}>→ {FORM_INFO[q.form].ask}</span>}
           </div>
         )}
 
-        {q.type === 'build' ? (
+        {q.type === 'build' || q.type === 'rebuild' ? (
           <ConjBuild key={q.id} q={q} disabled={!!answered} onAnswer={(ok) => answer(ok)} />
         ) : (
           <div className={cx(quiz.choices, q.type === 'group' && styles.choices3)}>
@@ -213,7 +224,7 @@ export function ConjRunner({ questions, mode, onAnswer, onRule, onFinish, onQuit
             <p>
               {answered.correct ? 'ถูกต้อง!' : 'ยังไม่ถูก —'}{' '}
               <span className={cx('kana', styles.feedbackJa)} lang="ja">
-                {q.form ? stepsTo(q.word, q.form).join(' → ') : q.word.kana}
+                {solution.join(' → ')}
               </span>{' '}
               {formKana ? `(${q.word.thai})` : `(${q.word.thai}) = กลุ่ม ${q.word.group}`}
             </p>

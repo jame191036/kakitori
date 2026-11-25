@@ -1,15 +1,16 @@
 import { buildDeck as buildLineDeck, lesson as lineLesson, segment as lineSegment, type LessonInput, type SegmentInput } from '../line/build';
-import { CONJ_VERBS, canUse, endingOf, verbById } from './verbs';
 import { TRICKY_GROUP1 } from './lists';
-import type { ConjDeck, ConjRule, ConjVerb, VerbForm } from './types';
+import { FORM_INFO, type ConjDeck, type ConjRule, type ConjWord, type Form } from './types';
+import { canUse, CONJ_WORDS, endingOf, wordById } from './words';
 
 /** เลือกคำของกฎ: ส่งเงื่อนไข หรือรายการ id */
-export type WordPick = readonly string[] | ((v: ConjVerb) => boolean);
+export type WordPick = readonly string[] | ((v: ConjWord) => boolean);
 
 interface RuleOpts {
   note?: string;
   focus?: ConjRule['focus'];
   mixed?: boolean;
+  reverse?: boolean;
 }
 
 /**
@@ -17,37 +18,50 @@ interface RuleOpts {
  *
  *   rule('te-mu', 'む → んで', 'ลงท้าย む: む → んで', ['คำอธิบาย…'], 'te', g1('む'), ['nomu', 'yomu', 'yasumu'])
  *
- * form = รูปที่สอน (null = กฎแยกกลุ่ม) · คำที่ไม่ใช้รูปนั้น (ConjVerb.skip) ถูกตัดออกเอง
+ * form = รูปที่สอน (null = กฎแยกกลุ่ม) · คำคนละชนิดและคำที่ไม่ใช้รูปนั้น (ConjWord.skip) ถูกตัดออกเอง
  */
 export function rule(
   id: string,
   pattern: string,
   title: string,
   explain: readonly string[],
-  form: VerbForm | null,
+  form: Form | null,
   pick: WordPick,
   examples: readonly string[],
-  { note, focus = 'stem', mixed }: RuleOpts = {},
+  { note, focus = 'stem', mixed, reverse }: RuleOpts = {},
 ): ConjRule {
-  const all = typeof pick === 'function' ? CONJ_VERBS.filter(pick) : pick.map(verbById);
+  const kind = form ? FORM_INFO[form].kind : 'verb';
+  const all = typeof pick === 'function' ? CONJ_WORDS.filter((v) => v.kind === kind && pick(v)) : pick.map(wordById);
   const words = all.filter((v) => !form || canUse(v, form)).map((v) => v.id);
   if (!words.length) throw new Error(`กฎไม่มีคำ: ${id}`);
   for (const x of examples) if (!words.includes(x)) throw new Error(`คำตัวอย่างไม่อยู่ในกฎ: ${id} / ${x}`);
-  return { id, pattern, title, explain, ...(note ? { note } : {}), form, words, examples, focus, ...(mixed ? { mixed } : {}) };
+  return {
+    id,
+    pattern,
+    title,
+    explain,
+    ...(note ? { note } : {}),
+    form,
+    words,
+    examples,
+    focus,
+    ...(mixed ? { mixed } : {}),
+    ...(reverse ? { reverse } : {}),
+  };
 }
 
 // ── เงื่อนไขที่ใช้บ่อย ──
 
-export const isTricky = (v: ConjVerb) => TRICKY_GROUP1.includes(v.id);
+export const isTricky = (v: ConjWord) => TRICKY_GROUP1.includes(v.id);
 
 /** กลุ่ม 1 ที่ลงท้ายด้วยตัวในรายการ (ไม่รวมคำหลอก ซึ่งมีการ์ดของตัวเอง) */
 export const g1 =
   (endings: string) =>
-  (v: ConjVerb): boolean =>
+  (v: ConjWord): boolean =>
     v.group === 1 && endings.includes(endingOf(v)) && !isTricky(v);
 
-export const g2 = (v: ConjVerb) => v.group === 2;
-export const isSuru = (v: ConjVerb) => v.group === 3 && v.kana.endsWith('する');
+export const g2 = (v: ConjWord) => v.group === 2;
+export const isSuru = (v: ConjWord) => v.group === 3 && v.kana.endsWith('する');
 export const every = () => true;
 
 export const lesson = (id: string, name: string, title: string, items: readonly ConjRule[]): LessonInput<ConjRule> =>

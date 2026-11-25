@@ -1,8 +1,8 @@
-import { conjugate, POLITE_END, tilesOf, wrongForms } from '../../data/conj/conjugate';
-import { CONJ_N5 } from '../../data/conj/n5';
-import type { ConjDeck, ConjRule, ConjVerb, VerbForm, VerbGroup } from '../../data/conj/types';
-import { CONJ_VERBS, canUse, verbById } from '../../data/conj/verbs';
 import { isTricky } from '../../data/conj/build';
+import { conjugate, decoysOf, DICTIONARY_ENDS, otherEnds, tilesOf, wrongForms } from '../../data/conj/conjugate';
+import { CONJ_N5 } from '../../data/conj/n5';
+import { FORM_INFO, type ConjDeck, type ConjRule, type ConjWord, type Form, type VerbGroup } from '../../data/conj/types';
+import { canUse, CONJ_VERBS, CONJ_WORDS, wordById } from '../../data/conj/words';
 import { lessonWords, type LineLesson } from '../../data/line';
 import { shuffle, type Rng } from '../../lib/shuffle';
 
@@ -13,30 +13,31 @@ import { shuffle, type Rng } from '../../lib/shuffle';
  * - form:  ดูคำ → เลือกรูปที่ผันถูก
  * - build: ดูคำ → เรียงคานะเป็นรูปที่ถาม
  * - back:  ดูรูปที่ผันแล้ว → เลือกรูปพจนานุกรม
+ * - rebuild: ดูรูปที่ผันแล้ว + ความหมาย → เรียงคานะเป็นรูปพจนานุกรม (ช่วงย้อนหารูปพจนานุกรม)
  * ทุกข้อมีคำตอบเดียว: ตัวเลือกที่ผันแล้วเขียนเหมือนกัน (เช่น いって จาก いく และ いう) ไม่มาอยู่ข้อเดียวกัน
  */
 
-export type ConjQType = 'group' | 'pick' | 'form' | 'build' | 'back';
+export type ConjQType = 'group' | 'pick' | 'form' | 'build' | 'back' | 'rebuild';
 
 export interface ConjChoice {
   key: string;
-  /** ตัวเลือกที่เป็นคำกริยา (แสดงคานะ + คันจิ) */
-  word?: ConjVerb;
+  /** ตัวเลือกที่เป็นคำ (แสดงคานะ + คันจิ) */
+  word?: ConjWord;
 }
 
 export interface ConjQuestion {
   id: string;
   type: ConjQType;
   rule: ConjRule;
-  word: ConjVerb;
-  /** รูปที่ถาม (null = ข้อแยกกลุ่ม) */
-  form: VerbForm | null;
+  word: ConjWord;
+  /** รูปที่ถาม (back / rebuild = รูปที่ให้มา · null = ข้อแยกกลุ่ม) */
+  form: Form | null;
   choices: ConjChoice[];
-  /** key ของคำตอบ · build = คานะของรูปที่ถูก */
+  /** key ของคำตอบ · build / rebuild = คานะที่ถูก */
   answer: string;
-  /** build: ชิ้นที่สลับแล้ว (มีตัวหลอกปน) */
+  /** build / rebuild: ชิ้นที่สลับแล้ว (มีตัวหลอกปน) */
   tiles: string[];
-  /** build: จำนวนช่อง */
+  /** build / rebuild: จำนวนช่อง */
   slots: number;
 }
 
@@ -47,7 +48,7 @@ const unique = <T>(list: readonly T[], key: (x: T) => string): T[] =>
 
 // ───────────── ตัวเลือก ─────────────
 
-function formChoices(v: ConjVerb, form: VerbForm, focus: ConjRule['focus'], rng: Rng): ConjChoice[] {
+function formChoices(v: ConjWord, form: Form, focus: ConjRule['focus'], rng: Rng): ConjChoice[] {
   const right = conjugate(v, form);
   const wrong = wrongForms(v, form);
   const stem = shuffle(wrong.stem, rng);
@@ -59,22 +60,29 @@ function formChoices(v: ConjVerb, form: VerbForm, focus: ConjRule['focus'], rng:
   return shuffle([right, ...picked], rng).map((key) => ({ key }));
 }
 
-/** ชิ้นของข้อเรียง: ชิ้นที่ถูก + ตัวหลอก 3 ชิ้นจากรูปที่มักผันผิด */
-function buildTiles(v: ConjVerb, form: VerbForm, rng: Rng): string[] {
+/** จำนวนชิ้นหลอกในข้อเรียง */
+export const DECOYS = 3;
+
+/** ชิ้นของข้อเรียง: ชิ้นที่ถูก + ตัวหลอกจากรูปที่มักผันผิด (รูปที่มีตระกูลท้าย มีท้ายอื่นปน 1 ชิ้น) */
+function buildTiles(v: ConjWord, form: Form, rng: Rng): string[] {
   const own = tilesOf(v, form);
-  const end = POLITE_END[form];
-  const wrong = shuffle(wrongForms(v, form).stem, rng).map((w) => w.slice(v.prefix.length));
-  const chars = end ? wrong.map((w) => w.slice(0, -end.length).at(-1) ?? '') : wrong.flatMap((w) => [...w]);
-  const ends = end ? shuffle(Object.values(POLITE_END), rng).filter((e) => e !== end) : [];
-  const extra = [...new Set(chars)].filter((c) => c && !own.includes(c));
-  return shuffle([...own, ...(end ? [...extra.slice(0, 2), ends[0]!] : extra.slice(0, 3))], rng);
+  const { must, pool } = decoysOf(v, form);
+  const ends = v.kind === 'verb' ? shuffle(otherEnds(form), rng).slice(0, 1) : [];
+  const extra = [...new Set([...must, ...ends, ...shuffle(pool, rng)])].filter((t) => !own.includes(t));
+  return shuffle([...own, ...extra.slice(0, DECOYS)], rng);
+}
+
+/** ชิ้นของข้อเรียงรูปพจนานุกรม: ตัวหลอกคือตัวท้ายคำกริยาอื่น */
+function rebuildTiles(v: ConjWord, rng: Rng): string[] {
+  const own = [...v.kana];
+  return shuffle([...own, ...shuffle(DICTIONARY_ENDS, rng).filter((x) => !own.includes(x)).slice(0, DECOYS)], rng);
 }
 
 /** ตัวเลือกรูปพจนานุกรม: คำอื่นที่ขึ้นต้นเหมือนกันก่อน · ไม่ใช้คำที่เขียนเหมือนกัน หรือผันแล้วได้เหมือนกัน */
-function backChoices(v: ConjVerb, form: VerbForm, rng: Rng): ConjChoice[] {
+function backChoices(v: ConjWord, form: Form, rng: Rng): ConjChoice[] {
   const shown = conjugate(v, form);
   const pool = shuffle(
-    CONJ_VERBS.filter((x) => !x.prefix && x.kana !== v.kana && conjugate(x, form) !== shown),
+    CONJ_WORDS.filter((x) => x.kind === v.kind && !x.prefix && x.kana !== v.kana && conjugate(x, form) !== shown),
     rng,
   );
   const near = pool.filter((x) => x.kana[0] === v.kana[0]);
@@ -84,7 +92,7 @@ function backChoices(v: ConjVerb, form: VerbForm, rng: Rng): ConjChoice[] {
 }
 
 /** "คำไหนเป็นกลุ่ม X": คำจากกลุ่มอื่นที่ลงท้าย る ก่อน (แยกยากกว่า) · ไม่ใช้คำหลอกและคำที่เขียนซ้ำกัน */
-function pickChoices(v: ConjVerb, rng: Rng): ConjChoice[] {
+function pickChoices(v: ConjWord, rng: Rng): ConjChoice[] {
   const pool = shuffle(
     CONJ_VERBS.filter(
       (x) =>
@@ -104,19 +112,19 @@ function pickChoices(v: ConjVerb, rng: Rng): ConjChoice[] {
 // ───────────── สร้างข้อ ─────────────
 
 const canPick = (rule: ConjRule) => rule.form === null && rule.words.length >= 3;
-/** คำนาม + する: ข้อย้อนกลับง่ายเกินไป (เห็นคำนามอยู่แล้ว) */
-const canBack = (v: ConjVerb) => !v.prefix;
+/** คำนาม + する และคุณศัพท์ な: ข้อย้อนกลับง่ายเกินไป (เห็นคำเดิมอยู่แล้ว) */
+const canBack = (v: ConjWord) => !v.prefix && v.kind !== 'na';
 
-function make(type: ConjQType, rule: ConjRule, word: ConjVerb, rng: Rng, key = ''): ConjQuestion {
+/** แบบที่ทำได้จริง: กฎแยกกลุ่มถามกลุ่ม · กฎย้อนกลับถามรูปพจนานุกรม · กฎรูปผันถามรูป */
+function usableType(type: ConjQType, rule: ConjRule, word: ConjWord): ConjQType {
+  if (!rule.form) return type === 'pick' && canPick(rule) ? 'pick' : 'group';
+  if (rule.reverse) return type === 'build' || type === 'rebuild' ? 'rebuild' : 'back';
+  return type === 'build' || (type === 'back' && canBack(word)) ? type : 'form';
+}
+
+function make(type: ConjQType, rule: ConjRule, word: ConjWord, rng: Rng, key = ''): ConjQuestion {
   const form = rule.form;
-  // ใช้แบบที่ทำได้: กฎแยกกลุ่มถามกลุ่ม · กฎรูปผันถามรูป
-  const t: ConjQType = !form
-    ? type === 'pick' && canPick(rule)
-      ? 'pick'
-      : 'group'
-    : type === 'build' || (type === 'back' && canBack(word))
-      ? type
-      : 'form';
+  const t = usableType(type, rule, word);
   const q: ConjQuestion = {
     id: `${t}:${rule.id}:${word.id}:${key}`,
     type: t,
@@ -140,6 +148,10 @@ function make(type: ConjQType, rule: ConjRule, word: ConjVerb, rng: Rng, key = '
   } else if (form && t === 'back') {
     q.choices = backChoices(word, form, rng);
     q.answer = word.id;
+  } else if (t === 'rebuild') {
+    q.tiles = rebuildTiles(word, rng);
+    q.slots = [...word.kana].length;
+    q.answer = word.kana;
   } else if (form) {
     q.tiles = buildTiles(word, form, rng);
     q.slots = tilesOf(word, form).length;
@@ -149,14 +161,20 @@ function make(type: ConjQType, rule: ConjRule, word: ConjVerb, rng: Rng, key = '
 }
 
 const practiceTypes = (rule: ConjRule): ConjQType[] =>
-  rule.form ? ['form', 'build', 'back', 'form'] : canPick(rule) ? ['group', 'pick', 'group', 'pick'] : ['group', 'group'];
+  rule.reverse
+    ? ['back', 'rebuild', 'back', 'rebuild']
+    : rule.form
+      ? ['form', 'build', 'back', 'form']
+      : canPick(rule)
+        ? ['group', 'pick', 'group', 'pick']
+        : ['group', 'group'];
 
 /** แบบฝึก: กฎละไม่เกิน 4 ข้อ คำไม่ซ้ำกันเท่าที่มี (กฎที่มีคำเดียวถามคนละแบบ) — ไม่นับเป็นผลสอบ */
 export function practiceQuestions(deck: ConjDeck, lesson: LineLesson, rng: Rng = Math.random): ConjQuestion[] {
   return shuffle(
     lessonWords(deck, lesson).flatMap((rule) => {
       const words = shuffle(rule.words, rng);
-      const qs = practiceTypes(rule).map((t, i) => make(t, rule, verbById(words[i % words.length]!), rng));
+      const qs = practiceTypes(rule).map((t, i) => make(t, rule, wordById(words[i % words.length]!), rng));
       return unique(qs, (q) => `${q.type}:${q.word.id}`);
     }),
     rng,
@@ -166,7 +184,7 @@ export function practiceQuestions(deck: ConjDeck, lesson: LineLesson, rng: Rng =
 /** ทบทวน: กฎละ 1 ข้อ คำที่สุ่มใหม่ทุกครั้ง สลับเลือกตอบกับเรียงคานะ */
 function oneEach(rules: readonly ConjRule[], rng: Rng): ConjQuestion[] {
   return shuffle(rules, rng).map((rule, i) => {
-    const word = verbById(rule.words[Math.floor(rng() * rule.words.length)]!);
+    const word = wordById(rule.words[Math.floor(rng() * rule.words.length)]!);
     return make(rule.form ? (i % 2 ? 'build' : 'form') : i % 2 ? 'pick' : 'group', rule, word, rng);
   });
 }
@@ -176,7 +194,7 @@ export const TEST_PER_RULE = 2;
 
 /** 2 ข้อของกฎในแบบทดสอบ: คนละแบบ คนละคำ (กฎที่มีคำเดียวถามคนละแบบ · คู่คำที่เขียนเหมือนกันถามครบทั้งสองคำ) */
 function testPair(rule: ConjRule, rng: Rng): ConjQuestion[] {
-  const words = shuffle(rule.words, rng).map(verbById);
+  const words = shuffle(rule.words, rng).map(wordById);
   const types: ConjQType[] = rule.form ? ['form', 'build'] : canPick(rule) ? ['group', 'pick'] : ['group', 'group'];
   return types.map((t, i) => make(t, rule, words[i % words.length]!, rng));
 }
@@ -201,7 +219,7 @@ export const reviewQuestions = (items: readonly ConjRule[], rng: Rng = Math.rand
 // ───────────── ฝึกอิสระ ─────────────
 
 /** 'group' = ข้อแยกกลุ่ม ที่เหลือ = รูปผัน */
-export type FreeTopic = VerbForm | 'group';
+export type FreeTopic = Form | 'group';
 export const FREE_TYPES = ['form', 'build', 'back'] as const;
 export type FreeType = (typeof FREE_TYPES)[number];
 export const FREE_COUNTS = [10, 20, 0] as const; // 0 = ไม่จำกัด
@@ -213,15 +231,19 @@ export interface FreePrefs {
   count: number;
 }
 
-/** กฎของคำนี้ในรูปนี้ (กฎรวมไม่นับ) — ทุกคำทุกรูปมีกฎเดียว */
-export function ruleFor(word: ConjVerb, form: VerbForm | null): ConjRule | undefined {
-  return Object.values(CONJ_N5.words).find((r) => !r.mixed && r.form === form && r.words.includes(word.id));
+/** กฎของคำนี้ในรูปนี้ (กฎรวมและกฎย้อนกลับไม่นับ) — ทุกคำทุกรูปมีกฎเดียว */
+export function ruleFor(word: ConjWord, form: Form | null): ConjRule | undefined {
+  return Object.values(CONJ_N5.words).find((r) => !r.mixed && !r.reverse && r.form === form && r.words.includes(word.id));
 }
 
-/** คำที่ใช้ในหัวข้อนี้ได้ ตามกลุ่มที่เลือก (ข้อแยกกลุ่มไม่กรองกลุ่ม ไม่งั้นเฉลยตัวเอง) */
-export function topicWords(topic: FreeTopic, groups: readonly VerbGroup[]): ConjVerb[] {
-  return CONJ_VERBS.filter((v) =>
-    topic === 'group' ? !!ruleFor(v, null) : groups.includes(v.group) && canUse(v, topic),
+/** หัวข้อที่ใช้กลุ่มคำกริยากรองคำ (รูปของคำกริยา) */
+export const usesGroups = (topic: FreeTopic) => topic !== 'group' && FORM_INFO[topic].kind === 'verb';
+
+/** คำที่ใช้ในหัวข้อนี้ได้ ตามกลุ่มที่เลือก (ข้อแยกกลุ่มไม่กรองกลุ่ม ไม่งั้นเฉลยตัวเอง · คุณศัพท์ไม่มีกลุ่ม) */
+export function topicWords(topic: FreeTopic, groups: readonly VerbGroup[]): ConjWord[] {
+  if (topic === 'group') return CONJ_VERBS.filter((v) => !!ruleFor(v, null));
+  return CONJ_WORDS.filter(
+    (v) => v.kind === FORM_INFO[topic].kind && canUse(v, topic) && (v.group === null || groups.includes(v.group)),
   );
 }
 

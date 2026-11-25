@@ -49,9 +49,9 @@ const { N5_DECK } = await server.ssrLoadModule('/src/data/vocab/n5/index.ts');
 const { KANJI_N5 } = await server.ssrLoadModule('/src/data/kanji/n5/index.ts');
 const { GRAMMAR_N5 } = await server.ssrLoadModule('/src/data/grammar/n5/index.ts');
 const { CONJ_N5 } = await server.ssrLoadModule('/src/data/conj/n5/index.ts');
-const { CONJ_VERBS, verbById } = await server.ssrLoadModule('/src/data/conj/verbs.ts');
+const { CONJ_VERBS, wordById } = await server.ssrLoadModule('/src/data/conj/words.ts');
 const { conjugate } = await server.ssrLoadModule('/src/data/conj/conjugate.ts');
-const { NOT_VOLITIONAL, TRICKY_GROUP1 } = await server.ssrLoadModule('/src/data/conj/lists.ts');
+const { NA_LEFT_OUT, NOT_VOLITIONAL, TRICKY_GROUP1 } = await server.ssrLoadModule('/src/data/conj/lists.ts');
 const { parseInline, plainOf } = await server.ssrLoadModule('/src/data/grammar/sentence.ts');
 const { EXAM_SETS } = await server.ssrLoadModule('/src/data/exam/n5/index.ts');
 const { KIND_INFO } = await server.ssrLoadModule('/src/data/exam/build.ts');
@@ -275,8 +275,14 @@ for (const segment of CONJ_N5.segments) {
         '',
         [...r.explain, r.note].filter(Boolean).join(' · '),
         r.examples
-          .map(verbById)
-          .map((v) => (r.form ? `${verbCell(v)} → ${conjugate(v, r.form)}` : `${verbCell(v)} = กลุ่ม ${v.group}`))
+          .map(wordById)
+          .map((v) =>
+            !r.form
+              ? `${verbCell(v)} = กลุ่ม ${v.group}`
+              : r.reverse
+                ? `${conjugate(v, r.form)} → ${verbCell(v)}`
+                : `${verbCell(v)} → ${conjugate(v, r.form)}`,
+          )
           .join(' / '),
         '',
         r.title,
@@ -289,10 +295,11 @@ for (const segment of CONJ_N5.segments) {
   }
 }
 for (const [id, name, list, about] of [
-  ['list-tricky', 'คำหลอก', TRICKY_GROUP1.map(verbById), 'ลงท้ายเสียง i/e + る แต่เป็นกลุ่ม 1'],
+  ['list-tricky', 'คำหลอก', TRICKY_GROUP1.map(wordById), 'ลงท้ายเสียง i/e + る แต่เป็นกลุ่ม 1'],
   ['list-group2', 'กลุ่ม 2', CONJ_VERBS.filter((v) => v.group === 2), 'คำกริยากลุ่ม 2 ทั้งหมด (คำที่เหลือเป็นกลุ่ม 1 ยกเว้น する くる)'],
   ['list-suru', 'คำนาม + する', CONJ_VERBS.filter((v) => v.prefix), 'คำนามที่เติม する แล้วใช้เป็นคำกริยา (กลุ่ม 3)'],
-  ['list-will', 'ไม่ใช้กับ ませんか・ましょう・たい', NOT_VOLITIONAL.map(verbById), 'คำที่ปกติไม่ใช้กับ 3 รูปนี้ จึงไม่เอามาออกข้อ (คัดโดยผู้พัฒนา)'],
+  ['list-will', 'คำที่ตั้งใจทำไม่ได้', NOT_VOLITIONAL.map(wordById), 'ไม่เอามาออกข้อในรูป ませんか・ましょう・たい・なければ・なくても・ないで (ยกเว้น わすれないで・なくさないで) — คัดโดยผู้พัฒนา'],
+  ['list-na', 'คุณศัพท์ な ที่ไม่ออกข้อ', NA_LEFT_OUT.map((id) => N5_DECK.words[id]), 'ไม่เอามาออกข้อเลย: おなじ ไม่เติม な หน้าคำนาม · いろいろ/けっこう ปกติไม่ใช้ในรูปปฏิเสธและอดีต'],
 ]) {
   rows.push(tag([
     CONJ_LISTS_SET,
@@ -495,10 +502,10 @@ const TRAVEL_NOTES = [
   'ความหมายไทยใช้เป็นตัวเลือกในแบบฝึกด้วย จึงต้องไม่มี 2 วลีที่แปลได้เหมือนกัน — ถ้าเห็นคู่ที่ความหมายทับกัน ช่วยบอก',
 ];
 const CONJ_INTRO =
-  'สายฝึกเปลี่ยนรูปคำกริยา การ์ดละ 1 กฎ · รูปผันทุกคำสร้างจากกฎในโค้ด กลุ่มของคำกริยาเทียบกับพจนานุกรม JMdict แล้ว · **คำอธิบายและรายการคำที่คัดไว้ร่างโดย AI ยังไม่มีผู้รู้ภาษาญี่ปุ่นตรวจ**';
+  'สายฝึกเปลี่ยนรูปคำกริยาและคำคุณศัพท์ การ์ดละ 1 กฎ · รูปผันทุกคำสร้างจากกฎในโค้ด กลุ่มของคำกริยาเทียบกับพจนานุกรม JMdict แล้ว · **คำอธิบายและรายการคำที่คัดไว้ร่างโดย AI ยังไม่มีผู้รู้ภาษาญี่ปุ่นตรวจ**';
 const CONJ_NOTES = [
   'ช่วยดูว่าคำอธิบายถูกและเข้าใจง่าย ตัวอย่างผันถูก และการแปลหน้าที่ของแต่ละรูปเหมาะไหม',
-  'แถว "รายการคำ" 4 แถวสุดท้ายคือรายการที่คัดด้วยมือ — ช่วยดูว่ามีคำไหนไม่ควรอยู่ในรายการ',
+  'แถว "รายการคำ" 5 แถวสุดท้ายคือรายการที่คัดด้วยมือ — ช่วยดูว่ามีคำไหนไม่ควรอยู่ในรายการ',
   'รูปพจนานุกรมและรูปผันแสดงเป็นคานะ คันจิในวงเล็บใช้แยกคำที่เขียนคานะเหมือนกัน (เช่น 切る / 着る)',
 ];
 const EXAM_INTRO =
