@@ -13,6 +13,7 @@ import {
   freeQuestions,
   freeWords,
   practiceQuestions,
+  presetPrefs,
   retryQuestions,
   reviewQuestions,
   ruleFor,
@@ -216,6 +217,12 @@ describe('free practice', () => {
     const again = retryQuestions([...qs, ...qs], ['build'], rng(1));
     expect(again.map(freeKey).sort()).toEqual([...new Set(qs.map(freeKey))].sort());
     for (const q of again) expectSound(q);
+  });
+
+  it('opens with the forms a link chose, ignoring unknown ones', () => {
+    expect(presetPrefs('te')).toEqual({ topics: ['te'], groups: [1, 2, 3], types: ['form', 'build'], count: 10 });
+    expect(presetPrefs('ta,zzz,te')?.topics).toEqual(['te', 'ta']);
+    for (const raw of [null, '', 'zzz', ',']) expect(presetPrefs(raw)).toBeNull();
   });
 
   it('drops saved choices it does not know', () => {

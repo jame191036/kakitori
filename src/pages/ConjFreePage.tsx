@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { conjPath } from '../app/paths';
 import { conjugate } from '../data/conj/conjugate';
 import { CONJ_N5 } from '../data/conj/n5';
@@ -12,6 +12,7 @@ import {
   freeKey,
   freeQuestions,
   freeWords,
+  presetPrefs,
   retryQuestions,
   topicWords,
   usesGroups,
@@ -78,7 +79,14 @@ const KIND_LABEL: Record<ConjKind, string> = { verb: '', i: ' · คุณศั
 
 /** ฝึกผันคำอิสระ: เลือกรูป กลุ่มคำ วิธีตอบ และจำนวนข้อเอง — นับเป็นการฝึก (เป้ารายวัน) แต่ไม่นับเป็นผลสอบ */
 export default function ConjFreePage() {
-  const [prefs, setPrefs] = useState<FreePrefs>(initialPrefs);
+  const [params] = useSearchParams();
+  const forms = params.get('forms');
+  return <FreePractice key={forms ?? ''} preset={presetPrefs(forms)} />;
+}
+
+/** preset = มาจากลิงก์ที่เลือกรูปไว้ให้ (ไม่ทับตัวเลือกที่จำไว้ในเครื่อง) */
+function FreePractice({ preset }: { preset: FreePrefs | null }) {
+  const [prefs, setPrefs] = useState<FreePrefs>(() => preset ?? initialPrefs());
   const [phase, setPhase] = useState<Phase>({ kind: 'setup' });
   const answers = useRef<Answer[]>([]);
 
@@ -105,7 +113,7 @@ export default function ConjFreePage() {
   };
 
   const start = () => {
-    updateSettings({ conjFree: prefs });
+    if (!preset) updateSettings({ conjFree: prefs });
     run(freeQuestions(usable(prefs), prefs.count || BATCH), prefs.count === 0);
   };
 
@@ -120,7 +128,7 @@ export default function ConjFreePage() {
         <h1 className={page.h1}>ฝึกผันคำอิสระ</h1>
         <p className={page.muted}>
           {phase.kind === 'setup'
-            ? 'เลือกรูป กลุ่มคำ และวิธีตอบเอง ฝึกได้เรื่อยๆ ไม่นับเป็นผลสอบ'
+            ? `${preset ? 'เลือกรูปไว้ให้แล้ว เปลี่ยนได้' : 'เลือกรูป กลุ่มคำ และวิธีตอบเอง'} ฝึกได้เรื่อยๆ ไม่นับเป็นผลสอบ`
             : phase.kind === 'run'
               ? 'สุ่มคำใหม่ทุกข้อ'
               : 'สรุปรอบนี้'}

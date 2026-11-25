@@ -303,6 +303,13 @@ export function cleanPrefs(raw: { topics: string[]; groups: number[]; types: str
   };
 }
 
+/** ตัวเลือกจากลิงก์ที่เลือกรูปไว้ให้ (?forms=te,ta) — ไม่มีหรือไม่รู้จักสักรูป = null */
+export function presetPrefs(forms: string | null): FreePrefs | null {
+  if (!forms) return null;
+  const prefs = cleanPrefs({ topics: forms.split(','), groups: [1, 2, 3], types: ['form', 'build'], count: 10 }, FREE_TOPICS);
+  return prefs.topics.length ? prefs : null;
+}
+
 /** หัวข้อที่เปิดสอนแล้ว: แยกกลุ่ม + ทุกรูปที่มีกฎในสาย ตามลำดับบท */
 export const FREE_TOPICS: readonly FreeTopic[] = [
   'group',

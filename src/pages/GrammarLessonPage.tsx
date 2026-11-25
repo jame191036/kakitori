@@ -8,6 +8,7 @@ import {
   LessonSteps,
   LessonTestResult,
   PracticeDone,
+  RelatedLessons,
   type LessonStep,
 } from '../components/line/LessonParts';
 import styles from '../components/line/LessonPage.module.css';
@@ -17,6 +18,7 @@ import { getLesson, lessonCode, lessonWords, type LineLesson } from '../data/lin
 import { GrammarCards } from '../features/grammar/GrammarCards';
 import { practiceQuestions, testQuestions, type GrammarQuestion } from '../features/grammar/grammarLogic';
 import { GrammarRunner, type GrammarResult } from '../features/grammar/GrammarRunner';
+import { conjLinksFor } from '../features/line/formLinks';
 import { deckProgress, lessonPassed } from '../features/line/lineLogic';
 import { recordAnswer, recordPractice, progressStore } from '../features/progress/progressStore';
 import { cx } from '../lib/cx';
@@ -164,6 +166,8 @@ function Lesson({ deck, lesson }: { deck: GrammarDeck; lesson: LineLesson }) {
           learnLabel="ทวนการ์ดไวยากรณ์"
         />
       )}
+
+      {(step === 'learn' || result) && <RelatedLessons title="ฝึกผันเพิ่ม" links={conjLinksFor(lesson.id)} />}
 
       <LessonNav
         prev={prev && { href: grammarPath(prev.id), title: prev.title }}

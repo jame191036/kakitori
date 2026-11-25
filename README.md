@@ -85,7 +85,7 @@ URL: `/` (เลือกหมวด) → `/kana` (หมวดตัวอั�
 · `/n5/kanji` (สายคันจิ) → `/n5/kanji/k-days?step=practice` (บทเรียน: เรียน / ฝึกเขียน / ทดสอบ)
 · `/n5/kanji/review` (ทบทวนคันจิ — หน้าทบทวนของทุกสายใช้ `src/components/line/LineReviewPage.tsx` ร่วมกัน)
 · `/n5/grammar` (สายไวยากรณ์) → `/n5/grammar/g-desu?step=practice` · `/n5/grammar/review`
-· `/n5/conj` (สายผันคำ) → `/n5/conj/c-te-nde?step=practice` · `/n5/conj/review` · `/n5/conj/free` (ฝึกอิสระ)
+· `/n5/conj` (สายผันคำ) → `/n5/conj/c-te-nde?step=practice` · `/n5/conj/review` · `/n5/conj/free?forms=te` (ฝึกอิสระ · เลือกรูปไว้ให้)
 · `/n5/exam` (ข้อสอบจำลอง N5) → `/n5/exam/1` (ทำข้อสอบชุดนั้น) → `/n5/exam/1?result=<id>` (ผลสอบ + เฉลย)
 · `/travel` (หมวดท่องเที่ยว = สายวลี) → `/travel/kippu?step=practice` (บทเรียน) · `/travel/review`
 · `/daily` (หมวดชีวิตประจำวัน = สายวลี + บทสนทนา) → `/daily/sasou?step=practice` · `/daily/review`

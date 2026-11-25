@@ -1,6 +1,7 @@
-import { ArrowLeft, ArrowRight, BookOpen, ListChecks, PenLine } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, ChevronRight, ListChecks, PenLine, Shuffle } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
+import type { RelatedLink } from '../../features/line/formLinks';
 import { cx } from '../../lib/cx';
 import styles from './LessonPage.module.css';
 
@@ -194,6 +195,29 @@ export function LessonTestResult({
           {learnLabel}
         </button>
       </div>
+    </section>
+  );
+}
+
+/** ลิงก์ไปบทของอีกสายที่ใช้รูปเดียวกัน (ไม่มีลิงก์ = ไม่แสดง) */
+export function RelatedLessons({ title, links }: { title: string; links: readonly RelatedLink[] }) {
+  if (!links.length) return null;
+  return (
+    <section className={cx('card', styles.related)} aria-labelledby="related-title">
+      <h2 id="related-title" className={styles.relatedTitle}>
+        {title}
+      </h2>
+      <ul className={styles.relatedList}>
+        {links.map((l) => (
+          <li key={l.href}>
+            <Link to={l.href} className={styles.relatedLink}>
+              <span className={styles.relatedCode}>{l.code ?? <Shuffle size={18} strokeWidth={2} aria-hidden />}</span>
+              <span className={styles.relatedText}>{l.title}</span>
+              <ChevronRight size={18} strokeWidth={2} aria-hidden />
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

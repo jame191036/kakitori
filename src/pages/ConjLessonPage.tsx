@@ -8,6 +8,7 @@ import {
   LessonSteps,
   LessonTestResult,
   PracticeDone,
+  RelatedLessons,
   type LessonStep,
 } from '../components/line/LessonParts';
 import styles from '../components/line/LessonPage.module.css';
@@ -17,6 +18,7 @@ import { getLesson, lessonCode, lessonWords, type LineLesson } from '../data/lin
 import { ConjCards } from '../features/conj/ConjCards';
 import { practiceQuestions, TEST_PER_RULE, testQuestions, type ConjQuestion } from '../features/conj/conjLogic';
 import { ConjRunner, type ConjResult } from '../features/conj/ConjRunner';
+import { grammarLinksFor } from '../features/line/formLinks';
 import { deckProgress, lessonPassed } from '../features/line/lineLogic';
 import { progressStore, recordAnswer, recordPractice } from '../features/progress/progressStore';
 import { cx } from '../lib/cx';
@@ -171,6 +173,8 @@ function Lesson({ deck, lesson }: { deck: ConjDeck; lesson: LineLesson }) {
           learnLabel="ทวนการ์ดกฎ"
         />
       )}
+
+      {(step === 'learn' || result) && <RelatedLessons title="ดูวิธีใช้ในประโยค" links={grammarLinksFor(lesson.id)} />}
 
       <LessonNav
         prev={prev && { href: conjPath(prev.id), title: prev.title }}

@@ -103,9 +103,9 @@ export function conjReviewPath(start?: 'due' | 'weak'): string {
   return `${conjPath()}/review${start ? `?start=${start}` : ''}`;
 }
 
-/** ฝึกผันคำอิสระ (เลือกรูปและกลุ่มคำเอง) */
-export function conjFreePath(): string {
-  return `${conjPath()}/free`;
+/** ฝึกผันคำอิสระ (เลือกรูปและกลุ่มคำเอง) — forms = เลือกรูปไว้ให้ เช่น /n5/conj/free?forms=te */
+export function conjFreePath(forms: readonly string[] = []): string {
+  return `${conjPath()}/free${forms.length ? `?forms=${forms.join(',')}` : ''}`;
 }
 
 /** ข้อสอบจำลอง N5 / ชุด / ผลสอบ เช่น examPath('1', '1795…') → /n5/exam/1?result=1795… */
