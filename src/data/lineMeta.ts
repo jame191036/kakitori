@@ -6,6 +6,7 @@ export const LINE_LESSON_COUNT = {
   'vocab-n5': 87,
   'kanji-n5': 18,
   'grammar-n5': 30,
+  'conj-n5': 11,
   travel: 26,
   daily: 27,
   anime: 27,

@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import {
   ANIME_ROOT,
   animeReviewPath,
+  conjReviewPath,
   DAILY_ROOT,
   dailyReviewPath,
   grammarReviewPath,
@@ -17,6 +18,7 @@ import {
 } from '../app/paths';
 import { TodayCard, type TodayLine } from '../components/TodayCard';
 import { ANIME_DECK } from '../data/anime';
+import { CONJ_N5 } from '../data/conj/n5';
 import { DAILY_DECK } from '../data/daily';
 import { GRAMMAR_N5 } from '../data/grammar/n5';
 import { KANJI_N5 } from '../data/kanji/n5';
@@ -44,7 +46,7 @@ interface LineCard {
   desc: string;
 }
 
-// 単語線 = สายคำศัพท์ · 漢字線 = สายคันจิ · 文法線 = สายไวยากรณ์
+// 単語線 = สายคำศัพท์ · 漢字線 = สายคันจิ · 文法線 = สายไวยากรณ์ · 活用線 = สายผันคำ
 const LINE_CARDS: readonly LineCard[] = [
   {
     deck: N5_DECK,
@@ -72,6 +74,15 @@ const LINE_CARDS: readonly LineCard[] = [
     lineJa: '文法線',
     title: 'ทบทวนไวยากรณ์ N5',
     desc: 'รูปไวยากรณ์ที่ถึงรอบ รูปที่ผิดบ่อย และความคืบหน้าทั้งสาย',
+  },
+  {
+    deck: CONJ_N5,
+    tone: 'n5',
+    href: conjReviewPath(),
+    glyph: '活',
+    lineJa: '活用線',
+    title: 'ทบทวนผันคำ N5',
+    desc: 'กฎที่ถึงรอบ กฎที่ผิดบ่อย และความคืบหน้าทั้งสาย',
   },
   {
     deck: TRAVEL_DECK,
@@ -106,6 +117,7 @@ const TODAY_LINES: readonly TodayLine[] = [
   { deck: N5_DECK, unit: 'คำ', dueHref: vocabReviewPath('due') },
   { deck: KANJI_N5, unit: 'ตัว', dueHref: kanjiReviewPath('due') },
   { deck: GRAMMAR_N5, unit: 'รูป', dueHref: grammarReviewPath('due') },
+  { deck: CONJ_N5, unit: 'กฎ', dueHref: conjReviewPath('due') },
   { deck: TRAVEL_DECK, unit: 'วลี', dueHref: travelReviewPath('due') },
   { deck: DAILY_DECK, unit: 'วลี', dueHref: dailyReviewPath('due') },
   { deck: ANIME_DECK, unit: 'วลี', dueHref: animeReviewPath('due') },
@@ -123,7 +135,7 @@ export default function ReviewHubPage() {
       <header className={styles.head}>
         <h1 className={styles.h1}>ทบทวน</h1>
         <p className={styles.lead}>
-          ระบบนัดทบทวนตัวอักษร คำศัพท์ คันจิ และไวยากรณ์ที่ใกล้จะลืม และรวมที่ผิดบ่อยไว้ให้ฝึกซ้ำ —
+          ระบบนัดทบทวนตัวอักษร คำศัพท์ คันจิ ไวยากรณ์ และการผันคำที่ใกล้จะลืม และรวมที่ผิดบ่อยไว้ให้ฝึกซ้ำ —
           ทบทวนวันละนิดช่วยให้จำได้นาน
         </p>
       </header>

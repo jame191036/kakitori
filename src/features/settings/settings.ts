@@ -26,6 +26,14 @@ export interface QuizPrefs {
   count: number;
 }
 
+/** ตัวเลือกล่าสุดของหน้าฝึกผันคำอิสระ (ค่าที่ไม่รู้จักถูกตัดออกตอนใช้ — features/conj/conjLogic.ts) */
+export interface ConjFreePrefs {
+  topics: string[];
+  groups: number[];
+  types: string[];
+  count: number;
+}
+
 export interface Settings {
   theme: ThemePref;
   /** ความเข้มงวดในการตรวจลายมือ */
@@ -44,6 +52,8 @@ export interface Settings {
   furigana: boolean;
   /** แสดงโรมาจิใต้วลี (สายท่องเที่ยว · ชีวิตประจำวัน) */
   romaji: boolean;
+  /** ฝึกผันคำอิสระ: ตัวเลือกล่าสุด (null = ยังไม่เคยเลือก) */
+  conjFree: ConjFreePrefs | null;
 }
 
 export const SETTINGS_KEY = 'jp-learn:settings:v1';
@@ -80,6 +90,7 @@ const defaults: Settings = {
   dailyGoal: DEFAULT_GOAL,
   furigana: true,
   romaji: true,
+  conjFree: null,
 };
 
 function sanitizeQuizPrefs(raw: unknown): QuizPrefs {
@@ -92,6 +103,17 @@ function sanitizeQuizPrefs(raw: unknown): QuizPrefs {
     : [];
   const count = typeof raw.count === 'number' && raw.count > 0 ? Math.round(raw.count) : 10;
   return { groups, types: types.length ? types : DEFAULT_QUIZ_PREFS.types, count };
+}
+
+function sanitizeConjFree(raw: unknown): ConjFreePrefs | null {
+  if (!isRecord(raw)) return null;
+  const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
+  return {
+    topics: list(raw.topics).filter((x): x is string => typeof x === 'string'),
+    groups: list(raw.groups).filter((x): x is number => typeof x === 'number'),
+    types: list(raw.types).filter((x): x is string => typeof x === 'string'),
+    count: typeof raw.count === 'number' ? raw.count : 10,
+  };
 }
 
 function sanitize(raw: unknown): Settings {
@@ -113,6 +135,7 @@ function sanitize(raw: unknown): Settings {
     dailyGoal: sanitizeGoal(raw.dailyGoal),
     furigana: raw.furigana !== false,
     romaji: raw.romaji !== false,
+    conjFree: sanitizeConjFree(raw.conjFree),
   };
 }
 

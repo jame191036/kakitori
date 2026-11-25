@@ -1,7 +1,7 @@
 import { ArrowRight, TrainFront } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router';
-import { animePath, dailyPath, grammarPath, kanjiPath, REVIEW_ROOT, travelPath, vocabPath } from '../app/paths';
+import { animePath, conjPath, dailyPath, grammarPath, kanjiPath, REVIEW_ROOT, travelPath, vocabPath } from '../app/paths';
 import { SECTIONS } from '../app/sections';
 import { LessonSign, StationSign, type LessonSignStop } from '../components/train/StationSign';
 import { groupLabel, scriptList } from '../data/scripts';
@@ -300,7 +300,7 @@ interface HeroLine {
   todo: (left: number) => string;
 }
 
-// 単語線 = สายคำศัพท์ · 漢字線 = สายคันจิ · 文法線 = สายไวยากรณ์
+// 単語線 = สายคำศัพท์ · 漢字線 = สายคันจิ · 文法線 = สายไวยากรณ์ · 活用線 = สายผันคำ
 const HERO_LINES: readonly HeroLine[] = [
   {
     id: 'vocab',
@@ -352,6 +352,23 @@ const HERO_LINES: readonly HeroLine[] = [
     wideChips: true,
     lead: 'แต่ละบทไวยากรณ์คือหนึ่งสถานี อ่านคำอธิบายและประโยคตัวอย่าง ฝึก แล้วทดสอบให้ถูกครบทุกรูป แล้วรับตราสถานีไปสะสม — ฟรี ไม่ต้องสมัครสมาชิก',
     todo: (left) => `อ่านการ์ดไวยากรณ์ ฝึก แล้วทำแบบทดสอบให้ตอบถูกครบทุกรูป (เหลือ ${left} รูป)`,
+  },
+  {
+    id: 'conj',
+    progressKey: 'conj-n5',
+    section: 'jlpt-n5',
+    tone: 'n5',
+    lineJa: '活用線',
+    lineName: 'สายผันคำ N5',
+    shortName: 'สายผันคำ',
+    lessonHref: conjPath,
+    chip: (decks, id) => {
+      const r = decks.conj.words[id]!;
+      return { main: r.pattern, small: r.title };
+    },
+    wideChips: true,
+    lead: 'แต่ละบทผันคำคือหนึ่งสถานี อ่านกฎ ฝึกผันหลายๆ คำ แล้วทดสอบให้ถูกครบทุกกฎ แล้วรับตราสถานีไปสะสม — ฟรี ไม่ต้องสมัครสมาชิก',
+    todo: (left) => `อ่านการ์ดกฎ ฝึก แล้วทำแบบทดสอบให้ตอบถูกครบทุกกฎ (เหลือ ${left} กฎ)`,
   },
   {
     // 旅行線 = สายท่องเที่ยว

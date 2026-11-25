@@ -1,0 +1,410 @@
+/* ── คำกริยา / รูปผัน ── */
+.form {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.face {
+  display: inline-grid;
+  justify-items: center;
+  gap: 2px;
+  line-height: 1.2;
+  min-width: 0;
+}
+
+.faceKana {
+  font-weight: 600;
+}
+
+.faceKanji {
+  color: var(--text-2);
+}
+
+.xl .faceKana {
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+}
+
+.xl .faceKanji {
+  font-size: 1.25rem;
+}
+
+.md .faceKana {
+  font-size: 1.45rem;
+}
+
+.md .faceKanji {
+  font-size: 0.95rem;
+}
+
+/* คำ → รูปที่ผัน: ส่วนที่หายไปจาง ส่วนที่เปลี่ยนเน้นสีสาย */
+.change {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.4em;
+}
+
+.arrow {
+  color: var(--text-2);
+  font-size: 0.8em;
+}
+
+.old {
+  color: var(--text-2);
+}
+
+.hot {
+  color: var(--c-text, var(--accent));
+  font-weight: inherit;
+  text-decoration: underline 2px;
+  text-decoration-color: color-mix(in srgb, var(--c, var(--accent)) 45%, transparent);
+  text-underline-offset: 0.18em;
+}
+
+/* ── การ์ดเรียน ── */
+.exWord {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 10px;
+  min-width: 0;
+}
+
+.exJa {
+  font-size: 1.35rem;
+  line-height: 1.6;
+}
+
+.groupTag,
+.askChip {
+  display: inline-block;
+  padding: 1px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--c, var(--border)) 30%, var(--border));
+  background: var(--c-soft, var(--surface-2));
+  color: var(--c-text, var(--text-2));
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.askChip {
+  padding: 4px 14px;
+  font-size: 1rem;
+}
+
+.allWords summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--text-2);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wordList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+  gap: 6px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wordList li {
+  display: grid;
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.wordThai {
+  color: var(--text-2);
+  font-size: 0.82rem;
+}
+
+/* ── คำถาม ── */
+.prompt {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.promptThai {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.promptForm {
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.askBig {
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  font-weight: 800;
+}
+
+.choiceForm {
+  padding-inline: 8px;
+  font-size: 1.35rem;
+  line-height: 1.35;
+}
+
+.choiceGroup {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.choices3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.feedback {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.feedbackJa {
+  font-size: 1.2rem;
+}
+
+.why {
+  font-size: 0.92rem;
+}
+
+.endless {
+  flex: 1;
+  color: var(--text-2);
+  font-size: 0.85rem;
+}
+
+/* ── เรียงคานะ ── */
+.build {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.slots,
+.tiles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slot,
+.tile {
+  min-width: 54px;
+  height: 54px;
+  padding: 0 10px;
+  border-radius: var(--radius);
+  font-size: 1.5rem;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.slot {
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--track-strong);
+  background: var(--pad);
+  cursor: pointer;
+}
+
+.slotFilled {
+  border-style: solid;
+  border-color: var(--c, var(--primary));
+  background: var(--surface);
+}
+
+.tile {
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  cursor: pointer;
+  transition:
+    transform var(--press),
+    opacity 150ms ease;
+}
+
+.tile:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.tile:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tile:hover:not(:disabled) {
+    border-color: var(--c, var(--primary));
+  }
+}
+
+/* ── ฝึกอิสระ ── */
+.setup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  max-width: 860px;
+  width: 100%;
+  margin-inline: auto;
+}
+
+.setupHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+}
+
+.setupTitle {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.topicJa {
+  font-size: 1.05rem;
+}
+
+.summary {
+  display: grid;
+  gap: 16px;
+  max-width: 760px;
+  width: 100%;
+  margin-inline: auto;
+}
+
+.scoreCard {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.score {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.topicRows,
+.wrongRows {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.topicRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 12px;
+}
+
+.topicScore {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.bar {
+  grid-column: 1 / -1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--c, var(--primary));
+}
+
+.wrongRows li {
+  display: grid;
+  gap: 2px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.startRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
+/* ── ทางลัดไปฝึกอิสระในหน้าแผนที่สาย ── */
+.freeLink {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  padding: 14px clamp(16px, 2.4vw, 24px);
+  border: 1px dashed color-mix(in srgb, var(--c) 45%, var(--border));
+  border-radius: var(--radius-lg);
+  background: var(--c-soft);
+}
+
+.freeText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.freeName {
+  font-weight: 800;
+}
+
+.freeDesc {
+  color: var(--text-2);
+  font-size: 0.92rem;
+}
+
+@media (max-width: 560px) {
+  .slot,
+  .tile {
+    min-width: 46px;
+    height: 46px;
+    font-size: 1.3rem;
+  }
+
+  .choiceForm {
+    font-size: 1.2rem;
+  }
+
+  /* คำยาวไม่ทับเลขข้อ (มุมซ้ายบน) */
+  .md .faceKana {
+    padding-top: 6px;
+    font-size: 1.2rem;
+  }
+}

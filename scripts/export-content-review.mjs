@@ -25,6 +25,7 @@ import {
   TRAVEL_PRIORITY,
   DAILY_PRIORITY,
   ANIME_PRIORITY,
+  CONJ_PRIORITY,
   VOCAB_PRIORITY,
 } from './content-review-priority.mjs';
 
@@ -47,6 +48,10 @@ const { vocabDecks, lessonCode, WORD_KIND_LABEL } = await server.ssrLoadModule('
 const { N5_DECK } = await server.ssrLoadModule('/src/data/vocab/n5/index.ts');
 const { KANJI_N5 } = await server.ssrLoadModule('/src/data/kanji/n5/index.ts');
 const { GRAMMAR_N5 } = await server.ssrLoadModule('/src/data/grammar/n5/index.ts');
+const { CONJ_N5 } = await server.ssrLoadModule('/src/data/conj/n5/index.ts');
+const { CONJ_VERBS, verbById } = await server.ssrLoadModule('/src/data/conj/verbs.ts');
+const { conjugate } = await server.ssrLoadModule('/src/data/conj/conjugate.ts');
+const { NOT_VOLITIONAL, TRICKY_GROUP1 } = await server.ssrLoadModule('/src/data/conj/lists.ts');
 const { parseInline, plainOf } = await server.ssrLoadModule('/src/data/grammar/sentence.ts');
 const { EXAM_SETS } = await server.ssrLoadModule('/src/data/exam/n5/index.ts');
 const { KIND_INFO } = await server.ssrLoadModule('/src/data/exam/build.ts');
@@ -64,6 +69,7 @@ const PRIORITY_TABLES = {
   vocab: VOCAB_PRIORITY,
   kanji: KANJI_PRIORITY,
   grammar: GRAMMAR_PRIORITY,
+  conj: CONJ_PRIORITY,
   exam: EXAM_PRIORITY,
   travel: TRAVEL_PRIORITY,
   daily: DAILY_PRIORITY,
@@ -252,6 +258,59 @@ for (const segment of GRAMMAR_N5.segments) {
   }
 }
 
+// ผันคำ: 1 แถวต่อกฎ (หัวกฎ คำอธิบาย ตัวอย่างที่ผันแล้ว) + แถวรายการคำที่คัดด้วยมือ
+// รูปผันของทุกคำสร้างจากกฎในโค้ด (เทียบกับพจนานุกรมและตัวผันอิสระแล้ว) จึงไม่มีแถวรายคำ
+const conjSet = (segment) => `${CONJ_N5.name} · ${segment.title}`;
+const CONJ_LISTS_SET = `${CONJ_N5.name} · รายการคำ`;
+const verbCell = (v) => (v.kanji ? `${v.kana}（${v.kanji}）` : v.kana);
+for (const segment of CONJ_N5.segments) {
+  for (const lesson of segment.lessons) {
+    for (const id of lesson.words) {
+      const r = CONJ_N5.words[id];
+      rows.push(tag([
+        conjSet(segment),
+        `${lessonCode(CONJ_N5, lesson)} ${lesson.title}`,
+        r.pattern,
+        '',
+        '',
+        [...r.explain, r.note].filter(Boolean).join(' · '),
+        r.examples
+          .map(verbById)
+          .map((v) => (r.form ? `${verbCell(v)} → ${conjugate(v, r.form)}` : `${verbCell(v)} = กลุ่ม ${v.group}`))
+          .join(' / '),
+        '',
+        r.title,
+        '',
+        priorityOf('conj', id),
+        '',
+        '',
+      ], `${CONJ_N5.id}:${id}`, CONJ_N5.name));
+    }
+  }
+}
+for (const [id, name, list, about] of [
+  ['list-tricky', 'คำหลอก', TRICKY_GROUP1.map(verbById), 'ลงท้ายเสียง i/e + る แต่เป็นกลุ่ม 1'],
+  ['list-group2', 'กลุ่ม 2', CONJ_VERBS.filter((v) => v.group === 2), 'คำกริยากลุ่ม 2 ทั้งหมด (คำที่เหลือเป็นกลุ่ม 1 ยกเว้น する くる)'],
+  ['list-suru', 'คำนาม + する', CONJ_VERBS.filter((v) => v.prefix), 'คำนามที่เติม する แล้วใช้เป็นคำกริยา (กลุ่ม 3)'],
+  ['list-will', 'ไม่ใช้กับ ませんか・ましょう・たい', NOT_VOLITIONAL.map(verbById), 'คำที่ปกติไม่ใช้กับ 3 รูปนี้ จึงไม่เอามาออกข้อ (คัดโดยผู้พัฒนา)'],
+]) {
+  rows.push(tag([
+    CONJ_LISTS_SET,
+    'รายการคำ',
+    name,
+    '',
+    '',
+    about,
+    list.map(verbCell).join(' / '),
+    '',
+    `${list.length} คำ`,
+    '',
+    priorityOf('conj', id),
+    '',
+    '',
+  ], `${CONJ_N5.id}:${id}`, CONJ_N5.name));
+}
+
 // ข้อสอบจำลอง: 1 แถวต่อบทความ + 1 แถวต่อข้อ
 // แถวข้อ: "คำตัวอย่าง" = โจทย์（คำอ่าน）— ข้อเติมคำ/เรียงประโยคแสดงประโยคที่เติมคำตอบแล้ว · "หมายเหตุ" = ตัวเลือก (✓ = ข้อที่ถูก) + เหตุผล
 const EXAM_NAME = 'ข้อสอบจำลอง N5';
@@ -435,6 +494,13 @@ const TRAVEL_NOTES = [
   'โรมาจิสร้างอัตโนมัติจากคานะ (คำช่วย は へ を อ่านตามเสียง wa e o) — ช่วยดูว่าเว้นวรรคอ่านง่ายและไม่มีที่ผิด',
   'ความหมายไทยใช้เป็นตัวเลือกในแบบฝึกด้วย จึงต้องไม่มี 2 วลีที่แปลได้เหมือนกัน — ถ้าเห็นคู่ที่ความหมายทับกัน ช่วยบอก',
 ];
+const CONJ_INTRO =
+  'สายฝึกเปลี่ยนรูปคำกริยา การ์ดละ 1 กฎ · รูปผันทุกคำสร้างจากกฎในโค้ด กลุ่มของคำกริยาเทียบกับพจนานุกรม JMdict แล้ว · **คำอธิบายและรายการคำที่คัดไว้ร่างโดย AI ยังไม่มีผู้รู้ภาษาญี่ปุ่นตรวจ**';
+const CONJ_NOTES = [
+  'ช่วยดูว่าคำอธิบายถูกและเข้าใจง่าย ตัวอย่างผันถูก และการแปลหน้าที่ของแต่ละรูปเหมาะไหม',
+  'แถว "รายการคำ" 4 แถวสุดท้ายคือรายการที่คัดด้วยมือ — ช่วยดูว่ามีคำไหนไม่ควรอยู่ในรายการ',
+  'รูปพจนานุกรมและรูปผันแสดงเป็นคานะ คันจิในวงเล็บใช้แยกคำที่เขียนคานะเหมือนกัน (เช่น 切る / 着る)',
+];
 const EXAM_INTRO =
   'ข้อสอบจำลองแบบเดียวกับ JLPT N5 จริง (ส่วนคำศัพท์ และส่วนไวยากรณ์ + การอ่าน ยังไม่มีการฟัง) 2 ชุด ชุดละ 43 ข้อ · **โจทย์ บทความ ตัวเลือก คำแปล และเหตุผลร่างโดย AI ยังไม่มีผู้รู้ภาษาญี่ปุ่นตรวจ**';
 const EXAM_NOTES = [
@@ -484,7 +550,7 @@ const md = [
   '# ตารางตรวจเนื้อหาภาษาญี่ปุ่น',
   '',
   '> ไฟล์นี้สร้างอัตโนมัติด้วย `npm run content:review` — อย่าแก้ไฟล์นี้โดยตรง ให้แก้ที่ `src/data/scripts/*.ts`',
-  '> (ตัวอักษร), `src/data/vocab/n5/*.ts` (คำศัพท์), `src/data/kanji/n5/*.ts` (คันจิ), `src/data/grammar/n5/*.ts` (ไวยากรณ์)',
+  '> (ตัวอักษร), `src/data/vocab/n5/*.ts` (คำศัพท์), `src/data/kanji/n5/*.ts` (คันจิ), `src/data/grammar/n5/*.ts` (ไวยากรณ์), `src/data/conj/n5/*.ts` (ผันคำ)',
   '> `src/data/exam/n5/*.ts` (ข้อสอบจำลอง) หรือ `src/data/travel/*.ts` (ท่องเที่ยว) แล้วรันใหม่',
   '> · รายการ "ควรดูก่อน" อยู่ที่ `scripts/content-review-priority.mjs`',
   '',
@@ -539,6 +605,18 @@ const md = [
   ...GRAMMAR_N5.segments
     .filter((s) => s.lessons.length)
     .flatMap((s) => [`### ${s.title} (${s.name})`, '', mdTable(rows.filter((r) => r[0] === grammarSet(s))), '']),
+  `## ${CONJ_N5.name} — ${Object.keys(CONJ_N5.words).length} กฎ (${CONJ_N5.lessons.length} บท · เปิดแล้ว ${CONJ_N5.segments.filter((s) => s.lessons.length).length} จาก ${CONJ_N5.segments.length} ช่วง)`,
+  '',
+  CONJ_INTRO,
+  ...CONJ_NOTES.map((n) => `- ${n}`),
+  '',
+  ...CONJ_N5.segments
+    .filter((s) => s.lessons.length)
+    .flatMap((s) => [`### ${s.title} (${s.name})`, '', mdTable(rows.filter((r) => r[0] === conjSet(s))), '']),
+  '### รายการคำ',
+  '',
+  mdTable(rows.filter((r) => r[0] === CONJ_LISTS_SET)),
+  '',
   `## ${EXAM_NAME} — ${EXAM_SETS.length} ชุด (ชุดละ ${EXAM_SETS[0].questions.length} ข้อ)`,
   '',
   EXAM_INTRO,
@@ -655,6 +733,18 @@ const SHEETS = [
       ['ความหมาย / คำแปล', at(8), 30],
       ['ประโยคตัวอย่าง（คำอ่าน）', at(6), 44],
       ['คำอธิบาย / ส่วนไวยากรณ์และตัวเลือกผิด', at(5), 56],
+    ],
+  },
+  {
+    name: CONJ_N5.name,
+    match: (r) => r.sheet === CONJ_N5.name,
+    cols: [
+      ['ช่วง', segmentOfSet, 18],
+      ['บท', at(1), 26],
+      ['กฎ', at(2), 24],
+      ['กฎ (ไทย)', at(8), 34],
+      ['ตัวอย่าง / รายการคำ', at(6), 50],
+      ['คำอธิบาย', at(5), 56],
     ],
   },
   {
@@ -832,6 +922,10 @@ wb.creator = 'kakitori';
   line('ไวยากรณ์ N5', { bold: true });
   line(GRAMMAR_INTRO);
   for (const note of GRAMMAR_NOTES) line(`• ${note}`);
+  gap();
+  line(CONJ_N5.name, { bold: true });
+  line(CONJ_INTRO);
+  for (const note of CONJ_NOTES) line(`• ${note}`);
   gap();
   line(EXAM_NAME, { bold: true });
   line(EXAM_INTRO);

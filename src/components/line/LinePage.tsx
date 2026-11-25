@@ -1,4 +1,5 @@
 import { ArrowRight, ChevronDown, RotateCcw } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { lessonCode, lessonWords, type LineDeck, type LineLesson } from '../../data/line';
 import {
@@ -50,6 +51,8 @@ export interface LinePageProps<T extends { id: string }> {
   reviewHref?: string;
   /** ข้อความย่อของรายการในการ์ดบท (เช่น คานะของคำ / ตัวคันจิ) */
   previewOf: (item: T) => string;
+  /** ทางลัดเฉพาะของสายนี้ ใต้แถบบทถัดไป (เช่น ฝึกอิสระของสายผันคำ) */
+  extra?: ReactNode;
 }
 
 /**
@@ -68,6 +71,7 @@ export function LinePage<T extends { id: string }>({
   lessonHref,
   reviewHref,
   previewOf,
+  extra,
 }: LinePageProps<T>) {
   const now = useNow();
   const progress = deckProgress(deck, useStore(progressStore));
@@ -140,6 +144,8 @@ export function LinePage<T extends { id: string }>({
           </>
         )}
       </section>
+
+      {extra}
 
       <h2 className={styles.sectionTitle}>
         <span className={cx('kana', styles.accentJa)}>区間</span> ช่วงของสาย

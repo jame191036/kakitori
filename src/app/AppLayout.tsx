@@ -23,6 +23,7 @@ import { useLineDecks, type LineDecks } from '../data/lineDecks';
 import {
   ANIME_ROOT,
   animePath,
+  conjPath,
   DAILY_ROOT,
   dailyPath,
   examPath,
@@ -64,16 +65,21 @@ const LESSON_LINES = [
   { root: `${N5_ROOT}/vocab`, above: [N5_CRUMB], label: 'คำศัพท์', deck: 'vocab', href: vocabPath },
   { root: `${N5_ROOT}/kanji`, above: [N5_CRUMB], label: 'คันจิ', deck: 'kanji', href: kanjiPath },
   { root: `${N5_ROOT}/grammar`, above: [N5_CRUMB], label: 'ไวยากรณ์', deck: 'grammar', href: grammarPath },
+  { root: `${N5_ROOT}/conj`, above: [N5_CRUMB], label: 'ผันคำ', deck: 'conj', href: conjPath },
   { root: TRAVEL_ROOT, above: [TALK_CRUMB], label: 'ใช้ท่องเที่ยว', deck: 'travel', href: travelPath },
   { root: DAILY_ROOT, above: [TALK_CRUMB], label: 'ใช้ในชีวิตประจำวัน', deck: 'daily', href: dailyPath },
   { root: ANIME_ROOT, above: [TALK_CRUMB], label: 'ดูการ์ตูน / ซีรีส์', deck: 'anime', href: animePath },
 ] as const;
 
+/** หน้าของสายที่ไม่ใช่บทเรียน (ฝึกอิสระมีเฉพาะสายผันคำ) → ชื่อในเส้นทาง */
+const toolOf = (deck: string, rest: string): string | undefined =>
+  rest === 'review' ? 'ทบทวน' : rest === 'free' && deck === 'conj' ? 'ฝึกอิสระ' : undefined;
+
 /** หน้าบทเรียนของสายบทเรียน (ต้องใช้ข้อมูลสายเพื่อแสดงชื่อบท) */
 const lessonMatch = (pathname: string) =>
   LESSON_LINES.some((l) => {
     const rest = matchPath(`${l.root}/*`, pathname)?.params['*'];
-    return !!rest && rest !== 'review';
+    return !!rest && !toolOf(l.deck, rest);
   });
 
 /**
@@ -111,7 +117,8 @@ function crumbsFor(pathname: string, decks: LineDecks | null): Crumb[] {
     const rest = m.params['*'];
     if (!rest) return [home, ...line.above, { label: line.label }];
     const up: Crumb = { label: line.label, to: line.href() };
-    if (rest === 'review') return [home, ...line.above, up, { label: 'ทบทวน' }];
+    const tool = toolOf(line.deck, rest);
+    if (tool) return [home, ...line.above, up, { label: tool }];
     if (!decks) return [home, ...line.above, up, { label: '…' }];
     const lesson = getLesson(decks[line.deck], rest);
     return [home, ...line.above, up, lesson ? { label: lesson.title } : notFound];

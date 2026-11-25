@@ -1,6 +1,7 @@
 import { ArrowRight, Lightbulb } from 'lucide-react';
 import { Link } from 'react-router';
-import { examPath, grammarPath, kanjiPath, scriptPath, vocabPath } from '../app/paths';
+import { conjPath, examPath, grammarPath, kanjiPath, scriptPath, vocabPath } from '../app/paths';
+import { CONJ_N5 } from '../data/conj/n5';
 import { EXAM_SETS } from '../data/exam/n5';
 import { GRAMMAR_N5 } from '../data/grammar/n5';
 import { KANJI_N5 } from '../data/kanji/n5';
@@ -17,7 +18,7 @@ import { HubLine } from '../components/line/HubLine';
 import styles from '../components/line/HubPage.module.css';
 
 /**
- * หมวด JLPT N5 — สายคำศัพท์ สายคันจิ สายไวยากรณ์ และข้อสอบจำลอง
+ * หมวด JLPT N5 — สายคำศัพท์ สายคันจิ สายไวยากรณ์ ข้อสอบจำลอง และสายผันคำ
  * (ไม่มีรายการเนื้อหา N5 อย่างเป็นทางการ จำนวนคำ/คันจิเป็นตัวเลขโดยประมาณที่ใช้กันทั่วไป)
  */
 export default function N5HubPage() {
@@ -78,6 +79,16 @@ export default function N5HubPage() {
           href={grammarPath()}
         />
         <ExamLine />
+        <HubLine
+          lineTone="n5"
+          deck={CONJ_N5}
+          data={data}
+          glyph="活"
+          name="ผันคำ N5"
+          desc="ฝึกเปลี่ยนรูปคำกริยา เช่น ます · て · た มีฝึกอิสระไม่จำกัดข้อ"
+          unit="กฎ"
+          href={conjPath()}
+        />
       </ul>
     </div>
   );

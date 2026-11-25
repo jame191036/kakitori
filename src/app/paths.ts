@@ -7,7 +7,7 @@
  *   /kana/:script             ชุดตัวอักษร — เมนูย่อย + ตาราง
  *   /kana/:script/practice/…  คัดตัวอักษร · /quiz แบบทดสอบ · /review ทบทวน · /worksheet พิมพ์แบบฝึก
  *   /review                   ทบทวน (รวมทุกชุด)
- *   /n5                       หมวด JLPT N5 — สายคำศัพท์ · สายคันจิ · สายไวยากรณ์
+ *   /n5                       หมวด JLPT N5 — สายคำศัพท์ · สายคันจิ · สายไวยากรณ์ · ข้อสอบจำลอง · สายผันคำ
  *   /n5/vocab                 สายคำศัพท์ N5 — แผนที่บท + ตรา
  *   /n5/vocab/:lesson         บทเรียน: เรียน → ฝึก → ทดสอบ
  *   /n5/vocab/review          ทบทวนคำศัพท์ (คำที่ถึงรอบ · คำที่ผิดบ่อย) — ?start=due เริ่มทบทวนทันที
@@ -16,6 +16,7 @@
  *   /n5/grammar               สายไวยากรณ์ N5 · /n5/grammar/:lesson บทเรียน · /n5/grammar/review ทบทวน
  *   /n5/exam                  ข้อสอบจำลอง N5 — เลือกชุด + ประวัติผลสอบ
  *   /n5/exam/:set             ทำข้อสอบชุดนั้น · ?result=<id> ดูผลสอบครั้งนั้น
+ *   /n5/conj                  สายผันคำ N5 · /n5/conj/:lesson บทเรียน · /n5/conj/review ทบทวน · /n5/conj/free ฝึกอิสระ
  *   /travel                   หมวดท่องเที่ยว = สายวลีท่องเที่ยว (แผนที่บท + ตรา)
  *   /travel/:lesson           บทเรียน: เรียน → ฝึก → ทดสอบ · /travel/review ทบทวนวลี
  *   /daily                    หมวดชีวิตประจำวัน = สายวลี + บทสนทนา · /daily/:lesson · /daily/review
@@ -90,6 +91,21 @@ export function grammarPath(lessonId?: string): string {
 /** หน้าทบทวนไวยากรณ์ N5 — start = เริ่มทบทวนชุดนั้นทันที (ใช้จากการ์ด "วันนี้") */
 export function grammarReviewPath(start?: 'due' | 'weak'): string {
   return `${grammarPath()}/review${start ? `?start=${start}` : ''}`;
+}
+
+/** สายผันคำ N5 / บทเรียน เช่น conjPath('c-te-nde') → /n5/conj/c-te-nde */
+export function conjPath(lessonId?: string): string {
+  return `${N5_ROOT}/conj${lessonId ? `/${lessonId}` : ''}`;
+}
+
+/** หน้าทบทวนการผันคำ N5 — start = เริ่มทบทวนชุดนั้นทันที (ใช้จากการ์ด "วันนี้") */
+export function conjReviewPath(start?: 'due' | 'weak'): string {
+  return `${conjPath()}/review${start ? `?start=${start}` : ''}`;
+}
+
+/** ฝึกผันคำอิสระ (เลือกรูปและกลุ่มคำเอง) */
+export function conjFreePath(): string {
+  return `${conjPath()}/free`;
 }
 
 /** ข้อสอบจำลอง N5 / ชุด / ผลสอบ เช่น examPath('1', '1795…') → /n5/exam/1?result=1795… */

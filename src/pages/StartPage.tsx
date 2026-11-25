@@ -256,7 +256,7 @@ export default function StartPage() {
           <strong>ระดับ 2</strong> ตัวเล็กและตัวควบ (ตัวเล็กฝึกเขียน ตัวควบฝึกอ่าน ฟัง และทำแบบทดสอบ)
         </p>
         <p>
-          <strong>เรียนตัวอักษรแล้วไปต่อ:</strong> <Link to={N5_ROOT}>JLPT N5</Link> (คำศัพท์ คันจิ ไวยากรณ์ ข้อสอบจำลอง) และ{' '}
+          <strong>เรียนตัวอักษรแล้วไปต่อ:</strong> <Link to={N5_ROOT}>JLPT N5</Link> (คำศัพท์ คันจิ ไวยากรณ์ ผันคำ ข้อสอบจำลอง) และ{' '}
           <Link to={TALK_ROOT}>บทสนทนา</Link> (ท่องเที่ยว ชีวิตประจำวัน การ์ตูน)
         </p>
         <p className="small muted">
