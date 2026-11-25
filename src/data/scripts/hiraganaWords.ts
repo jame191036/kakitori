@@ -85,7 +85,7 @@ export const HIRAGANA_WORDS: Record<string, ExampleWord> = {
   pa: w('かんぱい', 'kanpai', 'ชนแก้ว', '乾杯'),
   pi: w('えんぴつ', 'enpitsu', 'ดินสอ', '鉛筆'),
   pu: w('てんぷら', 'tenpura', 'เทมปุระ', '天ぷら'),
-  pe: w('ぺこぺこ', 'pekopeko', 'หิวมาก (คำเลียนเสียงท้องร้อง)'),
+  pe: w('ぺこぺこ', 'pekopeko', 'หิวมาก (คำเลียนอาการท้องว่าง)'),
   po: w('さんぽ', 'sanpo', 'เดินเล่น', '散歩'),
   // ตัวเล็ก
   'small-ya': w('でんしゃ', 'densha', 'รถไฟ', '電車'),

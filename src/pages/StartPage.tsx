@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router';
-import { scriptPath } from '../app/paths';
+import { kanjiPath, N5_ROOT, scriptPath, TALK_ROOT } from '../app/paths';
 import { ArticleLayout, type TocItem } from '../components/ArticleLayout';
 import { ContinueCard } from '../components/ContinueCard';
 import { pairsOf } from '../data/minimalPairs';
@@ -77,7 +77,7 @@ export default function StartPage() {
           </li>
           <li>
             <strong>คันจิ</strong> <span lang="ja">漢字</span> — ตัวอักษรที่มาจากภาษาจีน แต่ละตัวมีความหมายในตัว
-            มีหลายพันตัว (ยังไม่มีในเว็บนี้)
+            มีหลายพันตัว ในเว็บนี้มี<Link to={kanjiPath()}>คันจิ N5 103 ตัว</Link>
           </li>
         </ul>
         <div className={styles.sentenceBox}>
@@ -151,6 +151,7 @@ export default function StartPage() {
         <p className="small">
           <strong>ข้อยกเว้นที่ต้องจำ:</strong> <span className="kana">し</span> = shi, <span className="kana">ち</span> =
           chi, <span className="kana">つ</span> = tsu, <span className="kana">ふ</span> = fu,{' '}
+          <span className="kana">を</span> = wo แต่ออกเสียง o เหมือน <span className="kana">お</span>,{' '}
           <span className="kana">ん</span> = n (ตัวสะกด)
         </p>
         <p className="small muted">
@@ -179,7 +180,7 @@ export default function StartPage() {
         <h2 className={styles.h2}>5. ทำไมต้องเขียนตามลำดับขีด</h2>
         <ul className={styles.list}>
           <li>ตัวอักษรจะได้สัดส่วนสวยและอ่านง่าย เขียนได้เร็วและเป็นธรรมชาติ</li>
-          <li>เป็นพื้นฐานสำคัญถ้าจะเรียนคันจิต่อในอนาคต</li>
+          <li>เป็นพื้นฐานสำคัญตอนเรียนคันจิ</li>
           <li>
             หลักทั่วไป: เขียน<strong>จากบนลงล่าง</strong> และ<strong>จากซ้ายไปขวา</strong> — บางตัวมีข้อยกเว้น
             ดูได้จากแอนิเมชันในหน้าคัดตัวอักษร
@@ -253,6 +254,10 @@ export default function StartPage() {
         <p>
           ตัวอักษรแบ่งเป็น 2 ระดับ: <strong>ระดับ 1</strong> ตัวพื้นฐานและตัวขุ่นของฮิรางานะ แล้วต่อด้วยคาตาคานะ ·{' '}
           <strong>ระดับ 2</strong> ตัวเล็กและตัวควบ (ตัวเล็กฝึกเขียน ตัวควบฝึกอ่าน ฟัง และทำแบบทดสอบ)
+        </p>
+        <p>
+          <strong>เรียนตัวอักษรแล้วไปต่อ:</strong> <Link to={N5_ROOT}>JLPT N5</Link> (คำศัพท์ คันจิ ไวยากรณ์ ข้อสอบจำลอง) และ{' '}
+          <Link to={TALK_ROOT}>บทสนทนา</Link> (ท่องเที่ยว ชีวิตประจำวัน การ์ตูน)
         </p>
         <p className="small muted">
           ปุ่ม “เรียนต่อ” จะพาไปขั้นถัดไปให้เอง ส่วนหน้า “ทบทวน” จะนัดให้กลับมาทบทวนตัวที่ใกล้จะลืม

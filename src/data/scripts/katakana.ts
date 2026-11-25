@@ -14,7 +14,7 @@ const chars = buildKana(CHARS, {
   a: { similar: 'マヤフ' },
   i: { similar: 'トノ' },
   u: { similar: 'ワラフ' },
-  e: { similar: 'ユコニ', note: 'หน้าตาคล้ายคันจิ 工' },
+  e: { similar: 'ユコニ', note: 'หน้าตาคล้ายคันจิ 工 (งานช่าง)' },
   o: { similar: 'ホキ' },
   ka: { similar: 'ヤナ', note: 'หน้าตาคล้ายคันจิ 力 (แรง)' },
   ki: { similar: 'チオモ' },
